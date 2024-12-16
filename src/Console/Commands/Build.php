@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Darken\Console\Commands;
 
 use Darken\Builder\CodeCompiler;
-use Darken\Builder\Collection\Components;
-use Darken\Builder\Collection\Pages;
 use Darken\Builder\FileSaveInterface;
 use Darken\Builder\InputFile;
 use Darken\Builder\OutputCompiled;
@@ -28,13 +26,6 @@ class Build implements CommandInterface
         }
 
         try {
-
-            /*
-            $collections = [
-                new Components(),
-                new Pages(),
-            ];
-            */
 
             $pages = [];
 

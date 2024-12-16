@@ -33,8 +33,5 @@
         "test": "phpunit",
         "cs": "vendor/bin/php-cs-fixer fix src",
         "phpstan": "vendor/bin/phpstan"
-    },
-    "bin" : [
-        "bin/darken"
-    ]
+    }
 }

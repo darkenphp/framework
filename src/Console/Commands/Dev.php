@@ -22,7 +22,7 @@ class Dev implements CommandInterface
         // Define the commands
         $webServerCmd = ['php', '-S', 'localhost:8009', '-t', 'public'];
         // Uncomment the following line to add the watch command
-        $watchCommand = ['vendor/bin/darken', 'watch'];
+        $watchCommand = ['php', 'darken', 'watch'];
 
         // Start the Web Server process
         $this->processes[] = $this->startProcess($webServerCmd, 'Web Server');
