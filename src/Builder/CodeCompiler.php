@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Darken\Builder;
 
+use Darken\Attributes\Param as AttributesParam;
+use Darken\Attributes\RouteParam;
+use Darken\Attributes\Slot;
 use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
@@ -28,12 +31,16 @@ use PhpParser\PrettyPrinter\Standard;
 
 class CodeCompiler
 {
-    public function compile(InputFile $file): string
+    public function compile(InputFile $file): CodeCompilerOutput
     {
         $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $ast = $parser->parse($file->getContent());
         $traverser = new NodeTraverser();
         $visitor = new class() extends NodeVisitorAbstract {
+            public $meta = [
+                'constructor' => [],
+            ];
+
             public function enterNode(Node $node)
             {
                 // If it's an anonymous class instantiation (e.g. $class = new class(...) {...}; )
@@ -52,14 +59,27 @@ class CodeCompiler
                         foreach ($propertyNode->props as $prop) {
                             foreach ($propertyNode->attrGroups as $attrGroup) {
                                 foreach ($attrGroup->attrs as $attr) {
-                                    $attrName = $attr->name->toString();
-                                    if ($attrName === 'Darken\Attributes\RouteParam' || $attrName === '\Darken\Attributes\RouteParam') {
+                                    $attrName = ltrim($attr->name->toString(), '\\');
+
+                                    if (in_array($attrName, [RouteParam::class, AttributesParam::class, Slot::class])) {
                                         // Extract the parameter name from the attribute arguments
+                                        // if (isset($attr->args[0]) && $attr->args[0]->value instanceof String_) {
                                         if (isset($attr->args[0]) && $attr->args[0]->value instanceof String_) {
                                             $paramName = $attr->args[0]->value->value;
                                             $queryParams[] = [
+                                                'attrName' => $attrName,
                                                 'propertyName' => $prop->name->toString(),
                                                 'paramName' => $paramName,
+                                                // return if the type is string, int, array
+                                                'paramType' => 'string', // adjust!
+                                            ];
+                                        } else {
+                                            $queryParams[] = [
+                                                'attrName' => $attrName,
+                                                'propertyName' => $prop->name->toString(),
+                                                'paramName' => $prop->name->toString(),
+                                                // return if the type is string, int, array
+                                                'paramType' => 'string', // adjust!
                                             ];
                                         }
                                     }
@@ -134,12 +154,36 @@ class CodeCompiler
                     // If QueryParams found, add the assignments to constructor
                     if (!empty($queryParams)) {
                         foreach ($queryParams as $qp) {
+
+                            $getterName = match($qp['attrName']) {
+                                RouteParam::class => 'getRouteParam',
+                                AttributesParam::class => 'getArgumentParam',
+                                Slot::class => 'getSlot',
+                                default => false,
+                            };
+
+                            if (!$getterName) {
+                                continue;
+                            }
+
+                            switch ($qp['attrName']) {
+                                case RouteParam::class:
+                                    $this->meta['constructor'][] = $qp;
+                                    break;
+                                case AttributesParam::class:
+                                    $this->meta['constructor'][] = $qp;
+                                    break;
+                                case Slot::class:
+                                    $this->meta['slots'][] = $qp;
+                                    break;
+                            }
+
                             $assignment = new Expression(
                                 new Assign(
                                     new PropertyFetch(new Variable('this'), $qp['propertyName']),
                                     new MethodCall(
                                         new PropertyFetch(new Variable('this'), 'runtime'),
-                                        'getRouteParam',
+                                        $getterName,
                                         [new Arg(new String_($qp['paramName']))]
                                     )
                                 )
@@ -151,11 +195,14 @@ class CodeCompiler
             }
         };
 
-        $traverser->addVisitor(new $visitor());
+        $visitorObj = new $visitor();
+        $traverser->addVisitor($visitorObj);
         $ast = $traverser->traverse($ast);
 
         // Pretty print the modified AST
         $prettyPrinter = new Standard();
-        return '<?php /** @var \Darken\Code\Runtime $this */ ?>' . $prettyPrinter->prettyPrintFile($ast);
+        $code = '<?php /** @var \Darken\Code\Runtime $this */ ?>' . $prettyPrinter->prettyPrintFile($ast);
+
+        return new CodeCompilerOutput($code, $visitorObj->meta);
     }
 }

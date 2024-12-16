@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Darken\Code;
 
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
 
 /**
  * The context which ALL compile code runs and is injected into the __constructor as __construct(Runtime $runtime)
@@ -16,6 +17,13 @@ abstract class Runtime
     private array $routeParams = [];
 
     private array $argumentParams = [];
+
+    private array $slots = [];
+
+    public function __toString()
+    {
+        return $this->render();
+    }
 
     abstract public function renderFilePath(): string;
 
@@ -29,17 +37,33 @@ abstract class Runtime
         return $this->routeParams[$name] ?? null;
     }
 
-    public function __toString()
+    public function setArgumentParam(string $name, string $value): void
     {
-        return $this->render();
+        $this->argumentParams[$name] = $value;
     }
 
+    public function getArgumentParam(string $name): string|null
+    {
+        return $this->argumentParams[$name] ?? null;
+    }
+
+    public function setSlot(string $name, string $value): void
+    {
+        $this->slots[$name] = $value;
+    }
+
+    public function getSlot(string $name): string|null
+    {
+        return $this->slots[$name] ?? null;
+    }
+
+    /*
     private static bool $bufferStarted = false;
 
     public static function start(): void
     {
         if (self::$bufferStarted) {
-            throw new \RuntimeException('Output buffering has already started.');
+            throw new RuntimeException('Output buffering has already started.');
         }
         ob_start();
         self::$bufferStarted = true;
@@ -48,11 +72,12 @@ abstract class Runtime
     public static function end(): string
     {
         if (!self::$bufferStarted) {
-            throw new \RuntimeException('Output buffering has not started.');
+            throw new RuntimeException('Output buffering has not started.');
         }
         self::$bufferStarted = false;
         return ob_get_clean();
     }
+        */
 
     public function render(array $_php_vars = []): string|ResponseInterface
     {

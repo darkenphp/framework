@@ -32,7 +32,7 @@ class Watch implements CommandInterface
         // Continuous loop to check for changes
         while (true) {
             // Sleep a bit to avoid hogging CPU
-            sleep(2);
+            usleep(500000); // 0.5 seconds
 
             $changesDetected = false;
             foreach ($folders as $folder) {

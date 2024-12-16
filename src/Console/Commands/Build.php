@@ -45,12 +45,12 @@ class Build implements CommandInterface
                     $compiler = new CodeCompiler();
                     $output = $compiler->compile($input);
 
-                    $compileCodeOutput = new OutputCompiled($output, $input, $app->config);
+                    $compileCodeOutput = new OutputCompiled($output->code, $input, $app->config);
 
                     if ($this->createFile($compileCodeOutput)) {
-                        //$app->stdOut("File {$input->getFileName()} compiled successfully");
 
-                        $polyfill = new OutputPolyfill($compileCodeOutput);
+
+                        $polyfill = new OutputPolyfill($compileCodeOutput, $output);
                         $this->createFile($polyfill);
 
                         if ($input->isInDirectory($app->config->getPagesFolder())) {

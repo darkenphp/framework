@@ -6,7 +6,7 @@ namespace Darken\Builder;
 
 class OutputPolyfill implements FileSaveInterface
 {
-    public function __construct(protected OutputCompiled $compiled)
+    public function __construct(protected OutputCompiled $compiled, protected CodeCompilerOutput $compilerOutput)
     {
 
     }
@@ -30,6 +30,77 @@ class OutputPolyfill implements FileSaveInterface
         return preg_replace('/[^a-zA-Z0-9]/', '', $class);
     }
 
+    public function getConstructorMethod(): string
+    {
+        $constructor = $this->compilerOutput->meta['constructor'] ?? [];
+
+        if (count($constructor) === 0) {
+            return '';
+        }
+
+        $params = [];
+        $assignments = [];
+
+        foreach ($constructor as $param) {
+            // Extract parameter details
+            $paramType = $param['paramType'] ?? 'mixed';
+            $paramName = $param['paramName'] ?? 'param';
+            $propertyName = $param['propertyName'] ?? $paramName;
+
+            // Build the parameter string with type hint
+            $params[] = "{$paramType} \${$paramName}";
+
+            // Build the assignment string
+            $assignments[] = "\$this->setArgumentParam(\"{$propertyName}\", \${$paramName});";
+        }
+
+        // Join parameters and assignments into strings
+        $paramsString = implode(', ', $params);
+        $assignmentsString = implode("\n        ", $assignments);
+
+        // Construct the full constructor method
+        return <<<EOT
+            public function __construct({$paramsString})
+                {
+                    {$assignmentsString}
+                }
+
+            EOT;
+    }
+
+    public function getSlotMethods(): string
+    {
+        $slots = $this->compilerOutput->meta['slots'] ?? [];
+
+        if (count($slots) === 0) {
+            return '';
+        }
+
+        $slotMethods = [];
+        foreach ($slots as $slot) {
+            $name = $slot['paramName'];
+            $startTag = 'open'.ucfirst($name);
+            $closetag = 'close'.ucfirst($name);
+
+            $slotMethods[] = <<<EOT
+                    public function {$startTag}() : self
+                    {
+                        ob_start();
+                        return \$this;
+                    }
+
+                    public function {$closetag}() : self
+                    {
+                        \$this->setSlot('{$name}', ob_get_clean());
+                        return \$this;
+                    }
+
+                EOT;
+        }
+
+        return implode("\n", $slotMethods);
+    }
+
     public function getBuildOutputContent(): string
     {
         return <<<PHP
@@ -38,6 +109,8 @@ class OutputPolyfill implements FileSaveInterface
 
             class {$this->getClassName()} extends \Darken\Code\Runtime
             {
+                {$this->getConstructorMethod()}
+                {$this->getSlotMethods()}
                 public function renderFilePath(): string
                 {
                     return '{$this->compiled->getBuildOutputFilePath()}';
