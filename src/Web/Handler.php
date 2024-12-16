@@ -95,7 +95,7 @@ class Handler implements RequestHandlerInterface
             return false;
         }
         /** @var Runtime $object */
-        $object = new $className($params);
+        $object = new $className();
         $object->setRouteParams($params);
         return $object;
     }

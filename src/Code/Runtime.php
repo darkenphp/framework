@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Darken\Code;
 
+use Darken\Kernel;
 use Psr\Http\Message\ResponseInterface;
-use RuntimeException;
 
 /**
  * The context which ALL compile code runs and is injected into the __constructor as __construct(Runtime $runtime)
@@ -57,27 +57,10 @@ abstract class Runtime
         return $this->slots[$name] ?? null;
     }
 
-    /*
-    private static bool $bufferStarted = false;
-
-    public static function start(): void
+    public function getContainer($className): object
     {
-        if (self::$bufferStarted) {
-            throw new RuntimeException('Output buffering has already started.');
-        }
-        ob_start();
-        self::$bufferStarted = true;
+        return Kernel::getContainer($className);
     }
-
-    public static function end(): string
-    {
-        if (!self::$bufferStarted) {
-            throw new RuntimeException('Output buffering has not started.');
-        }
-        self::$bufferStarted = false;
-        return ob_get_clean();
-    }
-        */
 
     public function render(array $_php_vars = []): string|ResponseInterface
     {
@@ -86,10 +69,6 @@ abstract class Runtime
         $x = include($this->renderFilePath());
         $content = ob_get_clean();
 
-        // Now $content contains anything that was directly echoed in the included file.
-        // $x contains the return value of the included file.
-
-        // If the return value is an object and callable (like your InvokeInterface class), invoke it:
         if (is_object($x) && is_callable($x)) {
 
             $response = $x();

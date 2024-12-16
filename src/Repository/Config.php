@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Darken\Repository;
 
-use DI\Container;
-use DI\ContainerBuilder;
 use Throwable;
 use Yiisoft\Files\FileHelper;
 
@@ -17,7 +15,7 @@ abstract class Config
             $this->loadEnvFile();
         }
     }
-    
+
     abstract public function getDebugMode(): bool;
 
     abstract public function getBuildOutputFolder(): string;
@@ -25,7 +23,6 @@ abstract class Config
     abstract public function getPagesFolder(): string;
 
     abstract public function getBuildOutputNamespace(): string;
-
 
     public function loadEnvFile(): void
     {
@@ -48,8 +45,6 @@ abstract class Config
     {
         return FileHelper::normalizePath($this->rootDirectoryPath);
     }
-
-    
 
     public function getBuildingFolders(): array
     {

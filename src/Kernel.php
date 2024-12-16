@@ -11,7 +11,20 @@ ini_set('display_errors', '1');
 
 class Kernel
 {
+    private static array $containers = [];
+
     public function __construct(public readonly Config $config)
     {
+        $this->addContainer($config::class, $config);
+    }
+
+    public function addContainer(string $name, object $container): void
+    {
+        self::$containers[$name] = $container;
+    }
+
+    public static function getContainer(string $name): ?object
+    {
+        return self::$containers[$name] ?? null;
     }
 }
