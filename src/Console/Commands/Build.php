@@ -25,6 +25,7 @@ class Build implements CommandInterface
             FileHelper::clearDirectory($app->config->getBuildOutputFolder());
         }
 
+        $filescount = 0;
         try {
 
             $pages = [];
@@ -39,6 +40,7 @@ class Build implements CommandInterface
                     $compileCodeOutput = new OutputCompiled($output->code, $input, $app->config);
 
                     if ($this->createFile($compileCodeOutput)) {
+                        $filescount++;
 
 
                         $polyfill = new OutputPolyfill($compileCodeOutput, $output);
@@ -77,6 +79,8 @@ class Build implements CommandInterface
         } catch (Throwable $e) {
             $app->stdOut('ERROR: '. $e->getMessage() .  ' | ' . $e->getFile() . ' | '  . $e->getTraceAsString());
         }
+
+        $app->stdOut("Compiled {$filescount} files to {$app->config->getBuildOutputFolder()}");
     }
 
     private function createFile(FileSaveInterface $save): bool
