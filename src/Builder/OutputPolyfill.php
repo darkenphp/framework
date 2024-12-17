@@ -6,7 +6,7 @@ namespace Darken\Builder;
 
 class OutputPolyfill implements FileSaveInterface
 {
-    public function __construct(protected OutputCompiled $compiled, protected CodeCompilerOutput $compilerOutput)
+    public function __construct(public OutputCompiled $compiled, protected CodeCompilerOutput $compilerOutput)
     {
 
     }
@@ -20,6 +20,11 @@ class OutputPolyfill implements FileSaveInterface
     {
         // replace the .php at the end with .polyfill.php
         return str_replace('.compiled.php', '.php', $this->compiled->getBuildOutputFilePath());
+    }
+
+    public function getFullQualifiedClassName(): string
+    {
+        return $this->getNamespace() . '\\' . $this->getClassName();
     }
 
     public function getClassName(): string

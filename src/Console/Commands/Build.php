@@ -45,7 +45,7 @@ class Build implements CommandInterface
                         $this->createFile($polyfill);
 
                         if ($input->isInDirectory($app->config->getPagesFolder())) {
-                            $pages[] = $compileCodeOutput;
+                            $pages[] = $polyfill;
                         }
                     } else {
                         $app->stdOut("File {$input->getFileName()} failed to compile");
@@ -54,9 +54,9 @@ class Build implements CommandInterface
             }
 
             $trie = [];
-            foreach ($pages as $file) {
+            foreach ($pages as $polyfill) {
 
-                $page = new OutputPage($file);
+                $page = new OutputPage($polyfill);
 
                 // Insert route into Trie
                 $node = &$trie;
@@ -68,10 +68,8 @@ class Build implements CommandInterface
                     $node = &$node[$segment]['_children'];
                 }
 
-                if ($this->createFile($page)) {
-                    $node['file_path'] = $page->getBuildOutputFilePath();
-                    $node['class_name'] = $page->getFullQulieidNamespacedClassName();
-                }
+                $node['file_path'] = $polyfill->getBuildOutputFilePath();
+                $node['class_name'] = $polyfill->getFullQualifiedClassName();
             }
 
 
