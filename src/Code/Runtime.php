@@ -122,29 +122,4 @@ abstract class Runtime
 
         return $content;
     }
-
-    private function file(string $_file_): mixed
-    {
-        $_obInitialLevel_ = ob_get_level();
-        ob_start();
-        ob_implicit_flush(false);
-        try {
-            require $_file_;
-            return ob_get_clean();
-        } catch (Exception $e) {
-            while (ob_get_level() > $_obInitialLevel_) {
-                if (!@ob_end_clean()) {
-                    ob_clean();
-                }
-            }
-            throw $e;
-        } catch (Throwable $e) {
-            while (ob_get_level() > $_obInitialLevel_) {
-                if (!@ob_end_clean()) {
-                    ob_clean();
-                }
-            }
-            throw $e;
-        }
-    }
 }
