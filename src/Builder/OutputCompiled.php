@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Darken\Builder;
 
-use Darken\Repository\Config;
+use Darken\Config\ConfigInterface;
 
 // rename: CompiledSourceFile
 
 class OutputCompiled implements FileSaveInterface
 {
-    public function __construct(private string $content, public InputFile $input, public Config $config)
+    public function __construct(private string $content, public InputFile $input, public ConfigInterface $config)
     {
 
     }

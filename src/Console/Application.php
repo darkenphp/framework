@@ -11,6 +11,14 @@ use Darken\Kernel;
 
 class Application extends Kernel
 {
+    public function initalize(): void
+    {
+        if ($this->config->getDebugMode()) {
+            $this->whoops->pushHandler(new \Whoops\Handler\PlainTextHandler());
+            $this->whoops->register();
+        }
+    }
+
     public function run(): void
     {
         switch ($this->getCommand()) {

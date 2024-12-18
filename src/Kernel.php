@@ -4,32 +4,42 @@ declare(strict_types=1);
 
 namespace Darken;
 
-use Darken\Repository\Config;
+use Darken\Config\ConfigInterface;
+use Darken\Service\ContainerSericeInterface;
+use Darken\Service\ContainerService;
+use Whoops\Run;
 
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-// register error handler
-$whoops = new \Whoops\Run;
-$whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
-$whoops->register();
 
-class Kernel
+
+abstract class Kernel
 {
-    private static array $containers = [];
+    public Run $whoops;
 
-    public function __construct(public readonly Config $config)
+    private static ContainerService $container;
+
+    public function __construct(public readonly ConfigInterface $config)
     {
-        $this->addContainer($config::class, $config);
+        $this->whoops = new Run();
+        $this->initalize();
+
+        $container = new ContainerService();
+
+        $container->register($config::class, $config);
+
+        if ($config instanceof ContainerSericeInterface) {
+            $container = $config->containers($container);
+        }
+
+        self::$container = $container;
     }
 
-    public function addContainer(string $name, object $container): void
+    public static function resolveContainer(string $className): object
     {
-        self::$containers[$name] = $container;
+        return self::$container->resolve($className);
     }
 
-    public static function getContainer(string $name): ?object
-    {
-        return self::$containers[$name] ?? null;
-    }
+    abstract public function initalize(): void;
 }

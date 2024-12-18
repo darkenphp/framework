@@ -59,13 +59,13 @@ abstract class Runtime
 
     public function getContainer($className): object
     {
-        return Kernel::getContainer($className);
+        return Kernel::resolveContainer($className);
     }
 
-    public function render(array $_php_vars = []): string|ResponseInterface
+    public function render(): string|ResponseInterface
     {
         ob_start();
-        extract($_php_vars);
+        //extract($_php_vars);
         $x = include($this->renderFilePath());
         $content = ob_get_clean();
 

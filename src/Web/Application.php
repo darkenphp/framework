@@ -5,11 +5,21 @@ declare(strict_types=1);
 namespace Darken\Web;
 
 use Darken\Kernel;
+use Darken\Service\MiddlewareService;
+use Darken\Service\MiddlewareServiceInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 
 class Application extends Kernel
 {
+    public function initalize(): void
+    {
+        if ($this->config->getDebugMode()) {
+            $this->whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler());
+            $this->whoops->register();
+        }
+    }
+
     public function run(): void
     {
         $psr17Factory = new Psr17Factory();
@@ -21,13 +31,33 @@ class Application extends Kernel
         );
         $request = $creator->fromGlobals();
 
+        /*
         $middleware = new Middleware();
         $handler = new Handler($this->config);
 
         $response = $middleware->process($request, $handler);
-        //$this->findRoute($_SERVER['REQUEST_URI']);
+        */
+        // Instantiate the final handler
+        $finalHandler = new Handler($this);
 
-        header('Content-Type: text/html; charset=UTF-8');
+        // Instantiate the MiddlewareService with the final handler
+        $middlewareService = new MiddlewareService($finalHandler);
+
+        if ($this->config instanceof MiddlewareServiceInterface) {
+            $middlewareService = $this->config->middlwares($middlewareService);
+        }
+
+        // Handle the request through the middleware stack
+        $response = $middlewareService->handle($request);
+
+        http_response_code($response->getStatusCode());
+
+        foreach ($response->getHeaders() as $name => $values) {
+            foreach ($values as $value) {
+                header(sprintf('%s: %s', $name, $value), false);
+            }
+        }
+
         echo $response->getBody();
     }
 }

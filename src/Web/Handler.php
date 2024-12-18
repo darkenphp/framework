@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Darken\Web;
 
 use Darken\Code\Runtime;
-use Darken\Repository\Config;
 use Nyholm\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,7 +12,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class Handler implements RequestHandlerInterface
 {
-    public function __construct(public Config $config)
+    public function __construct(public Application $app)
     {
     }
 
@@ -21,7 +20,7 @@ class Handler implements RequestHandlerInterface
     {
         $currentUrl = $request->getUri()->getPath();
 
-        $tmp = $this->config->getBuildOutputFolder() . '/routes.php';
+        $tmp = $this->app->config->getBuildOutputFolder() . '/routes.php';
 
         $trie = include($tmp);
 
