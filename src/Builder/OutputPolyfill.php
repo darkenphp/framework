@@ -22,6 +22,11 @@ class OutputPolyfill implements FileSaveInterface
         return str_replace('.compiled.php', '.php', $this->compiled->getBuildOutputFilePath());
     }
 
+    public function getRelativeBuildOutputFilePath(): string
+    {
+        return str_replace('.php', '.compiled.php', $this->compiled->input->getFileName());
+    }
+
     public function getFullQualifiedClassName(): string
     {
         return $this->getNamespace() . '\\' . $this->getClassName();
@@ -118,7 +123,7 @@ class OutputPolyfill implements FileSaveInterface
                 {$this->getSlotMethods()}
                 public function renderFilePath(): string
                 {
-                    return '{$this->compiled->getBuildOutputFilePath()}';
+                    return dirname(__FILE__) . DIRECTORY_SEPARATOR  . '{$this->getRelativeBuildOutputFilePath()}';
                 }
             }
             PHP;
