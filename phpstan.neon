@@ -1,7 +1,9 @@
 includes:
-	- phar://phpstan.phar/conf/bleedingEdge.neon
+    - phar://phpstan.phar/conf/bleedingEdge.neon
 parameters:
-  level: 1
+  level: 3
   paths:
     - src
   tmpDir: .tmp
+  ignoreErrors:
+    - '#^Class .+ extends @final class .+\.#'

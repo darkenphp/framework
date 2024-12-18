@@ -23,7 +23,6 @@ return $config->setRules([
     'return_assignment' => true,
     'semicolon_after_instruction' => true,
     'short_scalar_cast' => true,
-    'simplified_null_return' => true,
     'blank_lines_before_namespace' => true,
     'single_class_element_per_statement' => true,
     'single_line_comment_style' => true,
