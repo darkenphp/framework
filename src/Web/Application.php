@@ -7,17 +7,46 @@ namespace Darken\Web;
 use Darken\Kernel;
 use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
+use Exception;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
+use Whoops\Handler\CallbackHandler;
+use Whoops\Handler\PrettyPageHandler;
 
 class Application extends Kernel
 {
     public function initalize(): void
     {
         if ($this->config->getDebugMode()) {
-            $this->whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler());
-            $this->whoops->register();
+            $handler = new PrettyPageHandler();
+        } else {
+            $handler = new CallbackHandler(function (Exception $exception) {
+                echo <<<HTML
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Error</title>
+                    </head>
+                    <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 20px;">
+                        <h1 style="color: #333333;">An error occurred while processing your request</h1>
+                        <div style="
+                            margin-top: 20px;
+                            padding: 15px;
+                            background-color: #ffecec;
+                            border-left: 6px solid #f44336;
+                            border-radius: 4px;
+                        ">
+                            <strong>Exception Message:</strong> {$exception->getMessage()}<br />
+                            <strong>Error Code:</strong> {$exception->getCode()}
+                        </div>
+                    </body>
+                    </html>
+                    HTML;
+            });
         }
+        $this->whoops->pushHandler($handler);
+        $this->whoops->register();
     }
 
     public function run(): void
