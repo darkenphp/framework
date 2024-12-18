@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Darken\Code;
 
 use Darken\Kernel;
+use Exception;
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
+use Throwable;
 
 /**
  * The context which ALL compile code runs and is injected into the __constructor as __construct(Runtime $runtime)
@@ -64,10 +67,39 @@ abstract class Runtime
 
     public function render(): string|ResponseInterface
     {
+        $_file_ = $this->renderFilePath();
+
+        if (!file_exists($_file_)) {
+            throw new RuntimeException("File not found: $_file_");
+        }
+
+        if (!is_readable($_file_)) {
+            throw new RuntimeException("File not readable: $_file_");
+        }
+
+        $_obInitialLevel_ = ob_get_level();
         ob_start();
-        //extract($_php_vars);
-        $x = include($this->renderFilePath());
-        $content = ob_get_clean();
+        ob_implicit_flush(false);
+        try {
+            $x = require $_file_;
+            $content = ob_get_clean();
+        } catch (Exception $e) {
+            while (ob_get_level() > $_obInitialLevel_) {
+                if (!@ob_end_clean()) {
+                    ob_clean();
+                }
+            }
+            throw $e;
+        } catch (Throwable $e) {
+            while (ob_get_level() > $_obInitialLevel_) {
+                if (!@ob_end_clean()) {
+                    ob_clean();
+                }
+            }
+            throw $e;
+        }
+
+
 
         if (is_object($x) && is_callable($x)) {
 
@@ -89,5 +121,30 @@ abstract class Runtime
         }
 
         return $content;
+    }
+
+    private function file(string $_file_): mixed
+    {
+        $_obInitialLevel_ = ob_get_level();
+        ob_start();
+        ob_implicit_flush(false);
+        try {
+            require $_file_;
+            return ob_get_clean();
+        } catch (Exception $e) {
+            while (ob_get_level() > $_obInitialLevel_) {
+                if (!@ob_end_clean()) {
+                    ob_clean();
+                }
+            }
+            throw $e;
+        } catch (Throwable $e) {
+            while (ob_get_level() > $_obInitialLevel_) {
+                if (!@ob_end_clean()) {
+                    ob_clean();
+                }
+            }
+            throw $e;
+        }
     }
 }
