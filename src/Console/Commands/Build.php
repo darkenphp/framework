@@ -55,6 +55,13 @@ class Build implements CommandInterface
                 }
             }
 
+            /**
+             * @var array<string, array{
+             *     _children: array<string, mixed>,
+             *     middlewares: array<string, mixed>,
+             *     class?: string
+             * }> $trie
+             */
             $trie = [];
             foreach ($pages as $polyfill) {
 
@@ -70,8 +77,9 @@ class Build implements CommandInterface
                     $node = &$node[$segment]['_children'];
                 }
 
-                $node['file_path'] = $polyfill->getBuildOutputFilePath();
-                $node['class_name'] = $polyfill->getFullQualifiedClassName();
+                //$node['file_path'] = $polyfill->getBuildOutputFilePath();
+                $node['class'] = $polyfill->getFullQualifiedClassName();
+                $node['middlewares'] = $polyfill->compilerOutput->data->getData('middlewares', []);
             }
 
 

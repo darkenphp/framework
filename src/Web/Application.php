@@ -38,13 +38,22 @@ class Application extends Kernel
         $response = $middleware->process($request, $handler);
         */
         // Instantiate the final handler
-        $finalHandler = new Handler($this);
+        $pageHandler = new PageHandler($this, $request->getUri()->getPath());
+
 
         // Instantiate the MiddlewareService with the final handler
-        $middlewareService = new MiddlewareService($finalHandler);
+        $middlewareService = new MiddlewareService($pageHandler);
+
+        foreach ($pageHandler->getMiddlewares() as $middlewareConfig) {
+            $className = $middlewareConfig['class'];
+            $params = $middlewareConfig['params'];
+            $object = new $className(...$params);
+
+            $middlewareService->add($object, constant($middlewareConfig['position']));
+        }
 
         if ($this->config instanceof MiddlewareServiceInterface) {
-            $middlewareService = $this->config->middlwares($middlewareService);
+            $middlewareService = $this->config->middlewares($middlewareService);
         }
 
         // Handle the request through the middleware stack

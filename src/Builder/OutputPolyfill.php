@@ -6,7 +6,7 @@ namespace Darken\Builder;
 
 class OutputPolyfill implements FileSaveInterface
 {
-    public function __construct(public OutputCompiled $compiled, protected CodeCompilerOutput $compilerOutput)
+    public function __construct(public OutputCompiled $compiled, public CodeCompilerOutput $compilerOutput)
     {
 
     }

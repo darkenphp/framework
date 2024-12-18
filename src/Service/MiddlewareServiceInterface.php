@@ -6,5 +6,5 @@ namespace Darken\Service;
 
 interface MiddlewareServiceInterface
 {
-    public function middlwares(MiddlewareService $service): MiddlewareService;
+    public function middlewares(MiddlewareService $service): MiddlewareService;
 }

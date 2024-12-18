@@ -35,7 +35,7 @@ class GlobalVisitor extends NodeVisitorAbstract
         'constructor' => [],
     ];
 
-    public function __construct(private array $useStatements)
+    public function __construct(private UseStatementCollector $useStatementCollector)
     {
 
     }
@@ -78,10 +78,7 @@ class GlobalVisitor extends NodeVisitorAbstract
                                     ];
                                 } elseif ($attributeDecoratorParamValue instanceof ClassConstFetch) {
 
-                                    $className = $attributeDecoratorParamValue->class->name;
-                                    if (array_key_exists($className, $this->useStatements)) {
-                                        $className = $this->useStatements[$className];
-                                    }
+                                    $className = $this->useStatementCollector->ensureClassName($attributeDecoratorParamValue->class->name);
 
                                     // Create a FullyQualified name node
                                     $fullyQualifiedName = new FullyQualified(ltrim($className, '\\'));
@@ -219,5 +216,7 @@ class GlobalVisitor extends NodeVisitorAbstract
                 }
             }
         }
+
+        return null;
     }
 }

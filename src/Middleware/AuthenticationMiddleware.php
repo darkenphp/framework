@@ -10,45 +10,12 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/**
- * AuthenticationMiddleware checks for a valid authentication token in the request headers.
- */
 class AuthenticationMiddleware implements MiddlewareInterface
 {
-    /**
-     * The name of the header that contains the authentication token.
-     *
-     * @var string
-     */
-    private string $authHeader;
-
-    /**
-     * The expected value of the authentication token.
-     *
-     * @var string
-     */
-    private string $expectedToken;
-
-    /**
-     * Constructor.
-     *
-     * @param string $authHeader     The header name to check for the token (e.g., 'Authorization').
-     * @param string $expectedToken  The expected token value for authentication.
-     */
-    public function __construct(string $authHeader = 'Authorization', string $expectedToken = 'Bearer secret-token')
+    public function __construct(private string $authHeader, private string $expectedToken)
     {
-        $this->authHeader = $authHeader;
-        $this->expectedToken = $expectedToken;
     }
 
-    /**
-     * Process an incoming server request.
-     *
-     * @param ServerRequestInterface  $request The incoming server request.
-     * @param RequestHandlerInterface $handler The request handler.
-     *
-     * @return ResponseInterface The response after processing.
-     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         // Retrieve the authentication header from the request

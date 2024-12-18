@@ -33,10 +33,23 @@ class UseStatementCollector extends NodeVisitorAbstract
                 $this->useStatements[$alias] = $fullName;
             }
         }
+
+        return null;
     }
 
     public function getUseStatements(): array
     {
         return $this->useStatements;
+    }
+
+    public function ensureClassName(string $className): ?string
+    {
+        $class = $this->useStatements[$className] ?? $className;
+
+        // ensure the class name is fully qualified
+        if ($class[0] !== '\\') {
+            $class = '\\' . $class;
+        }
+        return $class;
     }
 }

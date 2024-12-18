@@ -15,6 +15,7 @@ class Watch implements CommandInterface
     public function run(Application $app): void
     {
         $app->stdOut('Watching for changes...');
+
         $this->runWatch($app->config->getBuildingFolders(), $app);
     }
 

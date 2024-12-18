@@ -9,25 +9,46 @@ use Nyholm\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
 
-class Handler implements RequestHandlerInterface
+class PageHandler implements RequestHandlerInterface
 {
-    public function __construct(public Application $app)
+    private array $trie = [];
+
+    private false|array $node;
+
+    public function __construct(public Application $app, string $path)
     {
+        $routesFile = $this->app->config->getBuildOutputFolder() . '/routes.php';
+
+        if (file_exists($routesFile) && !is_readable($routesFile)) {
+            throw new RuntimeException('Routes file is not readable');
+        }
+
+        if (file_exists($routesFile)) {
+            $this->trie = include($routesFile);
+        }
+
+        $this->node = $this->findRouteNode($path);
+    }
+
+    public function getMiddlewares(): array
+    {
+        return $this->node[0]['middlewares'] ?? [];
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $currentUrl = $request->getUri()->getPath();
+        $node = $this->node;
 
-        $tmp = $this->app->config->getBuildOutputFolder() . '/routes.php';
+        if (!$node) {
+            return new Response(404, [], 'Page not found');
+        }
 
-        $trie = include($tmp);
+        $runtimePage = $this->createRuntime($node[0], $node[1]);
 
-        $runtimePage = $this->matchTrie($trie, $currentUrl);
-
-        if (!$runtimePage) {
-            return new Response(404, [], 'Not found');
+        if ($runtimePage === false) {
+            return new Response(404, [], 'Page Runtime not found');
         }
 
         $content = $runtimePage->render();
@@ -41,8 +62,24 @@ class Handler implements RequestHandlerInterface
         ], $content);
     }
 
-    private function matchTrie($trie, $url): false|Runtime
+    private function createRuntime(array $node, array $params): false|Runtime
     {
+        // Return the script if found
+        $className = $node['class'] ?? null;
+
+        if (!$className) {
+            return false;
+        }
+        /** @var Runtime $object */
+        $object = new $className();
+        $object->setRouteParams($params);
+        return $object;
+
+    }
+
+    private function findRouteNode(string $url): false|array
+    {
+        $trie = $this->trie;
         $segments = explode('/', trim($url, '/'));
 
         $node = $trie;
@@ -87,15 +124,6 @@ class Handler implements RequestHandlerInterface
             return false;
         }
 
-        // Return the script if found
-        $className = $node['class_name'] ?? null;
-
-        if (!$className) {
-            return false;
-        }
-        /** @var Runtime $object */
-        $object = new $className();
-        $object->setRouteParams($params);
-        return $object;
+        return [$node, $params];
     }
 }

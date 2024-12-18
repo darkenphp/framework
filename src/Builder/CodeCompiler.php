@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Darken\Builder;
 
+use Darken\Builder\Compiler\DataExtractorVisitor;
 use Darken\Builder\Compiler\GlobalVisitor;
 use Darken\Builder\Compiler\UseStatementCollector;
 use PhpParser\NodeTraverser;
@@ -19,22 +20,30 @@ class CodeCompiler
         try {
             $parser = (new ParserFactory())->createForNewestSupportedVersion();
             $ast = $parser->parse($file->getContent());
+
+            // Initialize traverser and add all visitors
             $traverser = new NodeTraverser();
 
-            // collect use statements
+            // Visitor 1: Collect use statements
             $use = new UseStatementCollector();
             $traverser->addVisitor($use);
-            $traverser->traverse($ast);
 
-            $darkenVisitor = new GlobalVisitor($use->getUseStatements());
+            // Visitor 2: Extract data based on use statements
+            $data = new DataExtractorVisitor($use);
+            $traverser->addVisitor($data);
+
+            // Visitor 3: Apply global modifications
+            $darkenVisitor = new GlobalVisitor($use);
             $traverser->addVisitor($darkenVisitor);
+
+            // Traverse the AST once with all visitors
             $ast = $traverser->traverse($ast);
 
-            // Pretty print the modified AST
+            // Initialize pretty printer
             $prettyPrinter = new Standard();
             $code = '<?php /** @var \Darken\Code\Runtime $this */ ?>' . $prettyPrinter->prettyPrintFile($ast);
 
-            return new CodeCompilerOutput($code, $darkenVisitor->meta);
+            return new CodeCompilerOutput($code, $darkenVisitor->meta, $data);
         } catch (Throwable $e) {
             throw new RuntimeException('Failed to compile ' . $file->filePath . ': ' . $e->getMessage(), 0, $e);
         }
