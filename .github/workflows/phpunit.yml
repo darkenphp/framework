@@ -29,27 +29,16 @@ jobs:
         run: composer clearcache && composer install --prefer-dist
 
       - name: Run PHPUnit Tests
-        run: |
-          if [[ "${{ matrix.php }}" == "8.3" ]]; then
-            ./vendor/bin/phpunit --coverage-clover coverage.xml --log-junit junit.xml
-          else
-            ./vendor/bin/phpunit
-          fi
+        run: ./vendor/bin/phpunit --log-junit junit.xml
 
-
+      - name: Upload coverage to Codecov
+        if: matrix.php == '8.3'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          
       - name: Upload test results to Codecov
-        if: ${{ !cancelled() }} && matrix.php == '8.3'
+        if: matrix.php == '8.3' && ${{ !cancelled() }}
         uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
-
-      # Optional: Upload coverage to Codecov only for PHP 8.3
-      - name: Upload Coverage to Codecov
-        if: matrix.php == '8.3'
-        uses: codecov/codecov-action@v3
-        with:
-          files: coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
