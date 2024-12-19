@@ -8,8 +8,18 @@ use Darken\Builder\Compiler\DataExtractorVisitor;
 
 class CodeCompilerOutput
 {
-    public function __construct(public string $code, public array $meta, public DataExtractorVisitor $data)
+    public function __construct(private string $code, public DataExtractorVisitor $data)
     {
 
+    }
+
+    public function getCode(): string
+    {
+        return $this->code;
+    }
+
+    public function getMeta(string $key, mixed $default = []): array
+    {
+        return $this->data->getData($key, $default);
     }
 }

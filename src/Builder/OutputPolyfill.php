@@ -42,7 +42,7 @@ class OutputPolyfill implements FileSaveInterface
 
     public function getConstructorMethod(): string
     {
-        $constructor = $this->compilerOutput->meta['constructor'] ?? [];
+        $constructor = $this->compilerOutput->getMeta('constructor');
 
         if (count($constructor) === 0) {
             return '';
@@ -80,7 +80,7 @@ class OutputPolyfill implements FileSaveInterface
 
     public function getSlotMethods(): string
     {
-        $slots = $this->compilerOutput->meta['slots'] ?? [];
+        $slots = $this->compilerOutput->getMeta('slots');
 
         if (count($slots) === 0) {
             return '';

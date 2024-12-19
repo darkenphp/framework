@@ -4,6 +4,7 @@ namespace Tests\src;
 
 use Darken\Kernel;
 use Tests\TestCase;
+use Whoops\Run;
 
 class KernelTest extends TestCase
 {
@@ -13,6 +14,6 @@ class KernelTest extends TestCase
             ->setConstructorArgs([$this->createConfig()])
             ->getMock();
 
-        
+        $this->assertInstanceOf(Run::class, $mock->whoops);
     }
 }

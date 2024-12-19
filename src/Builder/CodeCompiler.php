@@ -33,7 +33,7 @@ class CodeCompiler
             $traverser->addVisitor($data);
 
             // Visitor 3: Apply global modifications
-            $darkenVisitor = new GlobalVisitor($use);
+            $darkenVisitor = new GlobalVisitor($use, $data);
             $traverser->addVisitor($darkenVisitor);
 
             // Traverse the AST once with all visitors
@@ -43,7 +43,7 @@ class CodeCompiler
             $prettyPrinter = new Standard();
             $code = '<?php /** @var \Darken\Code\Runtime $this */ ?>' . $prettyPrinter->prettyPrintFile($ast);
 
-            return new CodeCompilerOutput($code, $darkenVisitor->meta, $data);
+            return new CodeCompilerOutput($code, $data);
         } catch (Throwable $e) {
             throw new RuntimeException('Failed to compile ' . $file->filePath . ': ' . $e->getMessage(), 0, $e);
         }

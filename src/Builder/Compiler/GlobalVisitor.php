@@ -31,11 +31,7 @@ use PhpParser\NodeVisitorAbstract;
 
 class GlobalVisitor extends NodeVisitorAbstract
 {
-    public $meta = [
-        'constructor' => [],
-    ];
-
-    public function __construct(private UseStatementCollector $useStatementCollector)
+    public function __construct(private UseStatementCollector $useStatementCollector, private DataExtractorVisitor $dataExtractorVisitor)
     {
 
     }
@@ -48,7 +44,6 @@ class GlobalVisitor extends NodeVisitorAbstract
             // Add $this as an argument to the anonymous class instantiation
             $node->args[] = new Arg(new Variable('this'));
         }
-
 
         // Check if this node is a class (including anonymous classes)
         if ($node instanceof ClassLike) {
@@ -95,16 +90,14 @@ class GlobalVisitor extends NodeVisitorAbstract
 
                                     /** @var Name $propertyType */
                                     $propertyType = $propertyNode->type;
+
                                     // if this is a class:
-                                    if ($propertyType) {
+                                    if ($propertyType && ($propertyType instanceof Name || $propertyType instanceof FullyQualified)) {
                                         $fullyQualifiedName = new FullyQualified(ltrim($this->useStatementCollector->ensureClassName($propertyType->name), '\\'));
-
-
                                         $arg = new ClassConstFetch($fullyQualifiedName, 'class');
                                     } else {
                                         $arg = new String_($prop->name->toString());
                                     }
-
 
                                     // get the property type
                                     $queryParams[] = [
@@ -120,7 +113,6 @@ class GlobalVisitor extends NodeVisitorAbstract
                     }
                 }
             }
-
 
             // Ensure protected Runtime $runtime property exists
             $hasContextProperty = false;
@@ -203,13 +195,13 @@ class GlobalVisitor extends NodeVisitorAbstract
 
                     switch ($qp['attrName']) {
                         case RouteParam::class:
-                            $this->meta['constructor'][] = $qp;
+                            $this->dataExtractorVisitor->addData('constructor', $qp);
                             break;
                         case AttributesParam::class:
-                            $this->meta['constructor'][] = $qp;
+                            $this->dataExtractorVisitor->addData('constructor', $qp);
                             break;
                         case Slot::class:
-                            $this->meta['slots'][] = $qp;
+                            $this->dataExtractorVisitor->addData('slots', $qp);
                             break;
                     }
 

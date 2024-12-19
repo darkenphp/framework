@@ -20,6 +20,8 @@ class DataExtractorVisitor extends NodeVisitorAbstract
 {
     private array $data = [
         'middlewares' => [],
+        'constructor' => [],
+        'slots' => [],
     ];
 
     private PrettyPrinter $printer;
@@ -32,6 +34,19 @@ class DataExtractorVisitor extends NodeVisitorAbstract
         $this->useStatementCollector = $useStatementCollector;
     }
 
+    public function addData(string $key, array $value): void
+    {
+        $this->data[$key][] = $value;
+    }
+
+    /**
+     * Get the extracted data.
+     */
+    public function getData(string $key, $default = null): mixed
+    {
+        return $this->data[$key] ?? $default;
+    }
+
     public function enterNode(Node $node)
     {
         // Check if the node is a class (including anonymous classes)
@@ -42,22 +57,13 @@ class DataExtractorVisitor extends NodeVisitorAbstract
                     $attrName = $this->resolveAttributeName($attribute->name);
                     if ($attrName === Middleware::class) {
                         $middlewareData = $this->parseMiddlewareAttribute($attribute);
-
-                        $this->data['middlewares'][] = $middlewareData;
+                        $this->addData('middlewares', $middlewareData);
                     }
                 }
             }
         }
 
         return null;
-    }
-
-    /**
-     * Get the extracted data.
-     */
-    public function getData(string $key, $default = null): mixed
-    {
-        return $this->data[$key] ?? $default;
     }
 
     /**

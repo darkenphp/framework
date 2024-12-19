@@ -37,7 +37,7 @@ class Build implements CommandInterface
                     $compiler = new CodeCompiler();
                     $output = $compiler->compile($input);
 
-                    $compileCodeOutput = new OutputCompiled($output->code, $input, $app->config);
+                    $compileCodeOutput = new OutputCompiled($output->getCode(), $input, $app->config);
 
                     if ($this->createFile($compileCodeOutput)) {
                         $filescount++;
@@ -79,7 +79,7 @@ class Build implements CommandInterface
 
                 //$node['file_path'] = $polyfill->getBuildOutputFilePath();
                 $node['class'] = $polyfill->getFullQualifiedClassName();
-                $node['middlewares'] = $polyfill->compilerOutput->data->getData('middlewares', []);
+                $node['middlewares'] = $polyfill->compilerOutput->getMeta('middlewares');
             }
 
 
