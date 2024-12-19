@@ -34,5 +34,5 @@ jobs:
       - name: Upload coverage to Codecov
         if: matrix.php == '8.3'
         uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
