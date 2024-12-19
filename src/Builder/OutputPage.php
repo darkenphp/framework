@@ -16,8 +16,17 @@ class OutputPage
     public function getRoute(): string
     {
         $source = str_replace($this->polyfill->compiled->config->getPagesFolder(), '', $this->polyfill->compiled->input->filePath);
+
+        // if the pattern is [[...xyz]] then then match regex should match anything after the slash
+        if (str_contains($source, '[[...')) {
+            $pattern = preg_replace('/\[\[\.\.\.(.*?)\]\]/', '<$1:.+>', $source);
+        } else {
+            $pattern = preg_replace('/\[\[(.*?)\]\]/', '<$1:\w+>', $source);
+        }
+
+
         // an easy way to convert /blogs/[[slug]] to a matcahable regex like /blogs/<slug:[\w+]>
-        return str_replace('.php', '', preg_replace('/\[\[(.*?)\]\]/', '<$1:\w+>', $source));
+        return str_replace('.php', '', $pattern);
     }
 
     public function getSegmentedTrieRoute(): array

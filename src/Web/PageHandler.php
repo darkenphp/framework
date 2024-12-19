@@ -71,7 +71,7 @@ class PageHandler implements RequestHandlerInterface
             return false;
         }
         /** @var Runtime $object */
-        $object = new $className();
+        $object = new $className(...$params);
         $object->setRouteParams($params);
         return $object;
 
