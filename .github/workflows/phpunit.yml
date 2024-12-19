@@ -31,10 +31,18 @@ jobs:
       - name: Run PHPUnit Tests
         run: |
           if [[ "${{ matrix.php }}" == "8.3" ]]; then
-            ./vendor/bin/phpunit --coverage-clover coverage.xml
+            ./vendor/bin/phpunit --coverage-clover coverage.xml --log-junit junit.xml
           else
             ./vendor/bin/phpunit
           fi
+
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }} && matrix.php == '8.3'
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
 
       # Optional: Upload coverage to Codecov only for PHP 8.3
       - name: Upload Coverage to Codecov
