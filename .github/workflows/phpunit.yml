@@ -19,13 +19,29 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
-          extensions: mbstring
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xdebug
           ini-values: date.timezone='UTC'
           tools: composer:v2
+          coverage: xdebug  # Ensure coverage tools are set up
 
       - name: Install dependencies
         run: composer clearcache && composer install --prefer-dist
 
-      - name: Run tests
-        run: composer test --verbose
+      - name: Run PHPUnit Tests
+        run: |
+          if [[ "${{ matrix.php }}" == "8.3" ]]; then
+            ./vendor/bin/phpunit --coverage-clover coverage.xml
+          else
+            ./vendor/bin/phpunit
+          fi
+
+      # Optional: Upload coverage to Codecov only for PHP 8.3
+      - name: Upload Coverage to Codecov
+        if: matrix.php == '8.3'
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
