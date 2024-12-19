@@ -62,6 +62,8 @@ class GlobalVisitor extends NodeVisitorAbstract
                         foreach ($attrGroup->attrs as $attr) {
                             $attrName = ltrim($attr->name->toString(), '\\');
 
+                            /** @var PropertyItem $prop */
+
                             if (in_array($attrName, [RouteParam::class, AttributesParam::class, Slot::class, Inject::class])) {
                                 // Extract the parameter name from the attribute arguments
                                 // if (isset($attr->args[0]) && $attr->args[0]->value instanceof String_) {
@@ -79,30 +81,38 @@ class GlobalVisitor extends NodeVisitorAbstract
                                 } elseif ($attributeDecoratorParamValue instanceof ClassConstFetch) {
 
                                     $className = $this->useStatementCollector->ensureClassName($attributeDecoratorParamValue->class->name);
-
-                                    // Create a FullyQualified name node
                                     $fullyQualifiedName = new FullyQualified(ltrim($className, '\\'));
 
-                                    // Create a ClassConstFetch node representing "ClassName::class"
-                                    $classConstFetch = new ClassConstFetch(
-                                        $fullyQualifiedName,
-                                        'class'
-                                    );
                                     $queryParams[] = [
                                         'attrName' => $attrName,
                                         'propertyName' => $prop->name->toString(),
                                         'paramName' => $className,
-                                        'paramType' => 'string', // adjust, sould return int, bool, string
-                                        'arg' => $classConstFetch,
+                                        'paramType' => 'string', // adjust, sould return int, bool, strin
+                                        'arg' => new ClassConstFetch($fullyQualifiedName, 'class'),
                                     ];
 
                                 } else {
+
+                                    /** @var Name $propertyType */
+                                    $propertyType = $propertyNode->type;
+                                    // if this is a class:
+                                    if ($propertyType) {
+                                        $fullyQualifiedName = new FullyQualified(ltrim($this->useStatementCollector->ensureClassName($propertyType->name), '\\'));
+
+
+                                        $arg = new ClassConstFetch($fullyQualifiedName, 'class');
+                                    } else {
+                                        $arg = new String_($prop->name->toString());
+                                    }
+
+
+                                    // get the property type
                                     $queryParams[] = [
                                         'attrName' => $attrName,
                                         'propertyName' => $prop->name->toString(),
                                         'paramName' => $prop->name->toString(),
                                         'paramType' => 'string', // adjust, sould return int, bool, string
-                                        'arg' => new String_($prop->name->toString()),
+                                        'arg' => $arg,
                                     ];
                                 }
                             }
@@ -110,6 +120,7 @@ class GlobalVisitor extends NodeVisitorAbstract
                     }
                 }
             }
+
 
             // Ensure protected Runtime $runtime property exists
             $hasContextProperty = false;
