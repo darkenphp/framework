@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Darken;
 
 use Darken\Config\ConfigInterface;
-use Darken\Service\ContainerSericeInterface;
+use Darken\Service\ContainerServiceInterface;
 use Darken\Service\ContainerService;
 use Whoops\Run;
 
@@ -27,7 +27,7 @@ abstract class Kernel
 
         $container->register($config::class, $config);
 
-        if ($config instanceof ContainerSericeInterface) {
+        if ($config instanceof ContainerServiceInterface) {
             $container = $config->containers($container);
         }
 

@@ -8,10 +8,10 @@ use Darken\Enum\MiddlewarePosition;
 use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
 use Darken\Middleware\AddCustomHeaderMiddleware;
-use Darken\Service\ContainerSericeInterface;
+use Darken\Service\ContainerServiceInterface;
 use Darken\Service\ContainerService;
 
-class Config implements ConfigInterface, MiddlewareServiceInterface, ContainerSericeInterface
+class Config implements ConfigInterface, MiddlewareServiceInterface, ContainerServiceInterface
 {
     use ConfigHelperTrait;
 
