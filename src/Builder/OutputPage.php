@@ -21,7 +21,7 @@ class OutputPage
         if (str_contains($source, '[[...')) {
             $pattern = preg_replace('/\[\[\.\.\.(.*?)\]\]/', '<$1:.+>', $source);
         } else {
-            $pattern = preg_replace('/\[\[(.*?)\]\]/', '<$1:\w+>', $source);
+            $pattern = preg_replace('/\[\[(.*?)\]\]/', '<$1:[a-zA-Z0-9\-]+>', $source);
         }
 
 
