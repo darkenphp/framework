@@ -6,6 +6,7 @@ use Darken\Console\Application;
 use Darken\Console\Commands\Build;
 use Tests\TestCase;
 use Tests\TestConfig;
+use Yiisoft\Files\FileHelper;
 
 class BuildTest extends TestCase
 {
@@ -17,6 +18,8 @@ class BuildTest extends TestCase
             builderOutputFolder: '.build',
             componentsFolder: 'data/components'
         );
+
+        FileHelper::ensureDirectory($config->getBuildOutputFolder());
 
         $this->assertStringContainsString('tests/.build', $config->getBuildOutputFolder());
         $this->assertStringContainsString('tests/data/pages', $config->getPagesFolder());
@@ -70,7 +73,5 @@ class BuildTest extends TestCase
                 ]
             ]
         ], $content);
-
-        
     }
 }
