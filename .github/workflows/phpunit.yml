@@ -23,7 +23,7 @@ jobs:
           extensions: mbstring, xdebug
           ini-values: date.timezone='UTC'
           tools: composer:v2
-          coverage: xdebug  # Ensure coverage tools are set up
+          coverage: xdebug
 
       - name: Install dependencies
         run: composer clearcache && composer install --prefer-dist
@@ -35,6 +35,6 @@ jobs:
         if: matrix.php == '8.3'
         uses: codecov/codecov-action@v5
         with:
-          fail_ci_if_error: true # optional (default = false)
-          flags: unittests # optional
-          token: ${{ secrets.CODECOV_TOKEN }} # required
+          fail_ci_if_error: true
+          flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}

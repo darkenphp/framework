@@ -34,14 +34,9 @@ abstract class Kernel
         self::$container = $container;
     }
 
-    public static function resolveContainer(string $className): object
+    public static function getContainer(): ContainerService
     {
-        return self::$container->resolve($className);
-    }
-
-    public static function createObject(string $className, array $params): object
-    {
-        return self::$container->createObject($className, $params);
+        return self::$container;
     }
 
     abstract public function initalize(): void;

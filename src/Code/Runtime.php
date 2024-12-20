@@ -62,7 +62,7 @@ abstract class Runtime
 
     public function getContainer($className): object
     {
-        return Kernel::resolveContainer($className);
+        return Kernel::getContainer()->resolve($className);
     }
 
     public function render(): string|ResponseInterface
