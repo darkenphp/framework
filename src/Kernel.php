@@ -9,9 +9,6 @@ use Darken\Service\ContainerService;
 use Darken\Service\ContainerServiceInterface;
 use Whoops\Run;
 
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-
 abstract class Kernel
 {
     public Run $whoops;

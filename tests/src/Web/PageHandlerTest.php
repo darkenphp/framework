@@ -209,30 +209,5 @@ class PageHandlerTest extends TestCase
             ['class' => 'blogscomment'],
             [],
         ], $this->findRoutes('blogs/comments', $trie));
-
-
-        /*
-
-        $result = $this->findRoutes('blogs/1/comments', $trie);
-        $this->assertSame([
-            ['class' => 'Tests\\Build\\data\\pages\\blogs\\id\\comments'],
-            ['id' => '1'],
-        ], $result);
-
-        $result = $this->findRoutes('blogs/1/comments/', $trie);
-        $this->assertSame([
-            ['class' => 'Tests\\Build\\data\\pages\\blogs\\id\\comments'],
-            ['id' => '1'],
-        ], $result);
-
-        $result = $this->findRoutes('blogs/1/comments/1', $trie);
-        $this->assertFalse($result);
-
-        $result = $this->findRoutes('blogs/1/comments/1/', $trie);
-        $this->assertFalse($result);
-
-        $result = $this->findRoutes('blogs/1/comments/1/2', $trie);
-        $this->assertFalse($result);
-        */
     }
 }

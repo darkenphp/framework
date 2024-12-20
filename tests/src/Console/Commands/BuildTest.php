@@ -7,6 +7,7 @@ use Darken\Console\Commands\Build;
 use Darken\Web\Application as WebApplication;
 use Darken\Web\PageHandler;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionClass;
 use Tests\TestCase;
 use Tests\TestConfig;
 use Yiisoft\Files\FileHelper;
@@ -45,14 +46,6 @@ class BuildTest extends TestCase
                             'class' => 'Tests\\Build\\data\\pages\\api\\auth',
                             'middlewares' => [
                                 [
-                                    'class' => '\\Darken\\Middleware\\AddCustomHeaderMiddleware',
-                                    'params' => [
-                                        'name' => 'Content-Type',
-                                        'value' => 'application/json',
-                                    ],
-                                    'position' => '\\Darken\\Enum\\MiddlewarePosition::AFTER',
-                                ],
-                                [
                                     'class' => '\\Darken\\Middleware\\AuthenticationMiddleware',
                                     'params' => [
                                         'authHeader' => 'Authorization',
@@ -72,7 +65,16 @@ class BuildTest extends TestCase
                             "comments" => [
                                 "_children" => [
                                     "class" => "Tests\\Build\\data\\pages\\blogs\\id\\comments",
-                                    "middlewares" => []
+                                    "middlewares" => [
+                                        [
+                                            'class' => '\\Darken\\Middleware\\AddCustomHeaderMiddleware',
+                                            'params' => [
+                                                'name' => 'X-Foo',
+                                                'value' => 'X-Bar',
+                                            ],
+                                            'position' => '\\Darken\\Enum\\MiddlewarePosition::AFTER',
+                                        ],
+                                    ]
                                 ]
                             ],
                             "index" => [
@@ -98,7 +100,6 @@ class BuildTest extends TestCase
                 ]
             ]
         ], $content);
-
 
         // web app
         $web = new WebApplication($config);
@@ -129,15 +130,36 @@ class BuildTest extends TestCase
             'blogs/1/comments' => [
                 200, 'pages/blogs/[[id]]/comments:1'
             ],
+            'api/auth' => [
+                200, '{"message":"auth-api"}' // middlware is not extraed and processed in page handler!
+            ],
         ] as $path => $def) {
 
             $handler = new PageHandler($web, $path);
-            $response = $handler->handle($this->createServerRequest('GET',  $path));
+            $response = $handler->handle($this->createServerRequest($path, 'GET'));
 
             $this->assertInstanceOf(ResponseInterface::class, $response);
 
             $this->assertSame($def[0], $response->getStatusCode(), "Failed for GET path: $path");
             $this->assertSame($def[1], (string) $response->getBody(), "Failed for GET path: $path");
         }
+        
+        $reflection = new ReflectionClass($web);
+        $method = $reflection->getMethod('handleServerRequest');
+        $method->setAccessible(true);
+
+        $apiAuthResponse = $method->invoke($web, $this->createServerRequest('api/auth', 'GET'));
+        $this->assertSame('{"error":"Unauthorized"}', $apiAuthResponse->getBody()->__toString());
+        $this->assertSame(401, $apiAuthResponse->getStatusCode());
+
+        $blogCommentsResponse = $method->invoke($web, $this->createServerRequest('blogs/1/comments', 'GET'));
+        $this->assertSame('pages/blogs/[[id]]/comments:1', $blogCommentsResponse->getBody()->__toString());
+        $this->assertSame(200, $blogCommentsResponse->getStatusCode());
+        $this->assertSame([
+            'Content-Type' => ['text/html'],
+            'X-Foo' => ['X-Bar'],
+        ], $blogCommentsResponse->getHeaders());
+        
+        
     }
 }

@@ -7,7 +7,6 @@ use Darken\Middleware\AuthenticationMiddleware;
 use Darken\Web\Response;
 
 return new 
-#[\Darken\Attributes\Middleware(AddCustomHeaderMiddleware::class, ['name' => 'Content-Type', 'value' => 'application/json'], MiddlewarePosition::AFTER)]
 #[\Darken\Attributes\Middleware(AuthenticationMiddleware::class, ['authHeader' => 'Authorization', 'expectedToken' => 'FooBar'], MiddlewarePosition::BEFORE)]
 class implements InvokeResponseInterface
 {

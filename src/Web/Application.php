@@ -10,6 +10,8 @@ use Darken\Service\MiddlewareServiceInterface;
 use Exception;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Whoops\Handler\CallbackHandler;
 use Whoops\Handler\PrettyPageHandler;
 
@@ -58,8 +60,14 @@ class Application extends Kernel
             $psr17Factory, // UploadedFileFactory
             $psr17Factory  // StreamFactory
         );
-        $request = $creator->fromGlobals();
 
+        $response = $this->handleServerRequest($creator->fromGlobals());
+
+        $this->handleResponse($response);
+    }
+
+    private function handleServerRequest(ServerRequestInterface $request): ResponseInterface
+    {
         // Instantiate the final handler
         $pageHandler = new PageHandler($this, $request->getUri()->getPath());
 
@@ -77,8 +85,11 @@ class Application extends Kernel
         }
 
         // Handle the request through the middleware stack
-        $response = $middlewareService->handle($request);
+        return $middlewareService->handle($request);
+    }
 
+    private function handleResponse(ResponseInterface $response): void
+    {
         http_response_code($response->getStatusCode());
 
         foreach ($response->getHeaders() as $name => $values) {
