@@ -64,24 +64,19 @@ class Build implements CommandInterface
              */
             $trie = [];
             foreach ($pages as $polyfill) {
-
                 $page = new OutputPage($polyfill);
-
-                // Insert route into Trie
                 $node = &$trie;
                 foreach ($page->getSegmentedTrieRoute() as $segment) {
-
                     if (!isset($node[$segment])) {
                         $node[$segment] = ['_children' => []];
                     }
                     $node = &$node[$segment]['_children'];
                 }
-
-                //$node['file_path'] = $polyfill->getBuildOutputFilePath();
                 $node['class'] = $polyfill->getFullQualifiedClassName();
                 $node['middlewares'] = $polyfill->compilerOutput->getMeta('middlewares');
             }
 
+            ksort($trie);
 
             $this->saveFile($app->config->getBuildOutputFolder() . '/routes.php', '<?php' . PHP_EOL . 'return ' . var_export($trie, true) . ';' . PHP_EOL);
         } catch (Throwable $e) {

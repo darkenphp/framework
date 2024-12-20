@@ -1,4 +1,4 @@
-name: PHP Composer Test
+name: PHPUnit Test
 
 on: [push, pull_request]
 

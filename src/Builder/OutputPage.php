@@ -30,7 +30,6 @@ class OutputPage
             $pattern = preg_replace('/\[\[(.*?)\]\]/', '<$1:[a-zA-Z0-9\-]+>', $source);
         }
 
-
         // an easy way to convert /blogs/[[slug]] to a matcahable regex like /blogs/<slug:[\w+]>
         return str_replace('.php', '', $pattern);
     }

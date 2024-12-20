@@ -32,6 +32,12 @@ class BuildTest extends TestCase
         $content = include($config->getBuildOutputFolder() . '/routes.php');
 
         $this->assertSame([
+            "<slug:.+>" => [
+                "_children" => [
+                    "class" => "Tests\\Build\\data\\pages\\slug",
+                    "middlewares" => []
+                ]
+            ],
             'api' => [
                 '_children' => [
                     'auth' => [
@@ -58,12 +64,6 @@ class BuildTest extends TestCase
                         ],
                     ],
                 ],
-            ],
-            "<slug:.+>" => [
-                "_children" => [
-                    "class" => "Tests\\Build\\data\\pages\\slug",
-                    "middlewares" => []
-                ]
             ],
             "blogs" => [
                 "_children" => [
