@@ -7,9 +7,9 @@ namespace Darken\Service;
 use InvalidArgumentException;
 use ReflectionClass;
 
-class ContainerService
+final class ContainerService
 {
-    private static array $containers = [];
+    private array $containers = [];
 
     /**
      * ->registr(new FooBar());
@@ -27,23 +27,27 @@ class ContainerService
             $object = $container;
         }
 
-        self::$containers[$class] = $object;
+        $this->containers[$class] = $object;
         return $this;
     }
 
-    public function resolve(string $name): ?object
+    public function resolve(string $name): object
     {
-        $resolve = self::$containers[$name];
+        $resolve = $this->containers[$name] ?? null;
+
+        if (!$resolve) {
+            throw new InvalidArgumentException('Container '.$name.' not found');
+        }
 
         if (is_callable($resolve)) {
-            self::$containers[$name] = $resolve();
+            $this->containers[$name] = $resolve();
         }
 
         if (is_array($resolve)) {
-            self::$containers[$name] = $this->createObject($name, $resolve);
+            $this->containers[$name] = $this->createObject($name, $resolve);
         }
 
-        return self::$containers[$name] ?? null;
+        return $this->containers[$name];
     }
 
     /**

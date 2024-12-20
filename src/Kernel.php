@@ -34,7 +34,7 @@ abstract class Kernel
         self::$container = $container;
     }
 
-    public static function getContainer(): ContainerService
+    public static function getContainerService(): ContainerService
     {
         return self::$container;
     }

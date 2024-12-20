@@ -72,7 +72,7 @@ class PageHandler implements RequestHandlerInterface
         }
 
         /** @var Runtime $object */
-        $object = $this->app->getContainer()->resolve($className);
+        $object = $this->app->getContainerService()->createObject($className, $params);
         $object->setRouteParams($params);
         return $object;
 
