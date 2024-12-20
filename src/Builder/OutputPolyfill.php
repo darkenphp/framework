@@ -11,10 +11,12 @@ class OutputPolyfill implements FileSaveInterface
 
     }
 
-    public function getNamespace(): string
+    public function getFullQualifiedClassName(): string
     {
-        return $this->compiled->config->getBuildOutputNamespace() . str_replace(DIRECTORY_SEPARATOR, '\\', $this->compiled->getRelativeDirectory());
+        return $this->getNamespace() . '\\' . $this->getClassName();
     }
+
+    // save interface
 
     public function getBuildOutputFilePath(): string
     {
@@ -22,17 +24,25 @@ class OutputPolyfill implements FileSaveInterface
         return str_replace('.compiled.php', '.php', $this->compiled->getBuildOutputFilePath());
     }
 
-    public function getRelativeBuildOutputFilePath(): string
+    public function getBuildOutputContent(): string
     {
-        return str_replace('.php', '.compiled.php', $this->compiled->input->getFileName());
+        return <<<PHP
+            <?php
+            namespace {$this->getNamespace()};
+
+            class {$this->getClassName()} extends \Darken\Code\Runtime
+            {
+                {$this->getConstructorMethod()}
+                {$this->getSlotMethods()}
+                public function renderFilePath(): string
+                {
+                    return dirname(__FILE__) . DIRECTORY_SEPARATOR  . '{$this->getRelativeBuildOutputFilePath()}';
+                }
+            }
+            PHP;
     }
 
-    public function getFullQualifiedClassName(): string
-    {
-        return $this->getNamespace() . '\\' . $this->getClassName();
-    }
-
-    public function getClassName(): string
+    private function getClassName(): string
     {
         $class = pathinfo($this->compiled->input->filePath, PATHINFO_FILENAME);
 
@@ -40,7 +50,18 @@ class OutputPolyfill implements FileSaveInterface
         return preg_replace('/[^a-zA-Z0-9]/', '', $class);
     }
 
-    public function getConstructorMethod(): string
+    private function getNamespace(): string
+    {
+        $directory = preg_replace('/[^a-zA-Z0-9\/_-]/', '', $this->compiled->getRelativeDirectory());
+        return $this->compiled->config->getBuildOutputNamespace() . str_replace(DIRECTORY_SEPARATOR, '\\', $directory);
+    }
+
+    private function getRelativeBuildOutputFilePath(): string
+    {
+        return str_replace('.php', '.compiled.php', $this->compiled->input->getFileName());
+    }
+
+    private function getConstructorMethod(): string
     {
         $constructor = $this->compilerOutput->getMeta('constructor');
 
@@ -78,7 +99,7 @@ class OutputPolyfill implements FileSaveInterface
             EOT;
     }
 
-    public function getSlotMethods(): string
+    private function getSlotMethods(): string
     {
         $slots = $this->compilerOutput->getMeta('slots');
 
@@ -109,23 +130,5 @@ class OutputPolyfill implements FileSaveInterface
         }
 
         return implode("\n", $slotMethods);
-    }
-
-    public function getBuildOutputContent(): string
-    {
-        return <<<PHP
-            <?php
-            namespace {$this->getNamespace()};
-
-            class {$this->getClassName()} extends \Darken\Code\Runtime
-            {
-                {$this->getConstructorMethod()}
-                {$this->getSlotMethods()}
-                public function renderFilePath(): string
-                {
-                    return dirname(__FILE__) . DIRECTORY_SEPARATOR  . '{$this->getRelativeBuildOutputFilePath()}';
-                }
-            }
-            PHP;
     }
 }

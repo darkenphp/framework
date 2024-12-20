@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Darken\Builder;
 
 use Darken\Config\ConfigInterface;
+use Yiisoft\Files\FileHelper;
 
 // rename: CompiledSourceFile
 
@@ -17,13 +18,12 @@ class OutputCompiled implements FileSaveInterface
 
     public function getRelativeDirectory(): string
     {
-        return str_replace($this->config->getRootDirectoryPath(), '', $this->input->getDirectoryPath());
+        $path = str_replace($this->config->getRootDirectoryPath(), '', $this->input->getDirectoryPath());
+
+        return  preg_replace('/[^a-zA-Z0-9\/_-]/', '', FileHelper::normalizePath($path));
     }
 
-    public function getFilePath(): string
-    {
-        return $this->getRelativeDirectory() . DIRECTORY_SEPARATOR . $this->input->getFileName();
-    }
+    // save interface
 
     public function getBuildOutputFilePath(): string
     {
@@ -34,5 +34,10 @@ class OutputCompiled implements FileSaveInterface
     public function getBuildOutputContent(): string
     {
         return $this->content;
+    }
+
+    private function getFilePath(): string
+    {
+        return $this->getRelativeDirectory() . DIRECTORY_SEPARATOR . $this->input->getFileName();
     }
 }

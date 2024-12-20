@@ -128,20 +128,17 @@ PHP, $output->getCode());
         $this->assertEquals($expectedSlots, $output->getMeta('slots'), "Slots meta data does not match.");
 
         $outputCompiled = new OutputCompiled($output->getCode(), $inputFile, $this->createConfig());
-        $this->assertStringContainsString('tests/src/Builder/../../data/components/layout1.compiled.php', $outputCompiled->getBuildOutputFilePath());
-        $this->assertSame('/tests/src/Builder/../../data/components', $outputCompiled->getRelativeDirectory());
-        $this->assertSame('/tests/src/Builder/../../data/components/layout1.php', $outputCompiled->getFilePath());
+        $this->assertStringContainsString('tests/.build/data/components/layout1.compiled.php', $outputCompiled->getBuildOutputFilePath());
+        $this->assertSame('/data/components', $outputCompiled->getRelativeDirectory());
 
         $polyfill = new OutputPolyfill($outputCompiled, $output);
-        $this->assertSame('Build\tests\src\Builder\..\..\data\components', $polyfill->getNamespace());
-        $this->assertStringContainsString('tests/src/Builder/../../data/components/layout1.ph', $polyfill->getBuildOutputFilePath());
-        $this->assertSame('layout1.compiled.php', $polyfill->getRelativeBuildOutputFilePath());
-        $this->assertSame('layout1', $polyfill->getClassName());
+        $this->assertStringContainsString('tests/.build/data/components/layout1.php', $polyfill->getBuildOutputFilePath());
+        $this->assertSame('Tests\Build\data\components\layout1', $polyfill->getFullQualifiedClassName());
 
         $this->assertSame(
 <<<'PHP'
 <?php
-namespace Build\tests\src\Builder\..\..\data\components;
+namespace Tests\Build\data\components;
 
 class layout1 extends \Darken\Code\Runtime
 {

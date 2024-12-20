@@ -8,12 +8,18 @@ namespace Darken\Builder;
 
 class OutputPage
 {
+    // use config and input instead
     public function __construct(public OutputPolyfill $polyfill)
     {
 
     }
 
-    public function getRoute(): string
+    public function getSegmentedTrieRoute(): array
+    {
+        return explode('/', trim($this->getRoute(), '/')); // Split into segments
+    }
+
+    private function getRoute(): string
     {
         $source = str_replace($this->polyfill->compiled->config->getPagesFolder(), '', $this->polyfill->compiled->input->filePath);
 
@@ -27,10 +33,5 @@ class OutputPage
 
         // an easy way to convert /blogs/[[slug]] to a matcahable regex like /blogs/<slug:[\w+]>
         return str_replace('.php', '', $pattern);
-    }
-
-    public function getSegmentedTrieRoute(): array
-    {
-        return explode('/', trim($this->getRoute(), '/')); // Split into segments
     }
 }

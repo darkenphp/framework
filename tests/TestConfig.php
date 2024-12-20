@@ -51,7 +51,7 @@ class TestConfig implements ConfigInterface
      */
     public function getBuildOutputNamespace(): string
     {
-        return $this->env('DARKEN_BUILD_OUTPUT_NAMESPACE', 'Build');
+        return $this->env('DARKEN_BUILD_OUTPUT_NAMESPACE', 'Tests\\Build');
     }
 
     /**

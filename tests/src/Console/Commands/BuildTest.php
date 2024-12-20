@@ -4,6 +4,9 @@ namespace Tests\src\Builder\Console\Commands;
 
 use Darken\Console\Application;
 use Darken\Console\Commands\Build;
+use Darken\Web\Application as WebApplication;
+use Darken\Web\PageHandler;
+use Psr\Http\Message\ResponseInterface;
 use Tests\TestCase;
 use Tests\TestConfig;
 use Yiisoft\Files\FileHelper;
@@ -12,12 +15,7 @@ class BuildTest extends TestCase
 {
     public function testBuild()
     {
-        $config = new TestConfig(
-            rootDirectoryPath: $this->getTestsRootFolder(),
-            pagesFolder: 'data/pages',
-            builderOutputFolder: '.build',
-            componentsFolder: 'data/components'
-        );
+        $config = $this->createConfig();
 
         FileHelper::ensureDirectory($config->getBuildOutputFolder());
 
@@ -36,7 +34,7 @@ class BuildTest extends TestCase
         $this->assertSame([
             "<slug:.+>" => [
                 "_children" => [
-                    "class" => "Build\\data\\pages\\slug",
+                    "class" => "Tests\\Build\\data\\pages\\slug",
                     "middlewares" => []
                 ]
             ],
@@ -46,13 +44,13 @@ class BuildTest extends TestCase
                         "_children" => [
                             "comments" => [
                                 "_children" => [
-                                    "class" => "Build\\data\\pages\\blogs\\[[id]]\\comments",
+                                    "class" => "Tests\\Build\\data\\pages\\blogs\\id\\comments",
                                     "middlewares" => []
                                 ]
                             ],
                             "index" => [
                                 "_children" => [
-                                    "class" => "Build\\data\\pages\\blogs\\[[id]]\\index",
+                                    "class" => "Tests\\Build\\data\\pages\\blogs\\id\\index",
                                     "middlewares" => []
                                 ]
                             ]
@@ -60,7 +58,7 @@ class BuildTest extends TestCase
                     ],
                     "index" => [
                         "_children" => [
-                            "class" => "Build\\data\\pages\\blogs\\index",
+                            "class" => "Tests\\Build\\data\\pages\\blogs\\index",
                             "middlewares" => []
                         ]
                     ]
@@ -68,10 +66,34 @@ class BuildTest extends TestCase
             ],
             "hello" => [
                 "_children" => [
-                    "class" => "Build\\data\\pages\\hello",
+                    "class" => "Tests\\Build\\data\\pages\\hello",
                     "middlewares" => []
                 ]
             ]
         ], $content);
+
+
+        // web app
+        $web = new WebApplication($config);
+        $web->whoops->unregister();
+
+        foreach ([
+            'index' => 200,
+            '' => 200,
+            'hello' => 200,
+            'blogs' => 200,
+            'blogs/1' => 200,
+            'blogs/1/comments' => 200,
+        ] as $path => $status) {
+
+            $handler = new PageHandler($web, $path);
+            $response = $handler->handle($this->createServerRequest('GET',  $path));
+
+            $this->assertInstanceOf(ResponseInterface::class, $response);
+
+            $this->assertSame($status, $response->getStatusCode());
+
+            //echo $response->getBody();
+        }
     }
 }

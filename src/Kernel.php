@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Darken;
 
 use Darken\Config\ConfigInterface;
-use Darken\Service\ContainerServiceInterface;
 use Darken\Service\ContainerService;
+use Darken\Service\ContainerServiceInterface;
 use Whoops\Run;
 
 error_reporting(E_ALL);
@@ -37,6 +37,11 @@ abstract class Kernel
     public static function resolveContainer(string $className): object
     {
         return self::$container->resolve($className);
+    }
+
+    public static function createObject(string $className, array $params): object
+    {
+        return self::$container->createObject($className, $params);
     }
 
     abstract public function initalize(): void;

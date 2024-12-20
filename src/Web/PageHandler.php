@@ -70,8 +70,9 @@ class PageHandler implements RequestHandlerInterface
         if (!$className) {
             return false;
         }
+
         /** @var Runtime $object */
-        $object = new $className(...$params);
+        $object = $this->app->createObject($className, $params);
         $object->setRouteParams($params);
         return $object;
 

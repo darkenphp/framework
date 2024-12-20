@@ -94,7 +94,7 @@ class Build implements CommandInterface
     private function createFile(FileSaveInterface $save): bool
     {
         FileHelper::ensureDirectory(dirname($save->getBuildOutputFilePath()));
-        
+
         return $this->saveFile($save->getBuildOutputFilePath(), $save->getBuildOutputContent());
     }
 

@@ -7,7 +7,10 @@ ini_set('display_errors', '1');
 
 use Darken\Builder\InputFile;
 use Darken\Config\ConfigInterface;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7Server\ServerRequestCreator;
 use PHPUnit\Framework\TestCase as FrameworkTestCase;
+use Psr\Http\Message\ServerRequestInterface;
 
 class TestCase extends FrameworkTestCase
 {
@@ -16,15 +19,33 @@ class TestCase extends FrameworkTestCase
         return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'tests';
     }
 
+    public function createServerRequest(string $uri, string $method) : ServerRequestInterface
+    {
+        $psr17Factory = new Psr17Factory();
+        $creator = new ServerRequestCreator(
+            $psr17Factory, // ServerRequestFactory
+            $psr17Factory, // UriFactory
+            $psr17Factory, // UploadedFileFactory
+            $psr17Factory  // StreamFactory
+        );
+        $request = $creator->fromArrays([
+            'REQUEST_METHOD' => strtoupper($method),
+            'REQUEST_URI' => $uri,
+        ]);
+
+        return $request;
+    }
+
     public function createConfig() : ConfigInterface
     {
         return new TestConfig(
-            rootDirectoryPath: dirname(__DIR__),
-            pagesFolder: 'pages',
+            rootDirectoryPath: $this->getTestsRootFolder(),
+            pagesFolder: 'data/pages',
             builderOutputFolder: '.build',
-            componentsFolder: 'components'
+            componentsFolder: 'data/components'
         );
     }
+    
 
     public function createInputFile($path) : InputFile
     {
