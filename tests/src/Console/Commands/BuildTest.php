@@ -93,6 +93,12 @@ class BuildTest extends TestCase
                     ]
                 ]
             ],
+            'components-test' => [
+                '_children' => [
+                    'class' => 'Tests\\Build\\data\\pages\\componentstest',
+                    'middlewares' => []
+                ]
+            ],
             "hello" => [
                 "_children" => [
                     "class" => "Tests\\Build\\data\\pages\\hello",
@@ -160,6 +166,21 @@ class BuildTest extends TestCase
             'X-Foo' => ['X-Bar'],
         ], $blogCommentsResponse->getHeaders());
         
+        $renderTestPageWithComponentsAndLayouts = $method->invoke($web, $this->createServerRequest('components-test', 'GET'));
         
+        $this->assertSame(
+<<<'PHP'
+<h1>layoutarg1</h1>
+<h1>LAYOUTARG1</h1>
+<h2>layoutarg2</h2>
+<div><div class="slot1">Slot 1</div>
+<div class="alert">alert message</div></div>
+<div><div class="nmdSlot2">Named Slot 2</div>
+</div>
+<div>SQLITE::MEMORY:</div>
+<div>SQLITE::MEMORY:</div>
+<div>SQLITE::MEMORY:</div>
+PHP, $renderTestPageWithComponentsAndLayouts->getBody()->__toString());
+        $this->assertSame(200, $renderTestPageWithComponentsAndLayouts->getStatusCode());
     }
 }

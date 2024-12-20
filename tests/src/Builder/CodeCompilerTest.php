@@ -12,7 +12,7 @@ class CodeCompilerTest extends TestCase
 {
     public function testLayoutFile()
     {
-        $inputFile = $this->createInputFile(__DIR__ . '/../../data/components/layout1.php');
+        $inputFile = $this->createInputFile(__DIR__ . '/../../data/components/Layout1.php');
 
         $compiler = new CodeCompiler();
         $output = $compiler->compile($inputFile);
@@ -128,24 +128,24 @@ PHP, $output->getCode());
         $this->assertEquals($expectedSlots, $output->getMeta('slots'), "Slots meta data does not match.");
 
         $outputCompiled = new OutputCompiled($output->getCode(), $inputFile, $this->createConfig());
-        $this->assertStringContainsString('tests/.build/data/components/layout1.compiled.php', $outputCompiled->getBuildOutputFilePath());
+        $this->assertStringContainsString('tests/.build/data/components/Layout1.compiled.php', $outputCompiled->getBuildOutputFilePath());
         $this->assertSame('/data/components', $outputCompiled->getRelativeDirectory());
 
         $polyfill = new OutputPolyfill($outputCompiled, $output);
-        $this->assertStringContainsString('tests/.build/data/components/layout1.php', $polyfill->getBuildOutputFilePath());
-        $this->assertSame('Tests\Build\data\components\layout1', $polyfill->getFullQualifiedClassName());
+        $this->assertStringContainsString('tests/.build/data/components/Layout1.php', $polyfill->getBuildOutputFilePath());
+        $this->assertSame('Tests\Build\data\components\Layout1', $polyfill->getFullQualifiedClassName());
 
         $this->assertSame(
 <<<'PHP'
 <?php
 namespace Tests\Build\data\components;
 
-class layout1 extends \Darken\Code\Runtime
+class Layout1 extends \Darken\Code\Runtime
 {
     public function __construct(string $arg1, string $nmdArgu2)
     {
         $this->setArgumentParam("arg1", $arg1);
-        $this->setArgumentParam("namedArg2", $nmdArgu2);
+        $this->setArgumentParam("nmdArgu2", $nmdArgu2);
     }
 
         public function openSlot1() : self
@@ -174,7 +174,7 @@ class layout1 extends \Darken\Code\Runtime
 
     public function renderFilePath(): string
     {
-        return dirname(__FILE__) . DIRECTORY_SEPARATOR  . 'layout1.compiled.php';
+        return dirname(__FILE__) . DIRECTORY_SEPARATOR  . 'Layout1.compiled.php';
     }
 }
 PHP, $polyfill->getBuildOutputContent()

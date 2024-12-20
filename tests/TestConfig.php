@@ -4,8 +4,13 @@ namespace Tests;
 
 use Darken\Config\ConfigHelperTrait;
 use Darken\Config\ConfigInterface;
+use Darken\Service\ContainerService;
+use Darken\Service\ContainerServiceInterface;
+use Darken\Service\MiddlewareService;
+use Darken\Service\MiddlewareServiceInterface;
+use Tests\data\di\Db;
 
-class TestConfig implements ConfigInterface
+class TestConfig implements ConfigInterface, ContainerServiceInterface, MiddlewareServiceInterface
 {
     use ConfigHelperTrait;
 
@@ -14,7 +19,17 @@ class TestConfig implements ConfigInterface
         $this->loadEnvFile();
     }
 
-        /**
+    public function containers(ContainerService $service): ContainerService
+    {
+        return $service->register(new Db('sqlite::memory:'));
+    }
+
+    public function middlewares(MiddlewareService $service): MiddlewareService
+    {
+        return $service;
+    }
+
+    /**
      * ```
      * return $this->path($this->rootDirectoryPath);
      * ```

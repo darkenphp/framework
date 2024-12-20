@@ -33,6 +33,7 @@ class GlobalVisitor extends NodeVisitorAbstract
 {
     public function __construct(private UseStatementCollector $useStatementCollector, private DataExtractorVisitor $dataExtractorVisitor)
     {
+
     }
 
     public function enterNode(Node $node)

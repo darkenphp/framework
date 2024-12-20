@@ -76,13 +76,12 @@ class OutputPolyfill implements FileSaveInterface
             // Extract parameter details
             $paramType = $param['paramType'] ?? 'mixed';
             $paramName = $param['paramName'] ?? 'param';
-            $propertyName = $param['propertyName'] ?? $paramName;
 
             // Build the parameter string with type hint
             $params[] = "{$paramType} \${$paramName}";
 
             // Build the assignment string
-            $assignments[] = "\$this->setArgumentParam(\"{$propertyName}\", \${$paramName});";
+            $assignments[] = "\$this->setArgumentParam(\"{$paramName}\", \${$paramName});";
         }
 
         // Join parameters and assignments into strings
