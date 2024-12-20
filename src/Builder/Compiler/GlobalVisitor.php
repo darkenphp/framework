@@ -33,7 +33,6 @@ class GlobalVisitor extends NodeVisitorAbstract
 {
     public function __construct(private UseStatementCollector $useStatementCollector, private DataExtractorVisitor $dataExtractorVisitor)
     {
-
     }
 
     public function enterNode(Node $node)
@@ -48,6 +47,15 @@ class GlobalVisitor extends NodeVisitorAbstract
         // Check if this node is a class (including anonymous classes)
         if ($node instanceof ClassLike) {
 
+            /**
+             * @var array<int, array{
+             *     attrName: class-string,
+             *     propertyName: string,
+             *     paramName: string,
+             *     paramType: 'string'|'int'|'bool',
+             *     arg: \PhpParser\Node\Expr\ClassConstFetch
+             * }> $queryParams
+             */
             $queryParams = [];
 
             // Collect properties that have the RouteParam attribute
@@ -87,12 +95,9 @@ class GlobalVisitor extends NodeVisitorAbstract
                                     ];
 
                                 } else {
-
-                                    /** @var Name $propertyType */
                                     $propertyType = $propertyNode->type;
-
                                     // if this is a class:
-                                    if ($propertyType && ($propertyType instanceof Name || $propertyType instanceof FullyQualified)) {
+                                    if ($propertyType instanceof Name || $propertyType instanceof FullyQualified) {
                                         $fullyQualifiedName = new FullyQualified(ltrim($this->useStatementCollector->ensureClassName($propertyType->name), '\\'));
                                         $arg = new ClassConstFetch($fullyQualifiedName, 'class');
                                     } else {
@@ -181,7 +186,7 @@ class GlobalVisitor extends NodeVisitorAbstract
             if (!empty($queryParams)) {
                 foreach ($queryParams as $qp) {
 
-                    $getterName = match($qp['attrName']) {
+                    $getterName = match ($qp['attrName']) {
                         RouteParam::class => 'getRouteParam',
                         AttributesParam::class => 'getArgumentParam',
                         Slot::class => 'getSlot',

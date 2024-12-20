@@ -1,9 +1,10 @@
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
 parameters:
-  level: 3
+  level: 5
   paths:
     - src
   tmpDir: .tmp
+  treatPhpDocTypesAsCertain: false
   ignoreErrors:
     - '#^Class .+ extends @final class .+\.#'

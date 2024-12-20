@@ -15,24 +15,20 @@ use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeVisitorAbstract;
-use PhpParser\PrettyPrinter\Standard as PrettyPrinter;
 
 class DataExtractorVisitor extends NodeVisitorAbstract
 {
+    /**
+     * @var array<string, array>
+     */
     private array $data = [
         'middlewares' => [],
         'constructor' => [],
         'slots' => [],
     ];
 
-    private PrettyPrinter $printer;
-
-    private UseStatementCollector $useStatementCollector;
-
-    public function __construct(UseStatementCollector $useStatementCollector)
+    public function __construct(private UseStatementCollector $useStatementCollector)
     {
-        $this->printer = new PrettyPrinter();
-        $this->useStatementCollector = $useStatementCollector;
     }
 
     public function addData(string $key, array $value): void

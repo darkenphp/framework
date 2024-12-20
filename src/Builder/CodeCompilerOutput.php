@@ -18,6 +18,9 @@ class CodeCompilerOutput
         return $this->code;
     }
 
+    /**
+     * @return array<mixed>
+     */
     public function getMeta(string $key, mixed $default = []): array
     {
         return $this->data->getData($key, $default);

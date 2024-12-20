@@ -31,6 +31,8 @@ class Watch implements CommandInterface
         }
 
         // Continuous loop to check for changes
+
+        // @phpstan-ignore-next-line
         while (true) {
             // Sleep a bit to avoid hogging CPU
             usleep(500000); // 0.5 seconds
