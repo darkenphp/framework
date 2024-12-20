@@ -1,0 +1,1 @@
+pages/blogs/[[id]]/index.php => pages/blogs/123

@@ -9,7 +9,7 @@ class TestConfig implements ConfigInterface
 {
     use ConfigHelperTrait;
 
-    public function __construct(private readonly string $rootDirectoryPath)
+    public function __construct(private string $rootDirectoryPath, public string $pagesFolder, public string $builderOutputFolder, public string $componentsFolder)
     {
         $this->loadEnvFile();
     }
@@ -31,7 +31,7 @@ class TestConfig implements ConfigInterface
      */
     public function getDebugMode(): bool
     {
-        return (bool) $this->env('DARKEN_DEBUG', false);
+        return false;
     }
 
     /**
@@ -41,7 +41,7 @@ class TestConfig implements ConfigInterface
      */
     public function getBuildOutputFolder(): string
     {
-        return $this->getRootDirectoryPath() . DIRECTORY_SEPARATOR . $this->env('DARKEN_BUILD_OUTPUT_FOLDER', '.build');
+        return $this->getRootDirectoryPath() . DIRECTORY_SEPARATOR . $this->builderOutputFolder;
     }
 
     /**
@@ -61,7 +61,12 @@ class TestConfig implements ConfigInterface
      */
     public function getPagesFolder(): string
     {
-        return $this->getRootDirectoryPath() . DIRECTORY_SEPARATOR . $this->env('DARKEN_PAGES_FOLDER', 'pages');
+        return $this->getRootDirectoryPath() . DIRECTORY_SEPARATOR . $this->pagesFolder;
+    }
+
+    public function getComponentsFolder(): string
+    {
+        return $this->getRootDirectoryPath() . DIRECTORY_SEPARATOR . $this->componentsFolder;
     }
 
     /**
@@ -75,7 +80,7 @@ class TestConfig implements ConfigInterface
     public function getBuildingFolders(): array
     {
         return [
-            $this->getRootDirectoryPath() . DIRECTORY_SEPARATOR . 'components',
+            $this->getComponentsFolder(),
             $this->getPagesFolder(),
         ];
     }

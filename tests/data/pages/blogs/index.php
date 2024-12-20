@@ -1,0 +1,1 @@
+pages/blogs/index.php => pages/blogs

@@ -93,15 +93,13 @@ class Build implements CommandInterface
 
     private function createFile(FileSaveInterface $save): bool
     {
-        // ensure
         FileHelper::ensureDirectory(dirname($save->getBuildOutputFilePath()));
-        // save
+        
         return $this->saveFile($save->getBuildOutputFilePath(), $save->getBuildOutputContent());
     }
 
     private function saveFile(string $file, string $content): bool
     {
-        // Save the Trie structure to a file
         return file_put_contents($file, $content) !== false;
     }
 }

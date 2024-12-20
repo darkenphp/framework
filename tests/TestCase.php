@@ -11,10 +11,18 @@ use PHPUnit\Framework\TestCase as FrameworkTestCase;
 
 class TestCase extends FrameworkTestCase
 {
+    public function getTestsRootFolder() : string
+    {
+        return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'tests';
+    }
+
     public function createConfig() : ConfigInterface
     {
         return new TestConfig(
-            rootDirectoryPath: dirname(__DIR__)
+            rootDirectoryPath: dirname(__DIR__),
+            pagesFolder: 'pages',
+            builderOutputFolder: '.build',
+            componentsFolder: 'components'
         );
     }
 

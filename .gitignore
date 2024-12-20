@@ -4,3 +4,4 @@
 .tmp
 .phpunit.cache
 junit.xml
+tests/.build

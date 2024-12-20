@@ -1,0 +1,1 @@
+pages/blogs/[[id]]/comments.php => pages/blogs/123/comments
