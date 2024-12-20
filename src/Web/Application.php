@@ -22,7 +22,7 @@ class Application extends Kernel
         if ($this->config->getDebugMode()) {
             $handler = new PrettyPageHandler();
         } else {
-            $handler = new CallbackHandler(function (Exception $exception) {
+            $handler = new CallbackHandler(function (\Throwable $exception) {
                 echo <<<HTML
                     <!DOCTYPE html>
                     <html lang="en">
