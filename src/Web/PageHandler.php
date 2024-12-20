@@ -81,31 +81,49 @@ class PageHandler implements RequestHandlerInterface
     private function findRouteNode(string $url, array $trie): false|array
     {
         $segments = explode('/', trim($url, '/'));
-
+        $hasWildCardMatch = false;
+        $mustMatchFirst = false;
         $node = $trie;
         $params = [];
 
         // if there is only 1 segement and it is empty, then it is the root
         if (count($segments) === 1 && empty($segments[0])) {
             $segments = ['index'];
+            if (array_key_exists('index', $node)) {
+                return [$node['index']['_children'], $params];
+            }
+            $mustMatchFirst = true;
         } else {
             $segments[] = 'index';
         }
 
-        foreach ($segments as $segment) {
+        foreach ($segments as $index => $segment) {
 
             // Try exact match first
             if (isset($node[$segment])) {
                 $node = $node[$segment]['_children'];
                 continue;
             }
+
             // see if node matches regex
             foreach ($node as $key => $child) {
-                // example regex would be <slug:\\w+>
+                // Example dynamic route key: <id:[a-zA-Z0-9\-]+> or <slug:.+>
                 if (strpos($key, '<') === 0 && strpos($key, '>') === strlen($key) - 1) {
                     $pattern = substr($key, 1, -1);
                     [$name, $regex] = explode(':', $pattern);
-                    if (preg_match("/^$regex$/", $segment)) {
+                    if ($regex === '.+') {
+                        if (preg_match("/^$regex$/", $segment)) {
+                            $slices = array_slice($segments, $index);
+                            // if the last slice is "index" then remove it
+                            if (end($slices) === 'index') {
+                                array_pop($slices);
+                            }
+                            $params[$name] = implode('/', $slices);
+                            $node = $child['_children'];
+                            $hasWildCardMatch = true;
+                            continue 2;
+                        }
+                    } elseif (preg_match("/^$regex$/", $segment)) {
                         $params[$name] = $segment;
                         $node = $child['_children'];
                         continue 2;
@@ -120,7 +138,12 @@ class PageHandler implements RequestHandlerInterface
                 continue;
             }
 
-            // No match
+            if (!$hasWildCardMatch) {
+                return false;
+            }
+        }
+
+        if ($mustMatchFirst && !$hasWildCardMatch) {
             return false;
         }
 

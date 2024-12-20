@@ -67,6 +67,12 @@ class PageHandlerTest extends TestCase
             ],
         ];
 
+        $result = $this->findRoutes('foo/bar/baz', $trie);
+        $this->assertEquals([
+            ['class' => 'Tests\\Build\\data\\pages\\slug'],
+            ['slug' => 'foo/bar/baz'],
+        ], $result);
+
         // Case 1: Exact match for a static route
         $result = $this->findRoutes('api/auth', $trie);
         $this->assertEquals([
@@ -92,7 +98,7 @@ class PageHandlerTest extends TestCase
         $result = $this->findRoutes('/', $trie);
         $this->assertEquals([
             ['class' => 'Tests\Build\data\pages\slug'],
-            ['slug' => 'index'],
+            ['slug' => ''],
         ], $result);
 
 
@@ -103,15 +109,6 @@ class PageHandlerTest extends TestCase
             [],
         ], $result);
 
-
-        /*
-        // Case 2: Wildcard match with <slug:.+>
-        $result = $this->findRoutes('foo/bar/baz', $trie);
-        $this->assertEquals([
-            ['class' => 'Tests\\Build\\data\\pages\\slug'],
-            ['slug' => 'foo/bar/baz'],
-        ], $result);
-        */
     }
 
     public function testWithouWildCardToHave404()
@@ -158,5 +155,84 @@ class PageHandlerTest extends TestCase
 
         $result = $this->findRoutes('does/not/with/trailing/', $trie);
         $this->assertFalse($result);
+    }
+
+    public function testWildCardButInSubFolder()
+    {
+        $trie = [
+            'root' => [
+                '_children' => [
+                    'class' => 'root',
+                ],
+            ],
+            'blogs' => [
+                '_children' => [
+                    '<slug:.+>' => [
+                        '_children' => [
+                            'class' => 'blogsslugwildcard',
+                        ],
+                    ],
+                    'comments' => [
+                        '_children' => [
+                            'class' => 'blogscomment',
+                        ],
+                    ],
+                    'index' => [
+                        '_children' => [
+                            'class' => 'blogsindex',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->assertFalse($this->findRoutes('', $trie));
+        $this->assertFalse($this->findRoutes('/', $trie));
+        $this->assertFalse($this->findRoutes('doesnotexists', $trie));
+        $this->assertSame([
+            ['class' => 'root'],
+            [],
+        ], $this->findRoutes('root', $trie));
+        $this->assertSame([
+            ['class' => 'blogsindex'],
+            [],
+        ], $this->findRoutes('/blogs', $trie));
+        $this->assertSame([
+            ['class' => 'blogsslugwildcard'],
+            ['slug' => 'my-blog-id'],
+        ], $this->findRoutes('blogs/my-blog-id', $trie));
+        $this->assertSame([
+            ['class' => 'blogsslugwildcard'],
+            ['slug' => 'my-blog-id/more'],
+        ], $this->findRoutes('blogs/my-blog-id/more', $trie));
+        $this->assertSame([
+            ['class' => 'blogscomment'],
+            [],
+        ], $this->findRoutes('blogs/comments', $trie));
+
+
+        /*
+
+        $result = $this->findRoutes('blogs/1/comments', $trie);
+        $this->assertSame([
+            ['class' => 'Tests\\Build\\data\\pages\\blogs\\id\\comments'],
+            ['id' => '1'],
+        ], $result);
+
+        $result = $this->findRoutes('blogs/1/comments/', $trie);
+        $this->assertSame([
+            ['class' => 'Tests\\Build\\data\\pages\\blogs\\id\\comments'],
+            ['id' => '1'],
+        ], $result);
+
+        $result = $this->findRoutes('blogs/1/comments/1', $trie);
+        $this->assertFalse($result);
+
+        $result = $this->findRoutes('blogs/1/comments/1/', $trie);
+        $this->assertFalse($result);
+
+        $result = $this->findRoutes('blogs/1/comments/1/2', $trie);
+        $this->assertFalse($result);
+        */
     }
 }

@@ -109,16 +109,14 @@ class BuildTest extends TestCase
                 200, 'pages/[[...slug]]:index'
             ],
             '' => [
-                200, 'pages/[[...slug]]:index' // this is wrong!
+                200, 'pages/[[...slug]]:'
             ],
-            /*
             'does/not/exist/but/wildcard' => [
                 200, 'pages/[[...slug]]:does/not/exist/but/wildcard'
             ],
             'does/not/with/trailing/' => [
                 200, 'pages/[[...slug]]:does/not/with/trailing'
             ],
-            */
             'hello' => [
                 200, 'pages/hello'
             ],
