@@ -1,1 +1,7 @@
-pages/blogs/[[id]]/comments.php => pages/blogs/123/comments
+<?php
+$page = new class {
+    #[\Darken\Attributes\RouteParam]
+    public string $id;
+};
+?>
+pages/blogs/[[id]]/comments:<?= $page->id ?>

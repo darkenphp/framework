@@ -32,6 +32,33 @@ class BuildTest extends TestCase
         $content = include($config->getBuildOutputFolder() . '/routes.php');
 
         $this->assertSame([
+            'api' => [
+                '_children' => [
+                    'auth' => [
+                        '_children' => [
+                            'class' => 'Tests\\Build\\data\\pages\\api\\auth',
+                            'middlewares' => [
+                                [
+                                    'class' => '\\Darken\\Middleware\\AddCustomHeaderMiddleware',
+                                    'params' => [
+                                        'name' => 'Content-Type',
+                                        'value' => 'application/json',
+                                    ],
+                                    'position' => '\\Darken\\Enum\\MiddlewarePosition::AFTER',
+                                ],
+                                [
+                                    'class' => '\\Darken\\Middleware\\AuthenticationMiddleware',
+                                    'params' => [
+                                        'authHeader' => 'Authorization',
+                                        'expectedToken' => 'FooBar',
+                                    ],
+                                    'position' => '\\Darken\\Enum\\MiddlewarePosition::BEFORE',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
             "<slug:.+>" => [
                 "_children" => [
                     "class" => "Tests\\Build\\data\\pages\\slug",
@@ -78,22 +105,41 @@ class BuildTest extends TestCase
         $web->whoops->unregister();
 
         foreach ([
-            'index' => 200,
-            '' => 200,
-            'hello' => 200,
-            'blogs' => 200,
-            'blogs/1' => 200,
-            'blogs/1/comments' => 200,
-        ] as $path => $status) {
+            'index' => [
+                200, 'pages/[[...slug]]:index'
+            ],
+            '' => [
+                200, 'pages/[[...slug]]:index' // this is wrong!
+            ],
+            /*
+            'does/not/exist/but/wildcard' => [
+                200, 'pages/[[...slug]]:does/not/exist/but/wildcard'
+            ],
+            'does/not/with/trailing/' => [
+                200, 'pages/[[...slug]]:does/not/with/trailing'
+            ],
+            */
+            'hello' => [
+                200, 'pages/hello'
+            ],
+            'blogs' => [
+                200, 'pages/blogs'
+            ],
+            'blogs/1' => [
+                200, 'pages/blogs/[[id]]:1'
+            ],
+            'blogs/1/comments' => [
+                200, 'pages/blogs/[[id]]/comments:1'
+            ],
+        ] as $path => $def) {
 
             $handler = new PageHandler($web, $path);
             $response = $handler->handle($this->createServerRequest('GET',  $path));
 
             $this->assertInstanceOf(ResponseInterface::class, $response);
 
-            $this->assertSame($status, $response->getStatusCode());
-
-            //echo $response->getBody();
+            $this->assertSame($def[0], $response->getStatusCode(), "Failed for GET path: $path");
+            $this->assertSame($def[1], (string) $response->getBody(), "Failed for GET path: $path");
         }
     }
 }

@@ -29,7 +29,7 @@ class PageHandler implements RequestHandlerInterface
             $this->trie = include($routesFile);
         }
 
-        $this->node = $this->findRouteNode($path);
+        $this->node = $this->findRouteNode($path, $this->trie);
     }
 
     public function getMiddlewares(): array
@@ -78,9 +78,8 @@ class PageHandler implements RequestHandlerInterface
 
     }
 
-    private function findRouteNode(string $url): false|array
+    private function findRouteNode(string $url, array $trie): false|array
     {
-        $trie = $this->trie;
         $segments = explode('/', trim($url, '/'));
 
         $node = $trie;

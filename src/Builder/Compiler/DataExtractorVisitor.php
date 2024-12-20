@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Darken\Builder\Compiler;
 
 use Darken\Attributes\Middleware;
+use InvalidArgumentException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ClassConstFetch;
@@ -158,8 +159,7 @@ class DataExtractorVisitor extends NodeVisitorAbstract
             } elseif ($item->key instanceof Int_) {
                 $key = $item->key->value;
             } else {
-                // Handle other key types if necessary
-                $key = $this->printer->prettyPrintExpr($item->key);
+                throw new InvalidArgumentException('Only string and integer keys are supported for middwlare attribute defintions..');
             }
 
             $value = $this->getValueFromExpr($item->value);

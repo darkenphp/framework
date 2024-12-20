@@ -60,24 +60,15 @@ class Application extends Kernel
         );
         $request = $creator->fromGlobals();
 
-        /*
-        $middleware = new Middleware();
-        $handler = new Handler($this->config);
-
-        $response = $middleware->process($request, $handler);
-        */
         // Instantiate the final handler
         $pageHandler = new PageHandler($this, $request->getUri()->getPath());
-
 
         // Instantiate the MiddlewareService with the final handler
         $middlewareService = new MiddlewareService($pageHandler);
 
         foreach ($pageHandler->getMiddlewares() as $middlewareConfig) {
             $className = $middlewareConfig['class'];
-            $params = $middlewareConfig['params'];
-            $object = new $className(...$params);
-
+            $object = $this->getContainerService()->createObject($className, $middlewareConfig['params'] ?? []);
             $middlewareService->add($object, constant($middlewareConfig['position']));
         }
 
