@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\src\Builder\Console\Commands;
+namespace Tests\src\Console\Commands;
 
 use Darken\Console\Application;
 use Darken\Console\Commands\Build;

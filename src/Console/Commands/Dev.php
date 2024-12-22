@@ -17,10 +17,13 @@ class Dev implements CommandInterface
         $build = new Build();
         $build->run($app);
 
-        $app->stdOut('Starting development server...');
+        $port = $app->getArgument('port', 8009);
+        
+        $app->stdOut('Starting development server on http://localhost:'.$port);
+
 
         // Define the commands
-        $webServerCmd = ['php', '-S', 'localhost:8009', '-t', 'public'];
+        $webServerCmd = ['php', '-S', 'localhost:'.$port, '-t', 'public'];
         // Uncomment the following line to add the watch command
         $watchCommand = ['php', 'darken', 'watch'];
 

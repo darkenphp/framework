@@ -47,6 +47,22 @@ class Application extends Kernel
         return $_SERVER['argv'][1] ?? null;
     }
 
+    public function getArguments(): array
+    {
+        $opts = [];
+        foreach (array_slice($_SERVER['argv'] ?? [], 2) as $option) {
+            $arg = explode('=', $option);
+            $opts[ltrim($arg[0], '--')] = is_numeric($arg[1]) ? (int) $arg[1] : $arg[1];
+        }
+
+        return $opts;
+    }
+
+    public function getArgument(string $name, string|int $defaultValue): string|int
+    {
+        return $this->getArguments()[$name] ?? $defaultValue;
+    }
+
     public function stdOut(string $message): void
     {
         echo $message . PHP_EOL;
