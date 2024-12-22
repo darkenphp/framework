@@ -4,6 +4,7 @@ namespace Tests\src\Builder;
 
 use PhpParser\Node\Scalar\String_;
 use Darken\Builder\CodeCompiler;
+use Darken\Builder\Compiler\PropertyExtractor;
 use Darken\Builder\OutputCompiled;
 use Darken\Builder\OutputPolyfill;
 use Tests\TestCase;
@@ -85,47 +86,39 @@ PHP, $output->getCode());
         // Assert that 'middlewares' is an empty array
         $this->assertSame([], $output->getMeta('middlewares'), "Middlewares should be an empty array.");
 
-        // Define the expected 'constructor' meta data
-        $expectedConstructor = [
-            [
-                'attrName'      => 'Darken\Attributes\Param',
-                'propertyName'  => 'arg1',
-                'paramName'     => 'arg1',
-                'paramType'     => 'string',
-                'arg'           => new String_('arg1'),
-            ],
-            [
-                'attrName'      => 'Darken\Attributes\Param',
-                'propertyName'  => 'namedArg2',
-                'paramName'     => 'nmdArgu2',
-                'paramType'     => 'string',
-                'arg'           => new String_('nmdArgu2'),
-            ],
-        ];
+        /** @var PropertyExtractor $constructor1 */
+        $constructor1 = $output->getMeta('constructor')[0];
+        $this->assertSame('arg1', $constructor1->getName());
+        $this->assertSame('string', $constructor1->getType());
+        $this->assertSame(null, $constructor1->getDefaultValue());
+        $this->assertInstanceOf(String_::class, $constructor1->getArg());
+        $this->assertSame('Darken\Attributes\Param', $constructor1->getDecoratorAttributeName());
+        $this->assertSame(null, $constructor1->getDecoratorAttributeParamValue());
+        
+        $constructor2 = $output->getMeta('constructor')[1];
+        $this->assertSame('namedArg2', $constructor2->getName());
+        $this->assertSame('string', $constructor2->getType());
+        $this->assertSame(null, $constructor2->getDefaultValue());
+        $this->assertInstanceOf(String_::class, $constructor2->getArg());
+        $this->assertSame('Darken\Attributes\Param', $constructor2->getDecoratorAttributeName());
+        $this->assertSame('nmdArgu2', $constructor2->getDecoratorAttributeParamValue());
 
-        // Assert that 'constructor' matches the expected structure
-        $this->assertEquals($expectedConstructor, $output->getMeta('constructor'), "Constructor meta data does not match.");
+        $slot1 = $output->getMeta('slots')[0];
+        $this->assertSame('slot1', $slot1->getName());
+        $this->assertSame('string', $slot1->getType());
+        $this->assertSame(null, $slot1->getDefaultValue());
+        $this->assertInstanceOf(String_::class, $slot1->getArg());
+        $this->assertSame('Darken\Attributes\Slot', $slot1->getDecoratorAttributeName());
+        $this->assertSame(null, $slot1->getDecoratorAttributeParamValue());
 
-        // Define the expected 'slots' meta data
-        $expectedSlots = [
-            [
-                'attrName'      => 'Darken\Attributes\Slot',
-                'propertyName'  => 'slot1',
-                'paramName'     => 'slot1',
-                'paramType'     => 'string',
-                'arg'           => new String_('slot1'),
-            ],
-            [
-                'attrName'      => 'Darken\Attributes\Slot',
-                'propertyName'  => 'slot2',
-                'paramName'     => 'nmdSlot2',
-                'paramType'     => 'string',
-                'arg'           => new String_('nmdSlot2'),
-            ],
-        ];
+        $slot2 = $output->getMeta('slots')[1];
+        $this->assertSame('slot2', $slot2->getName());
+        $this->assertSame('string', $slot2->getType());
+        $this->assertSame(null, $slot2->getDefaultValue());
+        $this->assertInstanceOf(String_::class, $slot2->getArg());
+        $this->assertSame('Darken\Attributes\Slot', $slot2->getDecoratorAttributeName());
+        $this->assertSame('nmdSlot2', $slot2->getDecoratorAttributeParamValue());
 
-        // Assert that 'slots' matches the expected structure
-        $this->assertEquals($expectedSlots, $output->getMeta('slots'), "Slots meta data does not match.");
 
         $outputCompiled = new OutputCompiled($output->getCode(), $inputFile, $this->createConfig());
         $this->assertStringContainsString('tests/.build/data/components/Layout1.compiled.php', $outputCompiled->getBuildOutputFilePath());

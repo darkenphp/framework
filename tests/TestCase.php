@@ -11,6 +11,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use PHPUnit\Framework\TestCase as FrameworkTestCase;
 use Psr\Http\Message\ServerRequestInterface;
+use Yiisoft\Files\FileHelper;
 
 class TestCase extends FrameworkTestCase
 {
@@ -45,7 +46,18 @@ class TestCase extends FrameworkTestCase
             componentsFolder: 'data/components'
         );
     }
-    
+
+    public function createTmpFile(string $fileName, string $content) : string
+    {
+        $path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $fileName;
+        file_put_contents($path, $content);
+        return $path;
+    }
+
+    public function destoryTmpFile(string $path) : void
+    {
+        FileHelper::unlink($path);
+    }
 
     public function createInputFile($path) : InputFile
     {

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Darken\Builder;
 
+use Darken\Builder\Compiler\PropertyExtractor;
+
 class OutputPolyfill implements FileSaveInterface
 {
     public function __construct(public OutputCompiled $compiled, public CodeCompilerOutput $compilerOutput)
@@ -69,23 +71,29 @@ class OutputPolyfill implements FileSaveInterface
             return '';
         }
 
-        $params = [];
+        $paramsRequired = [];
+        $paramsOptional = [];
         $assignments = [];
 
-        foreach ($constructor as $param) {
-            // Extract parameter details
-            $paramType = $param['paramType'] ?? 'mixed';
-            $paramName = $param['paramName'] ?? 'param';
+        foreach ($constructor as $prop) {
+            /** @var PropertyExtractor $prop */
+            $paramName = $prop->getDecoratorAttributeParamValue() ?? $prop->getName();
 
-            // Build the parameter string with type hint
-            $params[] = "{$paramType} \${$paramName}";
+            if ($prop->getDefaultValue() === null) {
+                // add the param as first of $params
+
+                $paramsRequired[] = $prop->getConstructorString();
+            } else {
+
+                $paramsOptional[] = $prop->getConstructorString();
+            }
 
             // Build the assignment string
             $assignments[] = "\$this->setArgumentParam(\"{$paramName}\", \${$paramName});";
         }
 
         // Join parameters and assignments into strings
-        $paramsString = implode(', ', $params);
+        $paramsString = implode(', ', [...$paramsRequired, ...$paramsOptional]);
         $assignmentsString = implode("\n        ", $assignments);
 
         // Construct the full constructor method
@@ -108,9 +116,10 @@ class OutputPolyfill implements FileSaveInterface
 
         $slotMethods = [];
         foreach ($slots as $slot) {
-            $name = $slot['paramName'];
-            $startTag = 'open'.ucfirst($name);
-            $closetag = 'close'.ucfirst($name);
+            /** @var PropertyExtractor $slot */
+            $methodName = $slot->getDecoratorAttributeParamValue() ? $slot->getDecoratorAttributeParamValue() : $slot->getName();
+            $startTag = 'open'.ucfirst($methodName);
+            $closetag = 'close'.ucfirst($methodName);
 
             $slotMethods[] = <<<EOT
                     public function {$startTag}() : self
@@ -121,7 +130,7 @@ class OutputPolyfill implements FileSaveInterface
 
                     public function {$closetag}() : self
                     {
-                        \$this->setSlot('{$name}', ob_get_clean());
+                        \$this->setSlot('{$methodName}', ob_get_clean());
                         return \$this;
                     }
 

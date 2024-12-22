@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Darken\Builder\Compiler;
 
 use Darken\Attributes\Middleware;
+use Darken\Attributes\Param;
+use Darken\Attributes\RouteParam;
+use Darken\Attributes\Slot;
 use InvalidArgumentException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
@@ -19,7 +22,7 @@ use PhpParser\NodeVisitorAbstract;
 class DataExtractorVisitor extends NodeVisitorAbstract
 {
     /**
-     * @var array<string, array>
+     * @var array<string, array<PropertyExtractor>>
      */
     private array $data = [
         'middlewares' => [],
@@ -27,11 +30,41 @@ class DataExtractorVisitor extends NodeVisitorAbstract
         'slots' => [],
     ];
 
+    /**
+     * @var array<PropertyExtractor>
+     */
+    private array $properties = [];
+
     public function __construct(private UseStatementCollector $useStatementCollector)
     {
     }
 
-    public function addData(string $key, array $value): void
+    public function addProperty(PropertyExtractor $property): void
+    {
+        $this->properties[] = $property;
+
+        switch ($property->getDecoratorAttributeName()) {
+            case RouteParam::class:
+                $this->addData('constructor', $property);
+                break;
+            case Param::class:
+                $this->addData('constructor', $property);
+                break;
+            case Slot::class:
+                $this->addData('slots', $property);
+                break;
+        }
+    }
+
+    /**
+     * @return array<PropertyExtractor>
+     */
+    public function getProperties(): array
+    {
+        return $this->properties;
+    }
+
+    public function addData(string $key, mixed $value): void
     {
         $this->data[$key][] = $value;
     }

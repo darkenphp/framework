@@ -8,20 +8,18 @@ use Darken\Attributes\Inject;
 use Darken\Attributes\Param as AttributesParam;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
+use PhpParser\Builder\Property;
 use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Param;
 use PhpParser\Node\PropertyItem;
-use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -48,72 +46,24 @@ class GlobalVisitor extends NodeVisitorAbstract
         // Check if this node is a class (including anonymous classes)
         if ($node instanceof ClassLike) {
 
-            /**
-             * @var array<int, array{
-             *     attrName: class-string,
-             *     propertyName: string,
-             *     paramName: string,
-             *     paramType: 'string'|'int'|'bool',
-             *     arg: \PhpParser\Node\Expr\ClassConstFetch
-             * }> $queryParams
-             */
-            $queryParams = [];
-
             // Collect properties that have the RouteParam attribute
             foreach ($node->getProperties() as $propertyNode) {
                 foreach ($propertyNode->props as $prop) {
                     foreach ($propertyNode->attrGroups as $attrGroup) {
                         foreach ($attrGroup->attrs as $attr) {
-                            $attrName = ltrim($attr->name->toString(), '\\');
+
+                            if ($attr->name instanceof FullyQualified) {
+                                $attrName = $attr->name->toString();
+                            } else {
+                                $attrName = $this->useStatementCollector->ensureClassName($attr->name->toString());
+                            }
+
+                            $attrName = ltrim($attrName, '\\');
 
                             /** @var PropertyItem $prop */
-
                             if (in_array($attrName, [RouteParam::class, AttributesParam::class, Slot::class, Inject::class])) {
-                                // Extract the parameter name from the attribute arguments
-                                // if (isset($attr->args[0]) && $attr->args[0]->value instanceof String_) {
-                                $attributeDecoratorParamValue = isset($attr->args[0]) ? $attr->args[0]->value : null;
 
-                                if ($attributeDecoratorParamValue instanceof String_) {
-                                    $paramName = $attributeDecoratorParamValue->value;
-                                    $queryParams[] = [
-                                        'attrName' => $attrName,
-                                        'propertyName' => $prop->name->toString(),
-                                        'paramName' => $paramName,
-                                        'paramType' => 'string', // adjust, sould return int, bool, string
-                                        'arg' => new String_($paramName),
-                                    ];
-                                } elseif ($attributeDecoratorParamValue instanceof ClassConstFetch) {
-
-                                    $className = $this->useStatementCollector->ensureClassName($attributeDecoratorParamValue->class->name);
-                                    $fullyQualifiedName = new FullyQualified(ltrim($className, '\\'));
-
-                                    $queryParams[] = [
-                                        'attrName' => $attrName,
-                                        'propertyName' => $prop->name->toString(),
-                                        'paramName' => $className,
-                                        'paramType' => 'string', // adjust, sould return int, bool, strin
-                                        'arg' => new ClassConstFetch($fullyQualifiedName, 'class'),
-                                    ];
-
-                                } else {
-                                    $propertyType = $propertyNode->type;
-                                    // if this is a class:
-                                    if ($propertyType instanceof Name || $propertyType instanceof FullyQualified) {
-                                        $fullyQualifiedName = new FullyQualified(ltrim($this->useStatementCollector->ensureClassName($propertyType->name), '\\'));
-                                        $arg = new ClassConstFetch($fullyQualifiedName, 'class');
-                                    } else {
-                                        $arg = new String_($prop->name->toString());
-                                    }
-
-                                    // get the property type
-                                    $queryParams[] = [
-                                        'attrName' => $attrName,
-                                        'propertyName' => $prop->name->toString(),
-                                        'paramName' => $prop->name->toString(),
-                                        'paramType' => 'string', // adjust, sould return int, bool, string
-                                        'arg' => $arg,
-                                    ];
-                                }
+                                $this->dataExtractorVisitor->addProperty(new PropertyExtractor($this->useStatementCollector, $propertyNode, $prop, $attr));
                             }
                         }
                     }
@@ -183,46 +133,26 @@ class GlobalVisitor extends NodeVisitorAbstract
                 );
             }
 
-            // If QueryParams found, add the assignments to constructor
-            if (!empty($queryParams)) {
-                foreach ($queryParams as $qp) {
+            foreach ($this->dataExtractorVisitor->getProperties() as $property) {
+                /** @var PropertyExtractor $property */
+                $getterName = $property->getFunctionNameForRuntimeClass();
 
-                    $getterName = match ($qp['attrName']) {
-                        RouteParam::class => 'getRouteParam',
-                        AttributesParam::class => 'getArgumentParam',
-                        Slot::class => 'getSlot',
-                        Inject::class => 'getContainer',
-                        default => false,
-                    };
-
-                    if (!$getterName) {
-                        continue;
-                    }
-
-                    switch ($qp['attrName']) {
-                        case RouteParam::class:
-                            $this->dataExtractorVisitor->addData('constructor', $qp);
-                            break;
-                        case AttributesParam::class:
-                            $this->dataExtractorVisitor->addData('constructor', $qp);
-                            break;
-                        case Slot::class:
-                            $this->dataExtractorVisitor->addData('slots', $qp);
-                            break;
-                    }
-
-                    $assignment = new Expression(
-                        new Assign(
-                            new PropertyFetch(new Variable('this'), $qp['propertyName']),
-                            new MethodCall(
-                                new PropertyFetch(new Variable('this'), 'runtime'),
-                                $getterName,
-                                [new Arg($qp['arg'])]
-                            )
-                        )
-                    );
-                    $constructor->stmts[] = $assignment;
+                if (!$getterName) {
+                    continue;
                 }
+
+                $assignment = new Expression(
+                    new Assign(
+                        new PropertyFetch(new Variable('this'), $property->getName()),
+                        new MethodCall(
+                            new PropertyFetch(new Variable('this'), 'runtime'),
+                            $getterName,
+                            [new Arg($property->getArg())]
+                        )
+                    )
+                );
+                $constructor->stmts[] = $assignment;
+
             }
         }
 

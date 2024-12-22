@@ -7,11 +7,11 @@ namespace Darken\Web;
 use Darken\Kernel;
 use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
-use Exception;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Throwable;
 use Whoops\Handler\CallbackHandler;
 use Whoops\Handler\PrettyPageHandler;
 
@@ -22,7 +22,7 @@ class Application extends Kernel
         if ($this->config->getDebugMode()) {
             $handler = new PrettyPageHandler();
         } else {
-            $handler = new CallbackHandler(function (\Throwable $exception) {
+            $handler = new CallbackHandler(function (Throwable $exception) {
                 echo <<<HTML
                     <!DOCTYPE html>
                     <html lang="en">
