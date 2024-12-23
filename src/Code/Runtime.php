@@ -40,7 +40,7 @@ abstract class Runtime
         return $this->routeParams[$name] ?? null;
     }
 
-    public function setArgumentParam(string $name, string $value): void
+    public function setArgumentParam(string $name, mixed $value): void
     {
         $this->argumentParams[$name] = $value;
     }
