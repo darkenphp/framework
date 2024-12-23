@@ -39,7 +39,7 @@ class Application extends Kernel
                             border-left: 6px solid #f44336;
                             border-radius: 4px;
                         ">
-                            <strong>Exception Message:</strong> {$exception->getMessage()}<br />
+                            {$exception->getMessage()}<br />
                             <strong>Error Code:</strong> {$exception->getCode()}
                         </div>
                     </body>
