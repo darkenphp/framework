@@ -45,7 +45,7 @@ abstract class Runtime
         $this->argumentParams[$name] = $value;
     }
 
-    public function getArgumentParam(string $name): string|null
+    public function getArgumentParam(string $name): mixed
     {
         return $this->argumentParams[$name] ?? null;
     }
