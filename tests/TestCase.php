@@ -37,7 +37,7 @@ class TestCase extends FrameworkTestCase
         return $request;
     }
 
-    public function createConfig() : ConfigInterface
+    public function createConfig() : TestConfig
     {
         return new TestConfig(
             rootDirectoryPath: $this->getTestsRootFolder(),

@@ -19,6 +19,21 @@ class TestConfig implements ConfigInterface, ContainerServiceInterface, Middlewa
         $this->loadEnvFile();
     }
 
+    public function setPagesFolder(string $pagesFolder): void
+    {
+        $this->pagesFolder = $pagesFolder;
+    }
+
+    public function setBuilderOutputFolder(string $builderOutputFolder): void
+    {
+        $this->builderOutputFolder = $builderOutputFolder;
+    }
+
+    public function setComponentsFolder(string $componentsFolder): void
+    {
+        $this->componentsFolder = $componentsFolder;
+    }
+
     public function containers(ContainerService $service): ContainerService
     {
         return $service->register(new Db('sqlite::memory:'));
