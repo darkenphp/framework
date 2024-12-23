@@ -136,14 +136,6 @@ class GlobalVisitor extends NodeVisitorAbstract
                 }
             }
 
-            // Add $this->runtime = $runtime; in the constructor body if not present
-            $constructor->stmts[] = new Expression(
-                new Assign(
-                    new PropertyFetch(new Variable('this'), 'runtime'),
-                    new Variable('runtime')
-                )
-            );
-
             foreach ($this->dataExtractorVisitor->getProperties() as $property) {
                 /** @var PropertyExtractor $property */
                 $getterName = $property->getFunctionNameForRuntimeClass();
@@ -162,9 +154,16 @@ class GlobalVisitor extends NodeVisitorAbstract
                         )
                     )
                 );
-                $constructor->stmts[] = $assignment;
-
+                array_unshift($constructor->stmts, $assignment);
             }
+
+            // Add $this->runtime = $runtime; in the constructor body if not present
+            array_unshift($constructor->stmts, new Expression(
+                new Assign(
+                    new PropertyFetch(new Variable('this'), 'runtime'),
+                    new Variable('runtime')
+                )
+            ));
         }
 
         return null;
