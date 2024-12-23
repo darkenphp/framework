@@ -18,7 +18,7 @@ class Dev implements CommandInterface
         $build->run($app);
 
         $port = $app->getArgument('port', 8009);
-        
+
         $app->stdOut('Starting development server on http://localhost:'.$port);
 
 

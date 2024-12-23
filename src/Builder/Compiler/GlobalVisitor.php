@@ -124,6 +124,15 @@ class GlobalVisitor extends NodeVisitorAbstract
                 );
                 $constructor->params[] = $contextParam;
 
+                foreach ($constructor->stmts as $index => $stmt) {
+                    /** @var Expression $stmt */
+                    if ($stmt->expr instanceof Assign && $stmt->expr->var instanceof PropertyFetch) {
+                        if ($stmt->expr->var->name->name == 'runtime') {
+                            unset($constructor->stmts[$index]);
+                        }
+                    }
+                }
+
                 // Add $this->runtime = $runtime; in the constructor body if not present
                 $constructor->stmts[] = new Expression(
                     new Assign(

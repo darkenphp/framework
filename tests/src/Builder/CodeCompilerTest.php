@@ -7,6 +7,8 @@ use Darken\Builder\CodeCompiler;
 use Darken\Builder\Compiler\PropertyExtractor;
 use Darken\Builder\OutputCompiled;
 use Darken\Builder\OutputPolyfill;
+use PhpParser\Error;
+use RuntimeException;
 use Tests\TestCase;
 
 class CodeCompilerTest extends TestCase
@@ -172,6 +174,69 @@ class Layout1 extends \Darken\Code\Runtime
 }
 PHP, $polyfill->getBuildOutputContent()
         );
+    }
 
+    public function testCompilerException()
+    {
+        $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
+        <?php
+        use \Darken\Attributes\Param;
+        $x = new class {
+
+            #[Param]
+            public string $stringvar = 'test'
+        };
+        PHP);
+
+        $file = $this->createInputFile($tmpFile);
+
+        $compiler = new CodeCompiler();
+        $this->expectException(RuntimeException::class);
+        $compiler->compile($file);
+    }
+
+
+
+    public function testAlreadyDefinedConstructorWithRuntimeParam()
+    {
+        $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
+        <?php
+        use \Darken\Attributes\Param;
+        $x = new class {
+
+            public $runtime;
+
+            private $inside;
+
+            public function __construct()
+            {
+                $this->inside = 'inside';
+                $this->runtime = new \Darken\Code\Runtime();
+            }
+        };
+        PHP);
+
+        $file = $this->createInputFile($tmpFile);
+
+        $compiler = new CodeCompiler();
+        $output = $compiler->compile($file);
+
+        $code = <<<'PHP'
+<?php /** @var \Darken\Code\Runtime $this */ ?><?php
+
+use Darken\Attributes\Param;
+$x = new class($this)
+{
+    public $runtime;
+    private $inside;
+    public function __construct(\Darken\Code\Runtime $runtime)
+    {
+        $this->inside = 'inside';
+        $this->runtime = $runtime;
+    }
+};
+PHP;
+
+        $this->assertSame($code, $output->getCode());
     }
 }
