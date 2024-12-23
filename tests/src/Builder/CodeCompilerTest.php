@@ -221,21 +221,58 @@ PHP, $polyfill->getBuildOutputContent()
         $output = $compiler->compile($file);
 
         $code = <<<'PHP'
-<?php /** @var \Darken\Code\Runtime $this */ ?><?php
+    <?php /** @var \Darken\Code\Runtime $this */ ?><?php
 
-use Darken\Attributes\Param;
-$x = new class($this)
-{
-    public $runtime;
-    #[DoesNotExist]
-    private $inside;
-    public function __construct(\Darken\Code\Runtime $runtime)
+    use Darken\Attributes\Param;
+    $x = new class($this)
     {
-        $this->inside = 'inside';
-        $this->runtime = $runtime;
+        public $runtime;
+        #[DoesNotExist]
+        private $inside;
+        public function __construct(\Darken\Code\Runtime $runtime)
+        {
+            $this->inside = 'inside';
+            $this->runtime = $runtime;
+        }
+    };
+    PHP;
+
+        $this->assertSame($code, $output->getCode());
     }
-};
-PHP;
+
+    public function testInvalidPhpAttributes()
+    {
+        $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
+        <?php
+        $x = new class {
+            #[DoesNotExist]
+            public $inside;
+
+            public function __construct()
+            {
+            }
+        };
+        PHP);
+
+        $file = $this->createInputFile($tmpFile);
+
+        $compiler = new CodeCompiler();
+        $output = $compiler->compile($file);
+
+        $code = <<<'PHP'
+        <?php /** @var \Darken\Code\Runtime $this */ ?><?php
+        
+        $x = new class($this)
+        {
+            protected \Darken\Code\Runtime $runtime;
+            #[DoesNotExist]
+            public $inside;
+            public function __construct(\Darken\Code\Runtime $runtime)
+            {
+                $this->runtime = $runtime;
+            }
+        };
+        PHP;
 
         $this->assertSame($code, $output->getCode());
     }
