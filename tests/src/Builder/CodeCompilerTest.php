@@ -195,8 +195,6 @@ PHP, $polyfill->getBuildOutputContent()
         $compiler->compile($file);
     }
 
-
-
     public function testAlreadyDefinedConstructorWithRuntimeParam()
     {
         $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
@@ -206,6 +204,7 @@ PHP, $polyfill->getBuildOutputContent()
 
             public $runtime;
 
+            #[DoesNotExist]
             private $inside;
 
             public function __construct()
@@ -228,10 +227,43 @@ use Darken\Attributes\Param;
 $x = new class($this)
 {
     public $runtime;
+    #[DoesNotExist]
     private $inside;
     public function __construct(\Darken\Code\Runtime $runtime)
     {
         $this->inside = 'inside';
+        $this->runtime = $runtime;
+    }
+};
+PHP;
+
+        $this->assertSame($code, $output->getCode());
+    }
+
+    public function testAlreadyDefinedRuntimeConstructor()
+    {
+        $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
+        <?php
+        $x = new class {
+            public function __construct($runtime, $another)
+            {
+            }
+        };
+        PHP);
+
+        $file = $this->createInputFile($tmpFile);
+
+        $compiler = new CodeCompiler();
+        $output = $compiler->compile($file);
+
+        $code = <<<'PHP'
+<?php /** @var \Darken\Code\Runtime $this */ ?><?php
+
+$x = new class($this)
+{
+    protected \Darken\Code\Runtime $runtime;
+    public function __construct(\Darken\Code\Runtime $runtime, $another)
+    {
         $this->runtime = $runtime;
     }
 };

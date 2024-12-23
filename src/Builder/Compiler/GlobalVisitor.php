@@ -109,38 +109,40 @@ class GlobalVisitor extends NodeVisitorAbstract
 
             // Ensure the constructor has a Darken\Page\Runtime $context parameter
             $hasContextParam = false;
-            foreach ($constructor->params as $param) {
+            foreach ($constructor->params as $paramIndex => $param) {
                 if ($param->var instanceof Variable && $param->var->name === 'runtime') {
-                    $hasContextParam = true;
+                    $hasContextParam = $paramIndex;
                     break;
                 }
             }
 
-            if (!$hasContextParam) {
-                $contextParam = new Param(
-                    var: new Variable('runtime'),
-                    default: null,
-                    type: new FullyQualified('Darken\\Code\\Runtime')
-                );
+            $contextParam = new Param(
+                var: new Variable('runtime'),
+                default: null,
+                type: new FullyQualified('Darken\\Code\\Runtime')
+            );
+            if ($hasContextParam === false) {
                 $constructor->params[] = $contextParam;
+            } else {
+                $constructor->params[$hasContextParam] = $contextParam;
+            }
 
-                foreach ($constructor->stmts as $index => $stmt) {
-                    /** @var Expression $stmt */
-                    if ($stmt->expr instanceof Assign && $stmt->expr->var instanceof PropertyFetch) {
-                        if ($stmt->expr->var->name->name == 'runtime') {
-                            unset($constructor->stmts[$index]);
-                        }
+            foreach ($constructor->stmts as $index => $stmt) {
+                /** @var Expression $stmt */
+                if ($stmt->expr instanceof Assign && $stmt->expr->var instanceof PropertyFetch) {
+                    if ($stmt->expr->var->name->name == 'runtime') {
+                        unset($constructor->stmts[$index]);
                     }
                 }
-
-                // Add $this->runtime = $runtime; in the constructor body if not present
-                $constructor->stmts[] = new Expression(
-                    new Assign(
-                        new PropertyFetch(new Variable('this'), 'runtime'),
-                        new Variable('runtime')
-                    )
-                );
             }
+
+            // Add $this->runtime = $runtime; in the constructor body if not present
+            $constructor->stmts[] = new Expression(
+                new Assign(
+                    new PropertyFetch(new Variable('this'), 'runtime'),
+                    new Variable('runtime')
+                )
+            );
 
             foreach ($this->dataExtractorVisitor->getProperties() as $property) {
                 /** @var PropertyExtractor $property */
