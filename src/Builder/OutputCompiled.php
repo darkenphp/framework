@@ -7,8 +7,6 @@ namespace Darken\Builder;
 use Darken\Config\ConfigInterface;
 use Yiisoft\Files\FileHelper;
 
-// rename: CompiledSourceFile
-
 class OutputCompiled implements FileSaveInterface
 {
     public function __construct(private string $content, public InputFile $input, public ConfigInterface $config)
