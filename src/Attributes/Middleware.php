@@ -10,12 +10,12 @@ use Darken\Enum\MiddlewarePosition;
 /**
  * An attribute used to attach a middleware to a class. This attribute can be repeated
  * multiple times on the same class to register multiple middlewares.
- * 
+ *
  * Example usage:
  *
  * ```php
  * use Darken\Enum\MiddlewarePosition;
- * 
+ *
  * #[Middleware(MyCustomMiddleware::class, ['option' => 'value'], MiddlewarePosition::AFTER)]
  * class SomeController
  * {

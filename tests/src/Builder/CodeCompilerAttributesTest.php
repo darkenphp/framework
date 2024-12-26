@@ -16,16 +16,16 @@ class CodeCompilerAttributesTest extends TestCase
         use \Darken\Attributes\ConstructorParam;
         $x = new class {
 
-            #[Param]
+            #[ConstructorParam]
             public string $stringvar = 'test';
 
-            #[Param]
+            #[ConstructorParam]
             public int $zahl;
 
-            #[Param]
+            #[ConstructorParam]
             public array $array;
 
-            #[Param]
+            #[ConstructorParam]
             public array $array2 = [];
         };
         PHP);
@@ -42,13 +42,13 @@ use Darken\Attributes\ConstructorParam;
 $x = new class($this)
 {
     protected \Darken\Code\Runtime $runtime;
-    #[Param]
+    #[ConstructorParam]
     public string $stringvar = 'test';
-    #[Param]
+    #[ConstructorParam]
     public int $zahl;
-    #[Param]
+    #[ConstructorParam]
     public array $array;
-    #[Param]
+    #[ConstructorParam]
     public array $array2 = [];
     public function __construct(\Darken\Code\Runtime $runtime)
     {
@@ -70,22 +70,21 @@ PHP;
         $this->assertSame(
             <<<'PHP'
 <?php
+
 namespace Tests\Build\tmp;
 
 class test extends \Darken\Code\Runtime
 {
     public function __construct(int $zahl, array $array, string $stringvar = 'test', array $array2 = [])
     {
-        $this->setArgumentParam("stringvar", $stringvar);
-        $this->setArgumentParam("zahl", $zahl);
-        $this->setArgumentParam("array", $array);
-        $this->setArgumentParam("array2", $array2);
+        $this->setArgumentParam('zahl', $zahl);
+        $this->setArgumentParam('array', $array);
+        $this->setArgumentParam('stringvar', $stringvar);
+        $this->setArgumentParam('array2', $array2);
     }
-
-    
     public function renderFilePath(): string
     {
-        return dirname(__FILE__) . DIRECTORY_SEPARATOR  . 'test.compiled.php';
+        return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'test.compiled.php';
     }
 }
 PHP, $polyfill->getBuildOutputContent());

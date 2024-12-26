@@ -133,43 +133,39 @@ PHP, $output->getCode());
         $this->assertSame(
 <<<'PHP'
 <?php
+
 namespace Tests\Build\data\components;
 
 class Layout1 extends \Darken\Code\Runtime
 {
     public function __construct(string $arg1, string $nmdArgu2)
     {
-        $this->setArgumentParam("arg1", $arg1);
-        $this->setArgumentParam("nmdArgu2", $nmdArgu2);
+        $this->setArgumentParam('arg1', $arg1);
+        $this->setArgumentParam('nmdArgu2', $nmdArgu2);
     }
-
-        public function openSlot1() : self
+    public function openSlot1(): self
     {
         ob_start();
         return $this;
     }
-
-    public function closeSlot1() : self
+    public function closeSlot1(): self
     {
         $this->setSlot('slot1', ob_get_clean());
         return $this;
     }
-
-    public function openNmdSlot2() : self
+    public function openNmdSlot2(): self
     {
         ob_start();
         return $this;
     }
-
-    public function closeNmdSlot2() : self
+    public function closeNmdSlot2(): self
     {
         $this->setSlot('nmdSlot2', ob_get_clean());
         return $this;
     }
-
     public function renderFilePath(): string
     {
-        return dirname(__FILE__) . DIRECTORY_SEPARATOR  . 'Layout1.compiled.php';
+        return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Layout1.compiled.php';
     }
 }
 PHP, $polyfill->getBuildOutputContent()
@@ -183,7 +179,7 @@ PHP, $polyfill->getBuildOutputContent()
         use \Darken\Attributes\ConstructorParam;
         $x = new class {
 
-            #[Param]
+            #[ConstructorParam]
             public string $stringvar = 'test'
         };
         PHP);

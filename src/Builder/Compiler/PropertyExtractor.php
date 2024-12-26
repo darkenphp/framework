@@ -8,8 +8,8 @@ use Darken\Attributes\ConstructorParam;
 use Darken\Attributes\Inject;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
+use PhpParser\Node;
 use PhpParser\Node\Attribute;
-use PhpParser\Node\Expr\Array_ as ExprArray_;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
@@ -18,7 +18,6 @@ use PhpParser\Node\NullableType;
 use PhpParser\Node\PropertyItem;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Property;
-use PhpParser\PrettyPrinter\Standard;
 
 class PropertyExtractor
 {
@@ -56,16 +55,10 @@ class PropertyExtractor
         return $this->prop->name->toString();
     }
 
-    public function getDefaultValue(): string|null
+    public function getDefaultValue(): Node|null
     {
         if ($this->prop->default !== null) {
-            $printer = new Standard();
-            $propertyDefaultValue = $this->prop->default;
-            if ($propertyDefaultValue instanceof String_) {
-                return $printer->prettyPrintExpr($propertyDefaultValue);
-            } elseif ($propertyDefaultValue instanceof ExprArray_) {
-                return $printer->prettyPrintExpr($propertyDefaultValue);
-            }
+            return $this->prop->default;
         }
 
         return null;
@@ -131,18 +124,5 @@ class PropertyExtractor
         }
 
         return new String_($this->prop->name->toString());
-    }
-
-    public function getConstructorString(): string
-    {
-        $propName = $this->getDecoratorAttributeParamValue() ?? $this->getName();
-        $string = "{$this->getType()} \${$propName}";
-
-        $defaultValue = $this->getDefaultValue();
-
-        if ($defaultValue !== null) {
-            $string .= " = {$defaultValue}";
-        }
-        return $string;
     }
 }
