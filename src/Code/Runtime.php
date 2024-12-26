@@ -23,9 +23,11 @@ abstract class Runtime
 
     private array $slots = [];
 
-    public function __toString()
+    public function __toString() : string
     {
-        return $this->render();
+        $response = $this->render();
+
+        return $response instanceof ResponseInterface ? $response->getBody()->getContents() : $response;
     }
 
     abstract public function renderFilePath(): string;
