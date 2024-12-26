@@ -28,9 +28,9 @@ use Tests\data\di\Db;
 $class = new class($this)
 {
     protected \Darken\Code\Runtime $runtime;
-    #[\Darken\Attributes\Param]
+    #[\Darken\Attributes\ConstructorParam]
     public string $arg1;
-    #[\Darken\Attributes\Param('nmdArgu2')]
+    #[\Darken\Attributes\ConstructorParam('nmdArgu2')]
     public string $namedArg2;
     #[\Darken\Attributes\Slot]
     public string $slot1;
@@ -94,7 +94,7 @@ PHP, $output->getCode());
         $this->assertSame('string', $constructor1->getType());
         $this->assertSame(null, $constructor1->getDefaultValue());
         $this->assertInstanceOf(String_::class, $constructor1->getArg());
-        $this->assertSame('Darken\Attributes\Param', $constructor1->getDecoratorAttributeName());
+        $this->assertSame('Darken\Attributes\ConstructorParam', $constructor1->getDecoratorAttributeName());
         $this->assertSame(null, $constructor1->getDecoratorAttributeParamValue());
         
         $constructor2 = $output->getMeta('constructor')[1];
@@ -102,7 +102,7 @@ PHP, $output->getCode());
         $this->assertSame('string', $constructor2->getType());
         $this->assertSame(null, $constructor2->getDefaultValue());
         $this->assertInstanceOf(String_::class, $constructor2->getArg());
-        $this->assertSame('Darken\Attributes\Param', $constructor2->getDecoratorAttributeName());
+        $this->assertSame('Darken\Attributes\ConstructorParam', $constructor2->getDecoratorAttributeName());
         $this->assertSame('nmdArgu2', $constructor2->getDecoratorAttributeParamValue());
 
         $slot1 = $output->getMeta('slots')[0];
@@ -180,7 +180,7 @@ PHP, $polyfill->getBuildOutputContent()
     {
         $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
         <?php
-        use \Darken\Attributes\Param;
+        use \Darken\Attributes\ConstructorParam;
         $x = new class {
 
             #[Param]
@@ -199,7 +199,7 @@ PHP, $polyfill->getBuildOutputContent()
     {
         $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
         <?php
-        use \Darken\Attributes\Param;
+        use \Darken\Attributes\ConstructorParam;
         $x = new class {
 
             public $runtime;
@@ -223,7 +223,7 @@ PHP, $polyfill->getBuildOutputContent()
         $code = <<<'PHP'
     <?php /** @var \Darken\Code\Runtime $this */ ?><?php
 
-    use Darken\Attributes\Param;
+    use Darken\Attributes\ConstructorParam;
     $x = new class($this)
     {
         public $runtime;

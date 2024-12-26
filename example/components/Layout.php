@@ -1,7 +1,7 @@
 <?php
 $layout = new class {
 
-    #[\Darken\Attributes\Param]
+    #[\Darken\Attributes\ConstructorParam]
     public $title;
 
     #[\Darken\Attributes\Slot]

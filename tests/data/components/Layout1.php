@@ -3,10 +3,10 @@
 use Tests\data\di\Db;
 
 $class = new class {
-    #[\Darken\Attributes\Param]
+    #[\Darken\Attributes\ConstructorParam]
     public string $arg1;
 
-    #[\Darken\Attributes\Param('nmdArgu2')]
+    #[\Darken\Attributes\ConstructorParam('nmdArgu2')]
     public string $namedArg2;
 
     #[\Darken\Attributes\Slot]

@@ -23,7 +23,7 @@ abstract class Runtime
 
     private array $slots = [];
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $response = $this->render();
 

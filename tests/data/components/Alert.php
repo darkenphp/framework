@@ -1,6 +1,6 @@
 <?php
 $component = new class {
-    #[\Darken\Attributes\Param]
+    #[\Darken\Attributes\ConstructorParam]
     public $message;
 };
 ?>

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Darken\Builder\Compiler;
 
+use Darken\Attributes\ConstructorParam as AttributesParam;
 use Darken\Attributes\Inject;
-use Darken\Attributes\Param as AttributesParam;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
 use PhpParser\Builder\Property;

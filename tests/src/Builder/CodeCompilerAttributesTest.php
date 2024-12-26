@@ -13,7 +13,7 @@ class CodeCompilerAttributesTest extends TestCase
     {
         $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
         <?php
-        use \Darken\Attributes\Param;
+        use \Darken\Attributes\ConstructorParam;
         $x = new class {
 
             #[Param]
@@ -38,7 +38,7 @@ class CodeCompilerAttributesTest extends TestCase
         $code = <<<'PHP'
 <?php /** @var \Darken\Code\Runtime $this */ ?><?php
 
-use Darken\Attributes\Param;
+use Darken\Attributes\ConstructorParam;
 $x = new class($this)
 {
     protected \Darken\Code\Runtime $runtime;

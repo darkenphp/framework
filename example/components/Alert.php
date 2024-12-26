@@ -7,7 +7,7 @@ $component = new class {
     #[\Darken\Attributes\Inject]
     public Config $config;
 
-    #[\Darken\Attributes\Param]
+    #[\Darken\Attributes\ConstructorParam]
     public $message;
 }
 ?>

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Darken\Builder\Compiler;
 
+use Darken\Attributes\ConstructorParam;
 use Darken\Attributes\Middleware;
-use Darken\Attributes\Param;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
 use InvalidArgumentException;
@@ -47,7 +47,7 @@ class DataExtractorVisitor extends NodeVisitorAbstract
             case RouteParam::class:
                 $this->addData('constructor', $property);
                 break;
-            case Param::class:
+            case ConstructorParam::class:
                 $this->addData('constructor', $property);
                 break;
             case Slot::class:
