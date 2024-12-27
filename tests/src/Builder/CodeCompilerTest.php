@@ -86,10 +86,10 @@ echo $class->db3->getUpperDsn();
 PHP, $output->getCode());
 
         // Assert that 'middlewares' is an empty array
-        $this->assertSame([], $output->getMeta('middlewares'), "Middlewares should be an empty array.");
+        $this->assertSame([], $output->data->getData('middlewares', []), "Middlewares should be an empty array.");
 
         /** @var PropertyExtractor $constructor1 */
-        $constructor1 = $output->getMeta('constructor')[0];
+        $constructor1 = $output->data->getData('constructor')[0];
         $this->assertSame('arg1', $constructor1->getName());
         $this->assertSame('string', $constructor1->getType());
         $this->assertSame(null, $constructor1->getDefaultValue());
@@ -97,7 +97,7 @@ PHP, $output->getCode());
         $this->assertSame('Darken\Attributes\ConstructorParam', $constructor1->getDecoratorAttributeName());
         $this->assertSame(null, $constructor1->getDecoratorAttributeParamValue());
         
-        $constructor2 = $output->getMeta('constructor')[1];
+        $constructor2 = $output->data->getData('constructor')[1];
         $this->assertSame('namedArg2', $constructor2->getName());
         $this->assertSame('string', $constructor2->getType());
         $this->assertSame(null, $constructor2->getDefaultValue());
@@ -105,7 +105,7 @@ PHP, $output->getCode());
         $this->assertSame('Darken\Attributes\ConstructorParam', $constructor2->getDecoratorAttributeName());
         $this->assertSame('nmdArgu2', $constructor2->getDecoratorAttributeParamValue());
 
-        $slot1 = $output->getMeta('slots')[0];
+        $slot1 = $output->data->getData('slots')[0];
         $this->assertSame('slot1', $slot1->getName());
         $this->assertSame('string', $slot1->getType());
         $this->assertSame(null, $slot1->getDefaultValue());
@@ -113,7 +113,7 @@ PHP, $output->getCode());
         $this->assertSame('Darken\Attributes\Slot', $slot1->getDecoratorAttributeName());
         $this->assertSame(null, $slot1->getDecoratorAttributeParamValue());
 
-        $slot2 = $output->getMeta('slots')[1];
+        $slot2 = $output->data->getData('slots')[1];
         $this->assertSame('slot2', $slot2->getName());
         $this->assertSame('string', $slot2->getType());
         $this->assertSame(null, $slot2->getDefaultValue());

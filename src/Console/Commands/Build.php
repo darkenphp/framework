@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Darken\Console\Commands;
 
-use Darken\Builder\CodeCompiler;
 use Darken\Builder\FileSaveInterface;
-use Darken\Builder\InputFile;
-use Darken\Builder\OutputCompiled;
 use Darken\Builder\OutputPage;
-use Darken\Builder\OutputPolyfill;
 use Darken\Console\Application;
 use Darken\Console\CommandInterface;
 use Throwable;
@@ -70,7 +66,7 @@ class Build implements CommandInterface
                     $node = &$node[$segment]['_children'];
                 }
                 $node['class'] = $page->polyfill->getFullQualifiedClassName();
-                $node['middlewares'] = $page->polyfill->compilerOutput->getMeta('middlewares');
+                $node['middlewares'] = $page->polyfill->compilerOutput->data->getData('middlewares', []);
             }
 
             ksort($trie);
