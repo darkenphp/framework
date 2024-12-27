@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Darken\Builder\Compiler;
 
+use Builder\Compiler\AttributeHandler\AttributeHandlerInterface;
 use Darken\Attributes\ConstructorParam as AttributesParam;
 use Darken\Attributes\Inject;
 use Darken\Attributes\RouteParam;
@@ -13,7 +14,6 @@ use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\Variable;
@@ -29,7 +29,10 @@ use PhpParser\NodeVisitorAbstract;
 
 class GlobalVisitor extends NodeVisitorAbstract
 {
-    public function __construct(private UseStatementCollector $useStatementCollector, private DataExtractorVisitor $dataExtractorVisitor)
+    /**
+     * @var array<AttributeHandlerInterface>
+     */
+    public function __construct(private UseStatementCollector $useStatementCollector, private DataExtractorVisitor $dataExtractorVisitor, protected array $attributeHandlers)
     {
 
     }
@@ -61,9 +64,10 @@ class GlobalVisitor extends NodeVisitorAbstract
                             $attrName = ltrim($attrName, '\\');
 
                             /** @var PropertyItem $prop */
+                            // das wird nicht mehr gebraucht
                             if (in_array($attrName, [RouteParam::class, AttributesParam::class, Slot::class, Inject::class])) {
-
-                                $this->dataExtractorVisitor->addProperty(new PropertyExtractor($this->useStatementCollector, $propertyNode, $prop, $attr));
+                                $attrExtractor = new AttributeExtractor($this->useStatementCollector, $attr);
+                                $this->dataExtractorVisitor->addProperty(new PropertyExtractor($this->useStatementCollector, $propertyNode, $prop, $attrExtractor));
                             }
                         }
                     }
@@ -137,24 +141,28 @@ class GlobalVisitor extends NodeVisitorAbstract
             }
 
             foreach ($this->dataExtractorVisitor->getProperties() as $property) {
-                /** @var PropertyExtractor $property */
-                $getterName = $property->getFunctionNameForRuntimeClass();
 
-                if (!$getterName) {
-                    continue;
+                foreach ($this->attributeHandlers as $attributeHandler) {
+                    if ($attributeHandler->isAttributeAccepted($property)) {
+                        $constructor = $attributeHandler->compileConstructorHook($constructor, $property);
+                    }
                 }
 
-                $assignment = new Expression(
-                    new Assign(
-                        new PropertyFetch(new Variable('this'), $property->getName()),
-                        new MethodCall(
-                            new PropertyFetch(new Variable('this'), 'runtime'),
-                            $getterName,
-                            [new Arg($property->getArg())]
-                        )
-                    )
-                );
-                array_unshift($constructor->stmts, $assignment);
+                // this will be removed if all attributes are handlers.
+                if ($property instanceof PropertyExtractor) {
+                    /** @var PropertyExtractor $property */
+                    $getterName = $property->getFunctionNameForRuntimeClass();
+
+                    if (!$getterName) {
+                        continue;
+                    }
+
+                    $assignment = $property->createAssignExpression($getterName);
+                    
+
+                    array_unshift($constructor->stmts, $assignment);
+                }
+                
             }
 
             // Add $this->runtime = $runtime; in the constructor body if not present

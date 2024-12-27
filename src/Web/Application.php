@@ -61,7 +61,9 @@ class Application extends Kernel
             $psr17Factory  // StreamFactory
         );
 
-        $response = $this->handleServerRequest($creator->fromGlobals());
+        $serverRequest = $creator->fromGlobals();
+        $this->getContainerService()->register(ServerRequestInterface::class, $serverRequest);
+        $response = $this->handleServerRequest($serverRequest);
 
         $this->handleResponse($response);
     }

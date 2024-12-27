@@ -39,7 +39,7 @@ class DataExtractorVisitor extends NodeVisitorAbstract
     {
     }
 
-    public function addProperty(PropertyExtractor $property): void
+    public function addProperty(AttributeInterface $property): void // rename to addAttirbute
     {
         $this->properties[] = $property;
 
@@ -85,6 +85,9 @@ class DataExtractorVisitor extends NodeVisitorAbstract
             foreach ($node->attrGroups as $attrGroup) {
                 foreach ($attrGroup->attrs as $attribute) {
                     $attrName = $this->resolveAttributeName($attribute->name);
+
+                    // hier müssen wir attributes auch extrahieren ....
+                    $this->addProperty(new AttributeExtractor($this->useStatementCollector, $attribute));
                     if ($attrName === Middleware::class) {
                         $middlewareData = $this->parseMiddlewareAttribute($attribute);
                         $this->addData('middlewares', $middlewareData);

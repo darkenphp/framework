@@ -8,7 +8,10 @@ use Darken\Builder\Compiler\DataExtractorVisitor;
 
 class CodeCompilerOutput
 {
-    public function __construct(private string $code, public DataExtractorVisitor $data)
+    /**
+     * @var array<\Darken\Builder\Compiler\AttributeHandler\AttributeHandlerInterface> $attributeHandlers
+     */
+    public function __construct(private string $code, public DataExtractorVisitor $data, public array $attributeHandlers)
     {
 
     }

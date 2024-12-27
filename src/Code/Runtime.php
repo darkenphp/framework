@@ -7,6 +7,7 @@ namespace Darken\Code;
 use Darken\Kernel;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;
 use Throwable;
 
@@ -65,6 +66,11 @@ abstract class Runtime
     public function getContainer($className): object
     {
         return Kernel::getContainerService()->resolve($className);
+    }
+
+    public function getServerRequest() : ServerRequestInterface
+    {
+        return Kernel::getContainerService()->resolve(ServerRequestInterface::class);
     }
 
     public function render(): string|ResponseInterface

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Darken\Builder;
 
+use Darken\Builder\Compiler\AttributeHandler\QueryParamHandler;
+use Darken\Builder\Compiler\AttributeHandler\Verb;
 use Darken\Builder\Compiler\DataExtractorVisitor;
 use Darken\Builder\Compiler\GlobalVisitor;
 use Darken\Builder\Compiler\UseStatementCollector;
@@ -15,8 +17,12 @@ use Throwable;
 
 class CodeCompiler
 {
+    public $handlers = [];
+
     public function compile(InputFile $file): CodeCompilerOutput
     {
+        $this->handlers[] = new QueryParamHandler();
+
         try {
             $parser = (new ParserFactory())->createForNewestSupportedVersion();
             $ast = $parser->parse($file->getContent());
@@ -33,7 +39,7 @@ class CodeCompiler
             $traverser->addVisitor($data);
 
             // Visitor 3: Apply global modifications
-            $darkenVisitor = new GlobalVisitor($use, $data);
+            $darkenVisitor = new GlobalVisitor($use, $data, $this->handlers);
             $traverser->addVisitor($darkenVisitor);
 
             // Traverse the AST once with all visitors
@@ -43,7 +49,7 @@ class CodeCompiler
             $prettyPrinter = new Standard();
             $code = '<?php /** @var \Darken\Code\Runtime $this */ ?>' . $prettyPrinter->prettyPrintFile($ast);
 
-            return new CodeCompilerOutput($code, $data);
+            return new CodeCompilerOutput($code, $data, $this->handlers);
         } catch (Throwable $e) {
             throw new RuntimeException('Failed to compile ' . $file->filePath . ': ' . $e->getMessage(), 0, $e);
         }

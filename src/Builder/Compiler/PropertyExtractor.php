@@ -9,21 +9,41 @@ use Darken\Attributes\Inject;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
 use PhpParser\Node;
-use PhpParser\Node\Attribute;
+use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\PropertyItem;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Property;
 
-class PropertyExtractor
+class PropertyExtractor implements AttributeInterface
 {
-    public function __construct(private UseStatementCollector $useStatementCollector, private Property $propertyNode, private PropertyItem $prop, private Attribute $decoratorAttribute)
+    public function __construct(public UseStatementCollector $useStatementCollector, public Property $propertyNode, public PropertyItem $prop, public AttributeExtractor $attributeExtractor)
     {
 
+    }
+
+    public function getDecoratorAttributeParamValue(): string|null
+    {
+        return $this->attributeExtractor->getDecoratorAttributeParamValue();
+    }
+
+    public function getDecoratorAttributeName(): string|false
+    {
+        return $this->attributeExtractor->getDecoratorAttributeName();
+    }
+
+    public function getDecoratorAttributeArguments(): array
+    {
+        return $this->attributeExtractor->getDecoratorAttributeArguments();
     }
 
     public function getVisibility(): string
@@ -64,30 +84,6 @@ class PropertyExtractor
         return null;
     }
 
-    // #[Inject($this)] <= getDecoratorAttributeParamValue = $this
-    public function getDecoratorAttributeParamValue(): string|null
-    {
-        $dectoratorAttributeFirstArgument = isset($this->decoratorAttribute->args[0]) ? $this->decoratorAttribute->args[0]->value : null;
-
-        if ($dectoratorAttributeFirstArgument instanceof String_) {
-            return $dectoratorAttributeFirstArgument->value;
-        } elseif ($dectoratorAttributeFirstArgument instanceof ClassConstFetch) {
-            return $this->useStatementCollector->ensureClassName($dectoratorAttributeFirstArgument->class->name);
-        }
-
-        return null;
-    }
-
-    // #[Inject()] <= getDecoratorAttributeName = Inject
-    public function getDecoratorAttributeName(): string|false
-    {
-        if ($this->decoratorAttribute->name instanceof FullyQualified) {
-            return $this->decoratorAttribute->name->toString();
-        }
-
-        return ltrim($this->useStatementCollector->ensureClassName($this->decoratorAttribute->name->toString()), '\\');
-    }
-
     public function getFunctionNameForRuntimeClass(): string|false
     {
         return match ($this->getDecoratorAttributeName()) {
@@ -101,7 +97,7 @@ class PropertyExtractor
 
     public function getArg(): object
     {
-        $attributeDecoratorParamValue = isset($this->decoratorAttribute->args[0]) ? $this->decoratorAttribute->args[0]->value : null;
+        $attributeDecoratorParamValue = $this->attributeExtractor->getFirstArgument();
 
 
         if ($attributeDecoratorParamValue instanceof String_) {
@@ -124,5 +120,19 @@ class PropertyExtractor
         }
 
         return new String_($this->prop->name->toString());
+    }
+
+    public function createAssignExpression(string $getterName): Expression
+    {
+        return new Expression(
+            new Assign(
+                new PropertyFetch(new Variable('this'), $this->getName()),
+                new MethodCall(
+                    new PropertyFetch(new Variable('this'), 'runtime'),
+                    $getterName,
+                    [new Arg($this->getArg())]
+                )
+            )
+        );
     }
 }

@@ -58,6 +58,13 @@ class Creator
             )
             ->getNode();
 
+        foreach ($outputPolyfill->compilerOutput->data->getProperties() as $dataProp) {
+            foreach ($outputPolyfill->compilerOutput->attributeHandlers as $handler) {
+                if ($handler->isAttributeAccepted($dataProp)) {
+                    $handler->polyfillCreatorHook($namespace, $dataProp);
+                }
+            }
+        }
 
         // Add class to namespace
         $namespace->addStmt($class);

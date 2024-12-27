@@ -5,7 +5,10 @@ namespace Tests;
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
+use Darken\Builder\CodeCompiler;
 use Darken\Builder\InputFile;
+use Darken\Builder\OutputCompiled;
+use Darken\Builder\OutputPolyfill;
 use Darken\Config\ConfigInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
@@ -65,5 +68,24 @@ class TestCase extends FrameworkTestCase
             throw new \RuntimeException('File for testing does not exist: ' . $path);
         }
         return new InputFile($path);
+    }
+
+    public function createCompileTest(string $content, string $expecedCompiledCode, string $expectedPolyfillCode) : void
+    {
+        $tmpFile = $this->createTmpFile('test.php', $content);
+
+        $file = $this->createInputFile($tmpFile);
+
+        $compiler = new CodeCompiler();
+        $output = $compiler->compile($file);
+
+
+        $this->assertSame($expecedCompiledCode, $output->getCode());
+
+        $outputCompiled = new OutputCompiled($output->getCode(), $file, $this->createConfig());
+
+        $polyfill = new OutputPolyfill($outputCompiled, $output);
+
+        $this->assertSame($expectedPolyfillCode, $polyfill->getBuildOutputContent());
     }
 }
