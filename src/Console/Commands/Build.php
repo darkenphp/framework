@@ -80,7 +80,8 @@ class Build implements CommandInterface
             $app->stdOut($errorMessage);
         }
 
-        $app->stdOut("Compiled {$filescount} files to {$app->config->getBuildOutputFolder()}");
+        $compiledText = $app->stdTextGreen('Compiled ') . $app->stdTextYellow("{$filescount}") . ' files to ' . $app->stdTextYellow("{$app->config->getBuildOutputFolder()}");
+        $app->stdOut($compiledText);
     }
 
     public static function createFile(FileSaveInterface $save): bool
