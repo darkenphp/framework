@@ -7,6 +7,7 @@ namespace Darken\Builder;
 use Darken\Builder\Compiler\DataExtractorVisitor;
 use Darken\Builder\Compiler\GlobalVisitor;
 use Darken\Builder\Compiler\UseStatementCollector;
+use Darken\Builder\Hooks\AttributeHookInterface;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
@@ -15,6 +16,13 @@ use Throwable;
 
 class CodeCompiler
 {
+    private array $hooks = [];
+
+    public function registerHook(AttributeHookInterface $hook): void
+    {
+        $this->hooks[] = $hook;
+    }
+
     public function compile(InputFile $file): CodeCompilerOutput
     {
         try {
@@ -29,7 +37,7 @@ class CodeCompiler
             $traverser->addVisitor($use);
 
             // Visitor 2: Extract data based on use statements
-            $data = new DataExtractorVisitor($use);
+            $data = new DataExtractorVisitor($use, $this->hooks);
             $traverser->addVisitor($data);
 
             // Visitor 3: Apply global modifications

@@ -139,6 +139,8 @@ class GlobalVisitor extends NodeVisitorAbstract
                 }
             }
 
+            $constructor = $this->dataExtractorVisitor->onCompileConstructorHook($constructor);
+
             foreach ($this->dataExtractorVisitor->getProperties() as $property) {
                 /** @var PropertyExtractor $property */
                 $getterName = $property->getFunctionNameForRuntimeClass();

@@ -10,6 +10,9 @@ use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
 use Darken\Builder\Compiler\Extractor\ClassAttribute;
 use Darken\Builder\Compiler\Extractor\PropertyAttribute;
+use Darken\Builder\Hooks\AttributeHookInterface;
+use Darken\Builder\Hooks\PropertyAttributeHook;
+use Darken\Enum\HookedAttributeType;
 use InvalidArgumentException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
@@ -19,6 +22,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeVisitorAbstract;
 
 class DataExtractorVisitor extends NodeVisitorAbstract
@@ -41,7 +45,10 @@ class DataExtractorVisitor extends NodeVisitorAbstract
      */
     private array $properties = [];
 
-    public function __construct(private UseStatementCollector $useStatementCollector)
+    /**
+     * @param array<AttributeHookInterface> $hooks
+     */
+    public function __construct(private UseStatementCollector $useStatementCollector, private array $hooks)
     {
     }
 
@@ -63,6 +70,20 @@ class DataExtractorVisitor extends NodeVisitorAbstract
     public function getClassAttributes(): array
     {
         return $this->classAttributes;
+    }
+
+    public function onCompileConstructorHook(ClassMethod $constructor): ClassMethod
+    {
+        foreach ($this->propertyAttributes as $propertyAttribute) {
+            $hooks = $this->getHooksByType(HookedAttributeType::ON_PROPERTY);
+            foreach ($hooks as $hook) {
+                /** @var PropertyAttributeHook $hook */
+                if ($hook->isValidAttribute($propertyAttribute)) {
+                    $constructor = $hook->compileConstructorHook($propertyAttribute, $constructor);
+                }
+            }
+        }
+        return $constructor;
     }
 
     public function addProperty(PropertyExtractor $property): void
@@ -124,6 +145,11 @@ class DataExtractorVisitor extends NodeVisitorAbstract
         }
 
         return null;
+    }
+
+    private function getHooksByType(HookedAttributeType $type): array
+    {
+        return array_filter($this->hooks, fn (AttributeHookInterface $hook) => $hook->attributeType() === $type);
     }
 
     /**

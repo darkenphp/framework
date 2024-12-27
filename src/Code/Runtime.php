@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Darken\Code;
 
 use Darken\Kernel;
+use Darken\Web\Request;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
@@ -65,6 +66,16 @@ abstract class Runtime
     public function getContainer($className): object
     {
         return Kernel::getContainerService()->resolve($className);
+    }
+
+    public function getQueryParam(string $name): string|null
+    {
+        return $this->getRequest()->getQueryParams()[$name] ?? null;
+    }
+
+    public function getRequest(): Request
+    {
+        return Kernel::getContainerService()->resolve(Request::class);
     }
 
     public function render(): string|ResponseInterface
