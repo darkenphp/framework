@@ -73,7 +73,11 @@ class Build implements CommandInterface
 
             $this->saveFile($app->config->getBuildOutputFolder() . '/routes.php', '<?php' . PHP_EOL . 'return ' . var_export($trie, true) . ';' . PHP_EOL);
         } catch (Throwable $e) {
-            $app->stdOut('ERROR: '. $e->getMessage() .  ' | ' . $e->getFile() . ' | '  . $e->getTraceAsString());
+
+            $errorMessage = $app->stdTextRed('ERROR: ') . $e->getMessage() . PHP_EOL .
+            $app->stdTextYellow('File: ') . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL .
+            $app->stdTextYellow('Trace:') . PHP_EOL . $e->getTraceAsString();
+            $app->stdOut($errorMessage);
         }
 
         $app->stdOut("Compiled {$filescount} files to {$app->config->getBuildOutputFolder()}");
