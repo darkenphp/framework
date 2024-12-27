@@ -174,7 +174,7 @@ PHP, $polyfill->getBuildOutputContent()
 
     public function testCompilerException()
     {
-        $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
+        $tmpFile = $this->createTmpFile($this->createConfig(), 'test.php', <<<'PHP'
         <?php
         use \Darken\Attributes\ConstructorParam;
         $x = new class {
@@ -193,7 +193,7 @@ PHP, $polyfill->getBuildOutputContent()
 
     public function testAlreadyDefinedConstructorWithRuntimeParam()
     {
-        $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
+        $tmpFile = $this->createTmpFile($this->createConfig(), 'test.php', <<<'PHP'
         <?php
         use \Darken\Attributes\ConstructorParam;
         $x = new class {
@@ -238,7 +238,7 @@ PHP, $polyfill->getBuildOutputContent()
 
     public function testInvalidPhpAttributes()
     {
-        $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
+        $tmpFile = $this->createTmpFile($this->createConfig(), 'test.php', <<<'PHP'
         <?php
         $x = new class {
             #[DoesNotExist]
@@ -275,7 +275,7 @@ PHP, $polyfill->getBuildOutputContent()
 
     public function testAlreadyDefinedRuntimeConstructor()
     {
-        $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
+        $tmpFile = $this->createTmpFile($this->createConfig(), 'test.php', <<<'PHP'
         <?php
         $x = new class {
             public function __construct($runtime, $another)

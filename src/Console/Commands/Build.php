@@ -32,25 +32,22 @@ class Build implements CommandInterface
 
             foreach ($app->config->getBuildingFolders() as $folder) {
                 foreach (FileHelper::findFiles($folder, ['only' => ['php']]) as $file) {
-                    $input = new InputFile($file);
 
-                    $compiler = new CodeCompiler();
-                    $output = $compiler->compile($input);
+                    $buildProcess = new FileBuildProcess($file, $app->config);
 
-                    $compileCodeOutput = new OutputCompiled($output->getCode(), $input, $app->config);
-
-                    if ($this->createFile($compileCodeOutput)) {
-                        $filescount++;
-
-
-                        $polyfill = new OutputPolyfill($compileCodeOutput, $output);
-                        $this->createFile($polyfill);
-
-                        if ($input->isInDirectory($app->config->getPagesFolder())) {
-                            $pages[] = $polyfill;
+                    $processed = true;
+                    foreach ($buildProcess->getFilesToSaveSequenze() as $save) {
+                        if (self::createFile($save)) {
+                            $filescount++;
+                        } else {
+                            // which should delete both files from the sequenze
+                            $app->stdOut("File {$save->getBuildOutputFilePath()} failed to compile");
+                            $processed = false;
                         }
-                    } else {
-                        $app->stdOut("File {$input->getFileName()} failed to compile");
+                    }
+
+                    if ($processed && $buildProcess->getIsPage()) {
+                        $pages[] = $buildProcess->getPageOutput();
                     }
                 }
             }
@@ -63,8 +60,8 @@ class Build implements CommandInterface
              * }> $trie
              */
             $trie = [];
-            foreach ($pages as $polyfill) {
-                $page = new OutputPage($polyfill);
+            foreach ($pages as $page) {
+                /** @var OutputPage $page */
                 $node = &$trie;
                 foreach ($page->getSegmentedTrieRoute() as $segment) {
                     if (!isset($node[$segment])) {
@@ -72,8 +69,8 @@ class Build implements CommandInterface
                     }
                     $node = &$node[$segment]['_children'];
                 }
-                $node['class'] = $polyfill->getFullQualifiedClassName();
-                $node['middlewares'] = $polyfill->compilerOutput->getMeta('middlewares');
+                $node['class'] = $page->polyfill->getFullQualifiedClassName();
+                $node['middlewares'] = $page->polyfill->compilerOutput->getMeta('middlewares');
             }
 
             ksort($trie);
@@ -86,14 +83,14 @@ class Build implements CommandInterface
         $app->stdOut("Compiled {$filescount} files to {$app->config->getBuildOutputFolder()}");
     }
 
-    private function createFile(FileSaveInterface $save): bool
+    public static function createFile(FileSaveInterface $save): bool
     {
         FileHelper::ensureDirectory(dirname($save->getBuildOutputFilePath()));
 
-        return $this->saveFile($save->getBuildOutputFilePath(), $save->getBuildOutputContent());
+        return self::saveFile($save->getBuildOutputFilePath(), $save->getBuildOutputContent());
     }
 
-    private function saveFile(string $file, string $content): bool
+    public static function saveFile(string $file, string $content): bool
     {
         return file_put_contents($file, $content) !== false;
     }

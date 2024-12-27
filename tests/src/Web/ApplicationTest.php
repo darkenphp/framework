@@ -7,6 +7,7 @@ use Tests\TestCase;
 
 class ApplicationTest extends TestCase
 {
+    /*
     public function testApplicationGlobals()
     {
         $app = new Application($this->createConfig());
@@ -35,4 +36,19 @@ class ApplicationTest extends TestCase
 
         $this->assertSame('Page not found', $output);
     }
+        */
+
+    public function testRequestDi()
+    {
+        $request = $this->createServerRequest('/test.php?x=test', 'GET');
+
+        //
+        // Debugging: Dump query parameters
+
+        // Continue with assertions
+        $this->assertEquals('GET', $request->getMethod());
+        $this->assertEquals('/test.php?x=test', $request->getRequestTarget());
+        $this->assertEquals(['x' => 'test'], $request->getQueryParams());
+    }
+
 }

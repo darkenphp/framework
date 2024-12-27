@@ -10,6 +10,7 @@ use Darken\Service\MiddlewareServiceInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 use Whoops\Handler\CallbackHandler;
@@ -54,8 +55,14 @@ class Application extends Kernel
     public function run(): void
     {
         $psr17Factory = new Psr17Factory();
+        $serverRequestFactory = new class() implements ServerRequestFactoryInterface {
+            public function createServerRequest(string $method, $uri, array $serverParams = []): ServerRequestInterface
+            {
+                return new Request($method, $uri, [], null, '1.1', $serverParams);
+            }
+        };
         $creator = new ServerRequestCreator(
-            $psr17Factory, // ServerRequestFactory
+            $serverRequestFactory, // ServerRequestFactory
             $psr17Factory, // UriFactory
             $psr17Factory, // UploadedFileFactory
             $psr17Factory  // StreamFactory
@@ -68,6 +75,8 @@ class Application extends Kernel
 
     private function handleServerRequest(ServerRequestInterface $request): ResponseInterface
     {
+        $this->getContainerService()->register(Request::class, $request);
+
         // Instantiate the final handler
         $pageHandler = new PageHandler($this, $request->getUri()->getPath());
 

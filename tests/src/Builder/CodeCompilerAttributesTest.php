@@ -11,7 +11,8 @@ class CodeCompilerAttributesTest extends TestCase
 {
     public function testArrayAndOtherTypes()
     {
-        $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
+        $cfg = $this->createConfig();
+        $tmpFile = $this->createTmpFile($cfg, 'test.php', <<<'PHP'
         <?php
         use \Darken\Attributes\ConstructorParam;
         $x = new class {
@@ -71,7 +72,7 @@ PHP;
             <<<'PHP'
 <?php
 
-namespace Tests\Build\tmp;
+namespace Tests\Build\data\generated;
 
 class test extends \Darken\Code\Runtime
 {
@@ -92,7 +93,7 @@ PHP, $polyfill->getBuildOutputContent());
 
     public function testInjectionBeforeOtherProps()
     {
-        $tmpFile = $this->createTmpFile('test.php', <<<'PHP'
+        $tmpFile = $this->createTmpFile($this->createConfig(), 'test.php', <<<'PHP'
         <?php
 
         use Darken\Attributes\Inject;
