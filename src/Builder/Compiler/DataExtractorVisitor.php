@@ -8,6 +8,8 @@ use Darken\Attributes\ConstructorParam;
 use Darken\Attributes\Middleware;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
+use Darken\Builder\Compiler\Extractor\ClassAttribute;
+use Darken\Builder\Compiler\Extractor\PropertyAttribute;
 use InvalidArgumentException;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
@@ -30,6 +32,10 @@ class DataExtractorVisitor extends NodeVisitorAbstract
         'slots' => [],
     ];
 
+    private array $propertyAttributes = [];
+
+    private array $classAttributes = [];
+
     /**
      * @var array<PropertyExtractor>
      */
@@ -37,6 +43,26 @@ class DataExtractorVisitor extends NodeVisitorAbstract
 
     public function __construct(private UseStatementCollector $useStatementCollector)
     {
+    }
+
+    public function addPropertyAttribute(PropertyAttribute $propertyAttribute): void
+    {
+        $this->propertyAttributes[] = $propertyAttribute;
+    }
+
+    public function getPropertyAttributes(): array
+    {
+        return $this->propertyAttributes;
+    }
+
+    public function addClassAttribute(ClassAttribute $classAttribute): void
+    {
+        $this->classAttributes[] = $classAttribute;
+    }
+
+    public function getClassAttributes(): array
+    {
+        return $this->classAttributes;
     }
 
     public function addProperty(PropertyExtractor $property): void
@@ -84,6 +110,10 @@ class DataExtractorVisitor extends NodeVisitorAbstract
             // Iterate through attribute groups
             foreach ($node->attrGroups as $attrGroup) {
                 foreach ($attrGroup->attrs as $attribute) {
+
+                    // ATTRIBUTE TO ATTRIBUTES BAG:
+                    $this->addClassAttribute(new ClassAttribute($this->useStatementCollector, $attribute));
+
                     $attrName = $this->resolveAttributeName($attribute->name);
                     if ($attrName === Middleware::class) {
                         $middlewareData = $this->parseMiddlewareAttribute($attribute);

@@ -8,6 +8,7 @@ use Darken\Attributes\ConstructorParam as AttributesParam;
 use Darken\Attributes\Inject;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
+use Darken\Builder\Compiler\Extractor\PropertyAttribute;
 use PhpParser\Builder\Property;
 use PhpParser\Modifiers;
 use PhpParser\Node;
@@ -58,6 +59,8 @@ class GlobalVisitor extends NodeVisitorAbstract
                             }
 
                             $attrName = ltrim($attrName, '\\');
+
+                            $this->dataExtractorVisitor->addPropertyAttribute(new PropertyAttribute($this->useStatementCollector, $propertyNode, $prop, $attr));
 
                             /** @var PropertyItem $prop */
                             if (in_array($attrName, [RouteParam::class, AttributesParam::class, Slot::class, Inject::class])) {
