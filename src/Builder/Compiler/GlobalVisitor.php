@@ -13,7 +13,6 @@ use PhpParser\Modifiers;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\Variable;
@@ -63,6 +62,7 @@ class GlobalVisitor extends NodeVisitorAbstract
                             /** @var PropertyItem $prop */
                             if (in_array($attrName, [RouteParam::class, AttributesParam::class, Slot::class, Inject::class])) {
 
+                                // ATTRIBUTE TO ATTRIBUTES BAG:
                                 $this->dataExtractorVisitor->addProperty(new PropertyExtractor($this->useStatementCollector, $propertyNode, $prop, $attr));
                             }
                         }
@@ -144,16 +144,8 @@ class GlobalVisitor extends NodeVisitorAbstract
                     continue;
                 }
 
-                $assignment = new Expression(
-                    new Assign(
-                        new PropertyFetch(new Variable('this'), $property->getName()),
-                        new MethodCall(
-                            new PropertyFetch(new Variable('this'), 'runtime'),
-                            $getterName,
-                            [new Arg($property->getArg())]
-                        )
-                    )
-                );
+                $assignment = $property->createAssignExpression($getterName);
+
                 array_unshift($constructor->stmts, $assignment);
             }
 

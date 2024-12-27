@@ -9,14 +9,20 @@ use Darken\Attributes\Inject;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
 use PhpParser\Node;
+use PhpParser\Node\Arg;
 use PhpParser\Node\Attribute;
+use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\PropertyItem;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Property;
 
 class PropertyExtractor
@@ -124,5 +130,19 @@ class PropertyExtractor
         }
 
         return new String_($this->prop->name->toString());
+    }
+
+    public function createAssignExpression(string $getterName): Expression
+    {
+        return new Expression(
+            new Assign(
+                new PropertyFetch(new Variable('this'), $this->getName()),
+                new MethodCall(
+                    new PropertyFetch(new Variable('this'), 'runtime'),
+                    $getterName,
+                    [new Arg($this->getArg())]
+                )
+            )
+        );
     }
 }
