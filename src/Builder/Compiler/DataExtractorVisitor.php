@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Darken\Builder\Compiler;
 
 use Darken\Attributes\Middleware;
-use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
 use Darken\Builder\Compiler\Extractor\ClassAttribute;
 use Darken\Builder\Compiler\Extractor\PropertyAttribute;
@@ -105,9 +104,6 @@ class DataExtractorVisitor extends NodeVisitorAbstract
         $this->properties[] = $property;
 
         switch ($property->getDecoratorAttributeName()) {
-            case RouteParam::class:
-                $this->addData('constructor', $property);
-                break;
             case Slot::class:
                 $this->addData('slots', $property);
                 break;

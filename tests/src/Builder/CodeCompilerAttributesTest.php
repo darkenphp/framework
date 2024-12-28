@@ -141,10 +141,10 @@ PHP, $polyfill->getBuildOutputContent());
             public function __construct(\Darken\Code\Runtime $runtime)
             {
                 $this->runtime = $runtime;
-                $this->slug = $this->runtime->getRouteParam('slug');
                 $this->config = $this->runtime->getContainer(\Tests\data\di\Db::class);
                 $cfg = new ConfigApi(null, $this->config);
                 $data = $cfg->getConfig();
+                $this->slug = $this->runtime->getRouteParam('slug');
             }
         };
         PHP, $output->getCode());
