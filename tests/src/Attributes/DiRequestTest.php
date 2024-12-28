@@ -52,7 +52,7 @@ class DiRequestTest extends TestCase
 
         class test extends \Darken\Code\Runtime
         {
-            function __construct()
+            public function __construct()
             {
             }
             public function renderFilePath(): string

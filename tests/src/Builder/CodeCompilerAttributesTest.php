@@ -54,10 +54,10 @@ $x = new class($this)
     public function __construct(\Darken\Code\Runtime $runtime)
     {
         $this->runtime = $runtime;
-        $this->array2 = $this->runtime->getArgumentParam('array2');
-        $this->array = $this->runtime->getArgumentParam('array');
-        $this->zahl = $this->runtime->getArgumentParam('zahl');
         $this->stringvar = $this->runtime->getArgumentParam('stringvar');
+        $this->zahl = $this->runtime->getArgumentParam('zahl');
+        $this->array = $this->runtime->getArgumentParam('array');
+        $this->array2 = $this->runtime->getArgumentParam('array2');
     }
 };
 PHP;
@@ -78,9 +78,9 @@ class test extends \Darken\Code\Runtime
 {
     public function __construct(int $zahl, array $array, string $stringvar = 'test', array $array2 = [])
     {
+        $this->setArgumentParam('stringvar', $stringvar);
         $this->setArgumentParam('zahl', $zahl);
         $this->setArgumentParam('array', $array);
-        $this->setArgumentParam('stringvar', $stringvar);
         $this->setArgumentParam('array2', $array2);
     }
     public function renderFilePath(): string

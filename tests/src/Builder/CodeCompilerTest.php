@@ -54,8 +54,8 @@ $class = new class($this)
         $this->db1 = $this->runtime->getContainer(\Tests\data\di\Db::class);
         $this->slot2 = $this->runtime->getSlot('nmdSlot2');
         $this->slot1 = $this->runtime->getSlot('slot1');
-        $this->namedArg2 = $this->runtime->getArgumentParam('nmdArgu2');
         $this->arg1 = $this->runtime->getArgumentParam('arg1');
+        $this->namedArg2 = $this->runtime->getArgumentParam('nmdArgu2');
     }
 };
 ?>
@@ -88,8 +88,9 @@ PHP, $output->getCode());
         // Assert that 'middlewares' is an empty array
         $this->assertSame([], $output->data->getData('middlewares', []), "Middlewares should be an empty array.");
 
+        
         /** @var PropertyExtractor $constructor1 */
-        $constructor1 = $output->data->getData('constructor')[0];
+        $constructor1 = $output->data->getPropertyAttributes()[0];
         $this->assertSame('arg1', $constructor1->getName());
         $this->assertSame('string', $constructor1->getType());
         $this->assertSame(null, $constructor1->getDefaultValue());
@@ -97,7 +98,7 @@ PHP, $output->getCode());
         $this->assertSame('Darken\Attributes\ConstructorParam', $constructor1->getDecoratorAttributeName());
         $this->assertSame(null, $constructor1->getDecoratorAttributeParamValue());
         
-        $constructor2 = $output->data->getData('constructor')[1];
+        $constructor2 = $output->data->getPropertyAttributes()[1];
         $this->assertSame('namedArg2', $constructor2->getName());
         $this->assertSame('string', $constructor2->getType());
         $this->assertSame(null, $constructor2->getDefaultValue());

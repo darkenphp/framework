@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Darken\Builder\Compiler;
 
-use Darken\Attributes\ConstructorParam;
 use Darken\Attributes\Middleware;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
@@ -14,6 +13,7 @@ use Darken\Builder\Hooks\AttributeHookInterface;
 use Darken\Builder\Hooks\PropertyAttributeHook;
 use Darken\Enum\HookedAttributeType;
 use InvalidArgumentException;
+use PhpParser\Builder\Method;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ClassConstFetch;
@@ -86,15 +86,26 @@ class DataExtractorVisitor extends NodeVisitorAbstract
         return $constructor;
     }
 
+    public function onPolyfillConstructorHook(Method $constructor): Method
+    {
+        foreach ($this->propertyAttributes as $propertyAttribute) {
+            $hooks = $this->getHooksByType(HookedAttributeType::ON_PROPERTY);
+            foreach ($hooks as $hook) {
+                /** @var PropertyAttributeHook $hook */
+                if ($hook->isValidAttribute($propertyAttribute)) {
+                    $constructor = $hook->polyfillConstructorHook($propertyAttribute, $constructor);
+                }
+            }
+        }
+        return $constructor;
+    }
+
     public function addProperty(PropertyExtractor $property): void
     {
         $this->properties[] = $property;
 
         switch ($property->getDecoratorAttributeName()) {
             case RouteParam::class:
-                $this->addData('constructor', $property);
-                break;
-            case ConstructorParam::class:
                 $this->addData('constructor', $property);
                 break;
             case Slot::class:

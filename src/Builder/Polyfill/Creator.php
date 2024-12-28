@@ -7,23 +7,36 @@ namespace Darken\Builder\Polyfill;
 use Darken\Builder\Compiler\DataExtractorVisitor;
 use Darken\Builder\Compiler\PropertyExtractor;
 use Darken\Builder\OutputPolyfill;
+use Darken\Code\Runtime;
+use InvalidArgumentException;
 use PhpParser\Builder;
+use PhpParser\Builder\Method;
 use PhpParser\BuilderFactory;
 use PhpParser\Node;
+use PhpParser\Node\Param;
 
 class Creator
 {
+    public $baseRuntimeClass = Runtime::class;
+
     public function createNode(OutputPolyfill $outputPolyfill): Node
     {
         $factory = new BuilderFactory();
 
-        // Define namespace
-        $namespace = $factory->namespace($outputPolyfill->getNamespace());
+        // Build the namespace
+        $namespaceBuilder = $factory->namespace($outputPolyfill->getNamespace());
 
-        // Define class
-        $class = $factory->class($outputPolyfill->getClassName())
-            ->extend('\\Darken\\Code\\Runtime')
-            ->addStmt($this->getConstructorMethod($outputPolyfill->compilerOutput->data))
+        // 1) Fetch the original constructor builder
+        $originalConstructorBuilder = $this->getConstructorMethod($outputPolyfill->compilerOutput->data);
+
+        // 2) Get a fully sorted constructor builder
+        $sortedConstructorBuilder = $this->fixConstructorPropertySorting($originalConstructorBuilder);
+
+        // 3) Build the class with the *sorted* constructor
+        $classBuilder = $factory
+            ->class($outputPolyfill->getClassName())
+            ->extend($this->transformClassToFullqualified($this->baseRuntimeClass))
+            ->addStmt($sortedConstructorBuilder) // Use the new (correctly sorted) method builder
             ->addStmts($this->getSlotMethods($outputPolyfill->compilerOutput->data))
             ->addStmt(
                 $factory->method('renderFilePath')
@@ -32,48 +45,86 @@ class Creator
                     ->addStmt(
                         new Node\Stmt\Return_(
                             new Node\Expr\BinaryOp\Concat(
-                                // First concat: dirname(__FILE__) . DIRECTORY_SEPARATOR
                                 new Node\Expr\BinaryOp\Concat(
                                     new Node\Expr\FuncCall(
                                         new Node\Name('dirname'),
                                         [
                                             new Node\Arg(
-                                                new Node\Expr\ConstFetch(
-                                                    new Node\Name('__FILE__')
-                                                )
+                                                new Node\Expr\ConstFetch(new Node\Name('__FILE__'))
                                             ),
                                         ]
                                     ),
-                                    new Node\Expr\ConstFetch(
-                                        new Node\Name('DIRECTORY_SEPARATOR')
-                                    )
+                                    new Node\Expr\ConstFetch(new Node\Name('DIRECTORY_SEPARATOR'))
                                 ),
-                                // Second concat: ... . 'layout1.compiled.php'
-                                new Node\Scalar\String_(
-                                    $outputPolyfill->getRelativeBuildOutputFilePath()
-                                )
+                                new Node\Scalar\String_($outputPolyfill->getRelativeBuildOutputFilePath())
                             )
                         )
                     )
-            )
-            ->getNode();
+            );
 
+        // 4) Get the Class_ node
+        $classNode = $classBuilder->getNode();
 
-        // Add class to namespace
-        $namespace->addStmt($class);
+        // 5) Add it to the namespace
+        $namespaceBuilder->addStmt($classNode);
 
-        return $namespace->getNode();
+        // 6) Return the full namespace AST
+        return $namespaceBuilder->getNode();
     }
 
-    private function getConstructorMethod(DataExtractorVisitor $extractor): Builder
+    private function transformClassToFullqualified(string $class): string
+    {
+        return '\\' . ltrim($class, '\\');
+    }
+
+    private function fixConstructorPropertySorting(Method $originalConstructor): Method
+    {
+        // 1) Get the underlying AST node
+        $oldNode = $originalConstructor->getNode();
+
+        // 2) Verify it's actually a constructor
+        if ($oldNode->name->toString() !== '__construct') {
+            throw new InvalidArgumentException('Not a constructor!');
+        }
+
+        // 3) Separate required vs. optional
+        $required = [];
+        $optional = [];
+
+        foreach ($oldNode->params as $param) {
+            // If $param->default is null => required
+            if ($param->default === null) {
+                $required[] = $param;
+            } else {
+                $optional[] = $param;
+            }
+        }
+        // Merge them in required-first order
+        $sortedParams = array_merge($required, $optional);
+
+        // 4) Build a brand-new Method builder with sorted params + original statements
+        $factory = new BuilderFactory();
+
+        return $factory
+            ->method('__construct')
+            ->makePublic()
+            // Add sorted parameters
+            ->addParams($sortedParams)
+            // Reuse the method body/statement block
+            ->addStmts($oldNode->stmts);
+
+        // 5) Return the new builder that is guaranteed sorted
+    }
+
+    private function getConstructorMethod(DataExtractorVisitor $extractor): Method
     {
         $factory = new BuilderFactory();
         $constructor = $extractor->getData('constructor', []);
 
         // If there is no constructor data, return an empty __construct()
-        if (count($constructor) === 0) {
-            return $factory->method('__construct');
-        }
+        //if (count($constructor) === 0) {
+        //return $factory->method('__construct');
+        //}
 
         // 1) Split into required vs optional
         $requiredProps = [];
@@ -129,6 +180,9 @@ class Creator
                 )
             );
         }
+
+        // $method
+        $extractor->onPolyfillConstructorHook($methodBuilder);
 
         return $methodBuilder;
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Darken\Builder\Compiler\Extractor;
 
-use Darken\Attributes\ConstructorParam;
 use Darken\Attributes\Inject;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
@@ -100,7 +99,6 @@ class PropertyAttribute implements AttributeExtractorInterface
         // not needed in future
         return match ($this->getDecoratorAttributeName()) {
             RouteParam::class => 'getRouteParam',
-            ConstructorParam::class => 'getArgumentParam',
             Slot::class => 'getSlot',
             Inject::class => 'getContainer',
             default => false,

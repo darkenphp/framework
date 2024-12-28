@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Darken\Builder;
 
+use Darken\Attributes\Hooks\ConstructorParamHook;
 use Darken\Builder\Compiler\DataExtractorVisitor;
 use Darken\Builder\Compiler\GlobalVisitor;
 use Darken\Builder\Compiler\UseStatementCollector;
@@ -17,6 +18,11 @@ use Throwable;
 class CodeCompiler
 {
     private array $hooks = [];
+
+    public function __construct()
+    {
+        $this->hooks[] = new ConstructorParamHook();
+    }
 
     public function registerHook(AttributeHookInterface $hook): void
     {

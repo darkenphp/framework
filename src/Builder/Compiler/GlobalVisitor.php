@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Darken\Builder\Compiler;
 
-use Darken\Attributes\ConstructorParam as AttributesParam;
 use Darken\Attributes\Inject;
 use Darken\Attributes\RouteParam;
 use Darken\Attributes\Slot;
@@ -63,7 +62,7 @@ class GlobalVisitor extends NodeVisitorAbstract
                             $this->dataExtractorVisitor->addPropertyAttribute(new PropertyAttribute($this->useStatementCollector, $propertyNode, $prop, $attr));
 
                             /** @var PropertyItem $prop */
-                            if (in_array($attrName, [RouteParam::class, AttributesParam::class, Slot::class, Inject::class])) {
+                            if (in_array($attrName, [RouteParam::class, Slot::class, Inject::class])) {
 
                                 // ATTRIBUTE TO ATTRIBUTES BAG:
                                 $this->dataExtractorVisitor->addProperty(new PropertyExtractor($this->useStatementCollector, $propertyNode, $prop, $attr));
