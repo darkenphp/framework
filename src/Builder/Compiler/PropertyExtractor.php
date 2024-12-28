@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Darken\Builder\Compiler;
 
-use Darken\Attributes\Inject;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Attribute;
@@ -67,7 +66,6 @@ class PropertyExtractor
         return null;
     }
 
-    // #[Inject($this)] <= getDecoratorAttributeParamValue = $this
     public function getDecoratorAttributeParamValue(): string|null
     {
         $dectoratorAttributeFirstArgument = isset($this->decoratorAttribute->args[0]) ? $this->decoratorAttribute->args[0]->value : null;
@@ -81,7 +79,6 @@ class PropertyExtractor
         return null;
     }
 
-    // #[Inject()] <= getDecoratorAttributeName = Inject
     public function getDecoratorAttributeName(): string|false
     {
         if ($this->decoratorAttribute->name instanceof FullyQualified) {
@@ -89,14 +86,6 @@ class PropertyExtractor
         }
 
         return ltrim($this->useStatementCollector->ensureClassName($this->decoratorAttribute->name->toString()), '\\');
-    }
-
-    public function getFunctionNameForRuntimeClass(): string|false
-    {
-        return match ($this->getDecoratorAttributeName()) {
-            Inject::class => 'getContainer',
-            default => false,
-        };
     }
 
     public function getArg(): object

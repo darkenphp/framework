@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Darken\Builder;
 
 use Darken\Attributes\Hooks\ConstructorParamHook;
+use Darken\Attributes\Hooks\InjectHook;
 use Darken\Attributes\Hooks\RouteParamHook;
 use Darken\Attributes\Hooks\SlotHook;
 use Darken\Builder\Compiler\DataExtractorVisitor;
@@ -24,6 +25,7 @@ class CodeCompiler
     public function __construct()
     {
         $this->hooks[] = new ConstructorParamHook();
+        $this->hooks[] = new InjectHook();
         $this->hooks[] = new RouteParamHook();
         $this->hooks[] = new SlotHook();
     }

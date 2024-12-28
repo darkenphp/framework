@@ -27,13 +27,11 @@ class ClassAttribute implements AttributeExtractorInterface
         return $this->createDecoratorAttributeArguments($this->decoratorAttribute);
     }
 
-    // #[Inject($this)] <= getDecoratorAttributeParamValue = $this
     public function getDecoratorAttributeParamValue(): string|null|array
     {
         return $this->createDecoratorAttributeParamValue($this->useStatementCollector, $this->decoratorAttribute);
     }
 
-    // #[Inject()] <= getDecoratorAttributeName = Inject
     public function getDecoratorAttributeName(): string|false
     {
         return $this->createDecoratorAttributeParamName($this->useStatementCollector, $this->decoratorAttribute);

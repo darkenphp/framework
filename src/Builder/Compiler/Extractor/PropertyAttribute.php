@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Darken\Builder\Compiler\Extractor;
 
-use Darken\Attributes\Inject;
 use Darken\Builder\Compiler\UseStatementCollector;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
@@ -43,13 +42,11 @@ class PropertyAttribute implements AttributeExtractorInterface
         return $this->createDecoratorAttributeArguments($this->decoratorAttribute);
     }
 
-    // #[Inject($this)] <= getDecoratorAttributeParamValue = $this
     public function getDecoratorAttributeParamValue(): string|null|array
     {
         return $this->createDecoratorAttributeParamValue($this->useStatementCollector, $this->decoratorAttribute);
     }
 
-    // #[Inject()] <= getDecoratorAttributeName = Inject
     public function getDecoratorAttributeName(): string|false
     {
         return $this->createDecoratorAttributeParamName($this->useStatementCollector, $this->decoratorAttribute);
@@ -90,15 +87,6 @@ class PropertyAttribute implements AttributeExtractorInterface
         }
 
         return null;
-    }
-
-    public function getFunctionNameForRuntimeClass(): string|false
-    {
-        // not needed in future
-        return match ($this->getDecoratorAttributeName()) {
-            Inject::class => 'getContainer',
-            default => false,
-        };
     }
 
     public function getArg(): object

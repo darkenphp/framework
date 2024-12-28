@@ -49,13 +49,13 @@ $class = new class($this)
     public function __construct(\Darken\Code\Runtime $runtime)
     {
         $this->runtime = $runtime;
-        $this->db3 = $this->runtime->getContainer(\Tests\data\di\Db::class);
-        $this->db2 = $this->runtime->getContainer(\Tests\data\di\Db::class);
-        $this->db1 = $this->runtime->getContainer(\Tests\data\di\Db::class);
         $this->arg1 = $this->runtime->getArgumentParam('arg1');
         $this->namedArg2 = $this->runtime->getArgumentParam('nmdArgu2');
         $this->slot1 = $this->runtime->getSlot('slot1');
         $this->slot2 = $this->runtime->getSlot('nmdSlot2');
+        $this->db1 = $this->runtime->getContainer(\Tests\data\di\Db::class);
+        $this->db2 = $this->runtime->getContainer(\Tests\data\di\Db::class);
+        $this->db3 = $this->runtime->getContainer(\Tests\data\di\Db::class);
     }
 };
 ?>

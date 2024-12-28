@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Darken\Builder\Compiler;
 
-use Darken\Attributes\Inject;
 use Darken\Attributes\RouteParam;
 use Darken\Builder\Compiler\Extractor\PropertyAttribute;
 use PhpParser\Builder\Property;
@@ -59,13 +58,6 @@ class GlobalVisitor extends NodeVisitorAbstract
                             $attrName = ltrim($attrName, '\\');
 
                             $this->dataExtractorVisitor->addPropertyAttribute(new PropertyAttribute($this->useStatementCollector, $propertyNode, $prop, $attr));
-
-                            /** @var PropertyItem $prop */
-                            if (in_array($attrName, [Inject::class])) {
-
-                                // ATTRIBUTE TO ATTRIBUTES BAG:
-                                $this->dataExtractorVisitor->addProperty(new PropertyExtractor($this->useStatementCollector, $propertyNode, $prop, $attr));
-                            }
                         }
                     }
                 }
@@ -138,19 +130,6 @@ class GlobalVisitor extends NodeVisitorAbstract
             }
 
             $constructor = $this->dataExtractorVisitor->onCompileConstructorHook($constructor);
-
-            foreach ($this->dataExtractorVisitor->getProperties() as $property) {
-                /** @var PropertyExtractor $property */
-                $getterName = $property->getFunctionNameForRuntimeClass();
-
-                if (!$getterName) {
-                    continue;
-                }
-
-                $assignment = $property->createAssignExpression($getterName);
-
-                array_unshift($constructor->stmts, $assignment);
-            }
 
             // Add $this->runtime = $runtime; in the constructor body if not present
             array_unshift($constructor->stmts, new Expression(

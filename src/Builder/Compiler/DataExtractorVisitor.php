@@ -39,11 +39,6 @@ class DataExtractorVisitor extends NodeVisitorAbstract
     private array $classAttributes = [];
 
     /**
-     * @var array<PropertyExtractor>
-     */
-    private array $properties = [];
-
-    /**
      * @param array<AttributeHookInterface> $hooks
      */
     public function __construct(private UseStatementCollector $useStatementCollector, private array $hooks)
@@ -110,19 +105,6 @@ class DataExtractorVisitor extends NodeVisitorAbstract
             }
         }
         return $builder;
-    }
-
-    public function addProperty(PropertyExtractor $property): void
-    {
-        $this->properties[] = $property;
-    }
-
-    /**
-     * @return array<PropertyExtractor>
-     */
-    public function getProperties(): array
-    {
-        return $this->properties;
     }
 
     public function addData(string $key, mixed $value): void
