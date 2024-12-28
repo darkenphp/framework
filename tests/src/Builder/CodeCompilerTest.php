@@ -52,10 +52,10 @@ $class = new class($this)
         $this->db3 = $this->runtime->getContainer(\Tests\data\di\Db::class);
         $this->db2 = $this->runtime->getContainer(\Tests\data\di\Db::class);
         $this->db1 = $this->runtime->getContainer(\Tests\data\di\Db::class);
-        $this->slot2 = $this->runtime->getSlot('nmdSlot2');
-        $this->slot1 = $this->runtime->getSlot('slot1');
         $this->arg1 = $this->runtime->getArgumentParam('arg1');
         $this->namedArg2 = $this->runtime->getArgumentParam('nmdArgu2');
+        $this->slot1 = $this->runtime->getSlot('slot1');
+        $this->slot2 = $this->runtime->getSlot('nmdSlot2');
     }
 };
 ?>
@@ -106,7 +106,7 @@ PHP, $output->getCode());
         $this->assertSame('Darken\Attributes\ConstructorParam', $constructor2->getDecoratorAttributeName());
         $this->assertSame('nmdArgu2', $constructor2->getDecoratorAttributeParamValue());
 
-        $slot1 = $output->data->getData('slots')[0];
+        $slot1 = $output->data->getPropertyAttributes()[2];
         $this->assertSame('slot1', $slot1->getName());
         $this->assertSame('string', $slot1->getType());
         $this->assertSame(null, $slot1->getDefaultValue());
@@ -114,7 +114,7 @@ PHP, $output->getCode());
         $this->assertSame('Darken\Attributes\Slot', $slot1->getDecoratorAttributeName());
         $this->assertSame(null, $slot1->getDecoratorAttributeParamValue());
 
-        $slot2 = $output->data->getData('slots')[1];
+        $slot2 = $output->data->getPropertyAttributes()[3];
         $this->assertSame('slot2', $slot2->getName());
         $this->assertSame('string', $slot2->getType());
         $this->assertSame(null, $slot2->getDefaultValue());
@@ -144,6 +144,10 @@ class Layout1 extends \Darken\Code\Runtime
         $this->setArgumentParam('arg1', $arg1);
         $this->setArgumentParam('nmdArgu2', $nmdArgu2);
     }
+    public function renderFilePath(): string
+    {
+        return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Layout1.compiled.php';
+    }
     public function openSlot1(): self
     {
         ob_start();
@@ -163,10 +167,6 @@ class Layout1 extends \Darken\Code\Runtime
     {
         $this->setSlot('nmdSlot2', ob_get_clean());
         return $this;
-    }
-    public function renderFilePath(): string
-    {
-        return dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Layout1.compiled.php';
     }
 }
 PHP, $polyfill->getBuildOutputContent()

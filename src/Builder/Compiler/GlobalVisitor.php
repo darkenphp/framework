@@ -6,7 +6,6 @@ namespace Darken\Builder\Compiler;
 
 use Darken\Attributes\Inject;
 use Darken\Attributes\RouteParam;
-use Darken\Attributes\Slot;
 use Darken\Builder\Compiler\Extractor\PropertyAttribute;
 use PhpParser\Builder\Property;
 use PhpParser\Modifiers;
@@ -62,7 +61,7 @@ class GlobalVisitor extends NodeVisitorAbstract
                             $this->dataExtractorVisitor->addPropertyAttribute(new PropertyAttribute($this->useStatementCollector, $propertyNode, $prop, $attr));
 
                             /** @var PropertyItem $prop */
-                            if (in_array($attrName, [Slot::class, Inject::class])) {
+                            if (in_array($attrName, [Inject::class])) {
 
                                 // ATTRIBUTE TO ATTRIBUTES BAG:
                                 $this->dataExtractorVisitor->addProperty(new PropertyExtractor($this->useStatementCollector, $propertyNode, $prop, $attr));

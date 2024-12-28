@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Darken\Builder\Polyfill;
 
 use Darken\Builder\Compiler\DataExtractorVisitor;
-use Darken\Builder\Compiler\PropertyExtractor;
 use Darken\Builder\OutputPolyfill;
 use Darken\Code\Runtime;
 use InvalidArgumentException;
@@ -13,7 +12,6 @@ use PhpParser\Builder;
 use PhpParser\Builder\Method;
 use PhpParser\BuilderFactory;
 use PhpParser\Node;
-use PhpParser\Node\Param;
 
 class Creator
 {
@@ -22,8 +20,6 @@ class Creator
     public function createNode(OutputPolyfill $outputPolyfill): Node
     {
         $factory = new BuilderFactory();
-
-        // Build the namespace
         $namespaceBuilder = $factory->namespace($outputPolyfill->getNamespace());
 
         // 1) Fetch the original constructor builder
@@ -36,8 +32,7 @@ class Creator
         $classBuilder = $factory
             ->class($outputPolyfill->getClassName())
             ->extend($this->transformClassToFullqualified($this->baseRuntimeClass))
-            ->addStmt($sortedConstructorBuilder) // Use the new (correctly sorted) method builder
-            ->addStmts($this->getSlotMethods($outputPolyfill->compilerOutput->data))
+            ->addStmt($sortedConstructorBuilder)
             ->addStmt(
                 $factory->method('renderFilePath')
                     ->makePublic()
@@ -62,8 +57,16 @@ class Creator
                     )
             );
 
+
+        $classNode = $outputPolyfill->compilerOutput->data->onPolyfillClassHook($classBuilder);
+
+
         // 4) Get the Class_ node
         $classNode = $classBuilder->getNode();
+
+        // here i get PhpParser\Node\Stmt\Class
+        // but i want to pass: PhpParser\Builder\Class_  so easier to extend for child class to add methods and stuff..
+
 
         // 5) Add it to the namespace
         $namespaceBuilder->addStmt($classNode);
@@ -119,132 +122,14 @@ class Creator
     private function getConstructorMethod(DataExtractorVisitor $extractor): Method
     {
         $factory = new BuilderFactory();
-        $constructor = $extractor->getData('constructor', []);
-
-        // If there is no constructor data, return an empty __construct()
-        //if (count($constructor) === 0) {
-        //return $factory->method('__construct');
-        //}
-
-        // 1) Split into required vs optional
-        $requiredProps = [];
-        $optionalProps = [];
-
-        foreach ($constructor as $prop) {
-            // If there's no default value, it's required
-            if ($prop->getDefaultValue() === null) {
-                $requiredProps[] = $prop;
-            } else {
-                $optionalProps[] = $prop;
-            }
-        }
-
-        // 2) Merge them so required come first
-        $sortedProps = array_merge($requiredProps, $optionalProps);
 
         // 3) Build the __construct
         $methodBuilder = $factory->method('__construct')
             ->makePublic();
 
-        foreach ($sortedProps as $prop) {
-            /** @var PropertyExtractor $prop */
-            $paramName = $prop->getDecoratorAttributeParamValue() ?? $prop->getName();
-
-            // 1) Build the param
-            $param = $factory->param($paramName);
-
-            // 2) If there's a type, set it
-            if ($prop->getType() !== null) {
-                $param->setType($prop->getType());
-            }
-
-            // 3) If there's a default value, set it
-            if ($prop->getDefaultValue() !== null) {
-                // Here you likely want to handle strings, arrays, etc. properly,
-                // but for simplicity we do:
-                $param->setDefault($prop->getDefaultValue());
-            }
-
-            // 4) Add param to the method
-            $methodBuilder->addParam($param);
-
-            // 5) Example assignment statement
-            $methodBuilder->addStmt(
-                new Node\Expr\MethodCall(
-                    new Node\Expr\Variable('this'),
-                    'setArgumentParam',
-                    [
-                        new Node\Arg(new Node\Scalar\String_($paramName)),
-                        new Node\Arg(new Node\Expr\Variable($paramName)),
-                    ]
-                )
-            );
-        }
-
         // $method
         $extractor->onPolyfillConstructorHook($methodBuilder);
 
         return $methodBuilder;
-    }
-
-    private function getSlotMethods(DataExtractorVisitor $extractor): array
-    {
-        $factory = new BuilderFactory();
-        $slots = $extractor->getData('slots', []);
-
-        // If there are no slots, return an empty array of methods
-        if (count($slots) === 0) {
-            return [];
-        }
-
-        $methods = [];
-
-        foreach ($slots as $slot) {
-            // @var PropertyExtractor $slot
-            $methodName = $slot->getDecoratorAttributeParamValue() ?: $slot->getName();
-            $startTag = 'open' . ucfirst($methodName);
-            $closeTag = 'close' . ucfirst($methodName);
-
-            // openXyz()
-            $openMethod = $factory->method($startTag)
-                ->makePublic()
-                ->setReturnType('self')
-                ->addStmt(
-                    // ob_start();
-                    new Node\Expr\FuncCall(new Node\Name('ob_start'))
-                )
-                ->addStmt(
-                    // return $this;
-                    new Node\Stmt\Return_(new Node\Expr\Variable('this'))
-                );
-
-            // closeXyz()
-            $closeMethod = $factory->method($closeTag)
-                ->makePublic()
-                ->setReturnType('self')
-                ->addStmt(
-                    // $this->setSlot('xyz', ob_get_clean());
-                    new Node\Expr\MethodCall(
-                        new Node\Expr\Variable('this'),
-                        'setSlot',
-                        [
-                            new Node\Arg(new Node\Scalar\String_($methodName)),
-                            new Node\Arg(
-                                new Node\Expr\FuncCall(new Node\Name('ob_get_clean'))
-                            ),
-                        ]
-                    )
-                )
-                ->addStmt(
-                    // return $this;
-                    new Node\Stmt\Return_(new Node\Expr\Variable('this'))
-                );
-
-            // Collect both new methods
-            $methods[] = $openMethod;
-            $methods[] = $closeMethod;
-        }
-
-        return $methods;
     }
 }

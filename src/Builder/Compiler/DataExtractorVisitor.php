@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Darken\Builder\Compiler;
 
 use Darken\Attributes\Middleware;
-use Darken\Attributes\Slot;
 use Darken\Builder\Compiler\Extractor\ClassAttribute;
 use Darken\Builder\Compiler\Extractor\PropertyAttribute;
 use Darken\Builder\Hooks\AttributeHookInterface;
 use Darken\Builder\Hooks\PropertyAttributeHook;
 use Darken\Enum\HookedAttributeType;
 use InvalidArgumentException;
+use PhpParser\Builder\Class_;
 use PhpParser\Builder\Method;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
@@ -32,7 +32,6 @@ class DataExtractorVisitor extends NodeVisitorAbstract
     private array $data = [
         'middlewares' => [],
         'constructor' => [],
-        'slots' => [],
     ];
 
     private array $propertyAttributes = [];
@@ -99,15 +98,23 @@ class DataExtractorVisitor extends NodeVisitorAbstract
         return $constructor;
     }
 
+    public function onPolyfillClassHook(Class_ $builder): Class_
+    {
+        foreach ($this->propertyAttributes as $propertyAttribute) {
+            $hooks = $this->getHooksByType(HookedAttributeType::ON_PROPERTY);
+            foreach ($hooks as $hook) {
+                /** @var PropertyAttributeHook $hook */
+                if ($hook->isValidAttribute($propertyAttribute)) {
+                    $builder = $hook->polyfillClassHook($propertyAttribute, $builder);
+                }
+            }
+        }
+        return $builder;
+    }
+
     public function addProperty(PropertyExtractor $property): void
     {
         $this->properties[] = $property;
-
-        switch ($property->getDecoratorAttributeName()) {
-            case Slot::class:
-                $this->addData('slots', $property);
-                break;
-        }
     }
 
     /**

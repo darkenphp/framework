@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Darken\Builder\Compiler;
 
 use Darken\Attributes\Inject;
-use Darken\Attributes\Slot;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Attribute;
@@ -95,7 +94,6 @@ class PropertyExtractor
     public function getFunctionNameForRuntimeClass(): string|false
     {
         return match ($this->getDecoratorAttributeName()) {
-            Slot::class => 'getSlot',
             Inject::class => 'getContainer',
             default => false,
         };
