@@ -9,11 +9,27 @@ use PhpParser\Node\Attribute;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Scalar\String_;
 
 trait AttributeExtractorTrait
 {
+    /**
+     * Resolve the fully qualified attribute name using use statements.
+     */
+    public function resolveAttributeName(UseStatementCollector $useStatementCollector, Name $name): string
+    {
+        $nameStr = $name->toString();
+
+        // Handle fully qualified names
+        if ($name->isFullyQualified()) {
+            return ltrim($nameStr, '\\');
+        }
+
+        return $useStatementCollector->ensureClassName($nameStr);
+    }
+
     public function createDecoratorAttributeArguments(Attribute $decoratorAttribute): array
     {
         return $decoratorAttribute->args ?? [];

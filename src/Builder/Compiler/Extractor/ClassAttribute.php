@@ -12,7 +12,7 @@ class ClassAttribute implements AttributeExtractorInterface
 {
     use AttributeExtractorTrait;
 
-    public function __construct(private UseStatementCollector $useStatementCollector, private Attribute $decoratorAttribute)
+    public function __construct(public UseStatementCollector $useStatementCollector, private Attribute $decoratorAttribute)
     {
 
     }

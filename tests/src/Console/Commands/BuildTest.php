@@ -33,78 +33,73 @@ class BuildTest extends TestCase
         $content = include($config->getBuildOutputFolder() . '/routes.php');
 
         $this->assertSame([
-            "<slug:.+>" => [
-                "_children" => [
-                    "class" => "Tests\\Build\\data\\pages\\slug",
-                    "middlewares" => []
-                ]
+            '<slug:.+>' => [
+                '_children' => [
+                    'class' => 'Tests\Build\data\pages\slug',
+                ],
             ],
             'api' => [
                 '_children' => [
                     'auth' => [
                         '_children' => [
-                            'class' => 'Tests\\Build\\data\\pages\\api\\auth',
                             'middlewares' => [
                                 [
-                                    'class' => '\\Darken\\Middleware\\AuthenticationMiddleware',
+                                    'class' => '\Darken\Middleware\AuthenticationMiddleware',
                                     'params' => [
                                         'authHeader' => 'Authorization',
                                         'expectedToken' => 'FooBar',
                                     ],
-                                    'position' => '\\Darken\\Enum\\MiddlewarePosition::BEFORE',
+                                    'position' => '\Darken\Enum\MiddlewarePosition::BEFORE',
                                 ],
                             ],
+                            'class' => 'Tests\Build\data\pages\api\auth',
                         ],
                     ],
                 ],
             ],
-            "blogs" => [
-                "_children" => [
-                    "<id:[a-zA-Z0-9\\-]+>" => [
-                        "_children" => [
-                            "comments" => [
-                                "_children" => [
-                                    "class" => "Tests\\Build\\data\\pages\\blogs\\id\\comments",
-                                    "middlewares" => [
+            'blogs' => [
+                '_children' => [
+                    '<id:[a-zA-Z0-9\-]+>' => [
+                        '_children' => [
+                            'comments' => [
+                                '_children' => [
+                                    'middlewares' => [
                                         [
-                                            'class' => '\\Darken\\Middleware\\AddCustomHeaderMiddleware',
+                                            'class' => '\Darken\Middleware\AddCustomHeaderMiddleware',
                                             'params' => [
                                                 'name' => 'X-Foo',
                                                 'value' => 'X-Bar',
                                             ],
-                                            'position' => '\\Darken\\Enum\\MiddlewarePosition::AFTER',
+                                            'position' => '\Darken\Enum\MiddlewarePosition::AFTER',
                                         ],
-                                    ]
-                                ]
+                                    ],
+                                    'class' => 'Tests\Build\data\pages\blogs\id\comments',
+                                ],
                             ],
-                            "index" => [
-                                "_children" => [
-                                    "class" => "Tests\\Build\\data\\pages\\blogs\\id\\index",
-                                    "middlewares" => []
-                                ]
-                            ]
-                        ]
+                            'index' => [
+                                '_children' => [
+                                    'class' => 'Tests\Build\data\pages\blogs\id\index',
+                                ],
+                            ],
+                        ],
                     ],
-                    "index" => [
-                        "_children" => [
-                            "class" => "Tests\\Build\\data\\pages\\blogs\\index",
-                            "middlewares" => []
-                        ]
-                    ]
-                ]
+                    'index' => [
+                        '_children' => [
+                            'class' => 'Tests\Build\data\pages\blogs\index',
+                        ],
+                    ],
+                ],
             ],
             'components-test' => [
                 '_children' => [
-                    'class' => 'Tests\\Build\\data\\pages\\componentstest',
-                    'middlewares' => []
-                ]
+                    'class' => 'Tests\Build\data\pages\componentstest',
+                ],
             ],
-            "hello" => [
-                "_children" => [
-                    "class" => "Tests\\Build\\data\\pages\\hello",
-                    "middlewares" => []
-                ]
-            ]
+            'hello' => [
+                '_children' => [
+                    'class' => 'Tests\Build\data\pages\hello',
+                ],
+            ],
         ], $content);
 
         // web app

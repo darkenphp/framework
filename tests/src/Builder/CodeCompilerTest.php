@@ -85,9 +85,6 @@ echo $class->db3->getUpperDsn();
 ?></div>
 PHP, $output->getCode());
 
-        // Assert that 'middlewares' is an empty array
-        $this->assertSame([], $output->data->getData('middlewares', []), "Middlewares should be an empty array.");
-
         
         /** @var PropertyExtractor $constructor1 */
         $constructor1 = $output->data->getPropertyAttributes()[0];

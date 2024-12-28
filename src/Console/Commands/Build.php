@@ -51,7 +51,6 @@ class Build implements CommandInterface
             /**
              * @var array<string, array{
              *     _children: array<string, mixed>,
-             *     middlewares: array<string, mixed>,
              *     class?: string
              * }> $trie
              */
@@ -65,8 +64,7 @@ class Build implements CommandInterface
                     }
                     $node = &$node[$segment]['_children'];
                 }
-                $node['class'] = $page->polyfill->getFullQualifiedClassName();
-                $node['middlewares'] = $page->polyfill->compilerOutput->data->getData('middlewares', []);
+                $node = [...$node, ...$page->getNodeData()];
             }
 
             ksort($trie);

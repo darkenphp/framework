@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Darken\Builder\Hooks;
 
 use Darken\Builder\Compiler\Extractor\PropertyAttribute;
+use Darken\Builder\OutputPage;
 use Darken\Enum\HookedAttributeType;
 use PhpParser\Builder\Class_;
 use PhpParser\Builder\Method;
@@ -19,6 +20,8 @@ abstract class PropertyAttributeHook implements AttributeHookInterface
     abstract public function polyfillConstructorHook(PropertyAttribute $attribute, Method $constructor): Method;
 
     abstract public function polyfillClassHook(PropertyAttribute $attribute, Class_ $builder): Class_;
+
+    abstract public function pageDataHook(PropertyAttribute $attribute, OutputPage $page): array;
 
     public function attributeType(): HookedAttributeType
     {

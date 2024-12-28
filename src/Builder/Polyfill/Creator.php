@@ -57,20 +57,11 @@ class Creator
                     )
             );
 
-
         $classNode = $outputPolyfill->compilerOutput->data->onPolyfillClassHook($classBuilder);
-
-
         // 4) Get the Class_ node
         $classNode = $classBuilder->getNode();
-
-        // here i get PhpParser\Node\Stmt\Class
-        // but i want to pass: PhpParser\Builder\Class_  so easier to extend for child class to add methods and stuff..
-
-
         // 5) Add it to the namespace
         $namespaceBuilder->addStmt($classNode);
-
         // 6) Return the full namespace AST
         return $namespaceBuilder->getNode();
     }
@@ -115,8 +106,6 @@ class Creator
             ->addParams($sortedParams)
             // Reuse the method body/statement block
             ->addStmts($oldNode->stmts);
-
-        // 5) Return the new builder that is guaranteed sorted
     }
 
     private function getConstructorMethod(DataExtractorVisitor $extractor): Method

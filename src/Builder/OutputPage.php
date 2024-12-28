@@ -12,6 +12,13 @@ class OutputPage
 
     }
 
+    public function getNodeData(): array
+    {
+        $extra = $this->polyfill->compilerOutput->data->onPageDataHook($this);
+        $extra['class'] = $this->polyfill->getFullQualifiedClassName();
+        return $extra;
+    }
+
     public function getSegmentedTrieRoute(): array
     {
         return explode('/', trim($this->getRoute(), '/')); // Split into segments
