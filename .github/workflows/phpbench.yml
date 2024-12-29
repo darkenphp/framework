@@ -1,0 +1,23 @@
+name: Performance Testing
+
+on: [push, pull_request]
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer clearcache && composer install --prefer-dist
+
+      - name: Run Benchmarks
+        run: vendor/bin/phpbench run benchmark --report=aggregate

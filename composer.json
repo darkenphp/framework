@@ -18,7 +18,8 @@
     "require-dev": {
         "phpunit/phpunit": "^11",
         "friendsofphp/php-cs-fixer": "^3.65",
-        "phpstan/phpstan": "^2.0"
+        "phpstan/phpstan": "^2.0",
+        "phpbench/phpbench": "^1.3"
     },
     "license": "MIT",
     "autoload": {
@@ -29,7 +30,8 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/",
-            "Tests\\Build\\": "tests/.build/"
+            "Tests\\Build\\": "tests/.build/",
+            "Benchmark\\": "benchmark/"
         }
     },
     "authors": [
