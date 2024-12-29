@@ -8,6 +8,7 @@ use Darken\Builder\FileSaveInterface;
 use Darken\Builder\OutputPage;
 use Darken\Console\Application;
 use Darken\Console\CommandInterface;
+use Darken\Events\AfterBuildEvent;
 use Throwable;
 use Yiisoft\Files\FileHelper;
 
@@ -79,6 +80,8 @@ class Build implements CommandInterface
 
         $compiledText = $app->stdTextGreen('Compiled ') . $app->stdTextYellow("{$filescount}") . ' files to ' . $app->stdTextYellow("{$app->config->getBuildOutputFolder()}");
         $app->stdOut($compiledText);
+
+        $app->getEventService()->dispatch(new AfterBuildEvent());
     }
 
     public static function createFile(FileSaveInterface $save): bool

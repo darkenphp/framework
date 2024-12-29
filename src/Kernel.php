@@ -7,6 +7,8 @@ namespace Darken;
 use Darken\Config\ConfigInterface;
 use Darken\Service\ContainerService;
 use Darken\Service\ContainerServiceInterface;
+use Darken\Service\EventService;
+use Darken\Service\EventServiceInterface;
 use Whoops\Run;
 
 abstract class Kernel
@@ -21,12 +23,18 @@ abstract class Kernel
         $this->initalize();
 
         $container = new ContainerService();
-
         $container->register($config::class, $config);
 
         if ($config instanceof ContainerServiceInterface) {
             $container = $config->containers($container);
         }
+
+        $event = new EventService();
+        if ($config instanceof EventServiceInterface) {
+            $event = $config->events($event);
+        }
+
+        $container->register($event);
 
         self::$container = $container;
     }
@@ -34,6 +42,11 @@ abstract class Kernel
     public static function getContainerService(): ContainerService
     {
         return self::$container;
+    }
+
+    public function getEventService(): EventService
+    {
+        return self::getContainerService()->resolve(EventService::class);
     }
 
     abstract public function initalize(): void;

@@ -4,6 +4,7 @@ namespace Tests\src\Console\Commands;
 
 use Darken\Console\Application;
 use Darken\Console\Commands\Build;
+use Darken\Events\AfterBuildEvent;
 use Darken\Web\Application as WebApplication;
 use Darken\Web\PageHandler;
 use Psr\Http\Message\ResponseInterface;
@@ -24,6 +25,10 @@ class BuildTest extends TestCase
         $this->assertStringContainsString('tests/data/pages', $config->getPagesFolder());
 
         $app = new Application($config);
+
+        $app->getEventService()->on(AfterBuildEvent::class, function () {
+            $this->assertTrue(true);
+        });
 
         $build = new Build();
         $build->clear = true;

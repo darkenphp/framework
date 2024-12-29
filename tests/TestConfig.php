@@ -6,11 +6,13 @@ use Darken\Config\ConfigHelperTrait;
 use Darken\Config\ConfigInterface;
 use Darken\Service\ContainerService;
 use Darken\Service\ContainerServiceInterface;
+use Darken\Service\EventService;
+use Darken\Service\EventServiceInterface;
 use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
 use Tests\data\di\Db;
 
-class TestConfig implements ConfigInterface, ContainerServiceInterface, MiddlewareServiceInterface
+class TestConfig implements ConfigInterface, ContainerServiceInterface, MiddlewareServiceInterface, EventServiceInterface
 {
     use ConfigHelperTrait;
 
@@ -32,6 +34,13 @@ class TestConfig implements ConfigInterface, ContainerServiceInterface, Middlewa
     public function setComponentsFolder(string $componentsFolder): void
     {
         $this->componentsFolder = $componentsFolder;
+    }
+
+    public function events(EventService $service): EventService
+    {
+        return $service->on('testevent', function () {
+            return 'test';
+        });
     }
 
     public function containers(ContainerService $service): ContainerService
