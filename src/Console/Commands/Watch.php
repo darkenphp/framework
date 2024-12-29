@@ -42,7 +42,6 @@ class Watch implements CommandInterface
             }
 
             if ($changesDetected) {
-                $app->stdOut('Changes detected.');
                 $build = new Build();
                 $build->run($app);
             }

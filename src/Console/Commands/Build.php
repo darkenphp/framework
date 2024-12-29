@@ -78,7 +78,7 @@ class Build implements CommandInterface
             $app->stdOut($errorMessage);
         }
 
-        $compiledText = $app->stdTextGreen('Compiled ') . $app->stdTextYellow("{$filescount}") . ' files to ' . $app->stdTextYellow("{$app->config->getBuildOutputFolder()}");
+        $compiledText = $app->stdTextGreen('✓') . ' Compiled ' . $filescount . ' files to ' . $app->config->getBuildOutputFolder();
         $app->stdOut($compiledText);
 
         $app->getEventService()->dispatch(new AfterBuildEvent());

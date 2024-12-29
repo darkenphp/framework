@@ -60,7 +60,7 @@ class Dev implements CommandInterface
                 }
 
                 // Read and display output
-                $this->readOutput($proc['pipes'], $proc['name']);
+                $this->readOutput($proc['pipes'], $proc['name'], $app);
             }
 
             // Sleep briefly to prevent high CPU usage
@@ -74,7 +74,7 @@ class Dev implements CommandInterface
      * @param array  $pipes Array containing the pipe resources.
      * @param string $name  Name of the process for logging purposes.
      */
-    private function readOutput($pipes, string $name)
+    private function readOutput($pipes, string $name, Application $app)
     {
         $read = [];
         if (isset($pipes[1]) && is_resource($pipes[1])) { // stdout
@@ -103,7 +103,9 @@ class Dev implements CommandInterface
                 continue;
             }
 
-            echo "[{$name}] " . $data;
+            echo date('H:i:s') . ' ';
+            echo $app->stdTextYellow("[{$name}]");
+            echo ' ' . $data;
         }
     }
 
