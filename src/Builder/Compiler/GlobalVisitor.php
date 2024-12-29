@@ -114,7 +114,7 @@ class GlobalVisitor extends NodeVisitorAbstract
             // Remove $this->runtime = $runtime; if it exists
             foreach ($constructor->stmts as $index => $stmt) {
                 /** @var Expression $stmt */
-                if ($stmt->expr instanceof Assign && $stmt->expr->var instanceof PropertyFetch) {
+                if ($stmt instanceof Expression && $stmt->expr instanceof Assign && $stmt->expr->var instanceof PropertyFetch) {
                     if ($stmt->expr->var->name->name == 'runtime') {
                         unset($constructor->stmts[$index]);
                     }
