@@ -116,16 +116,70 @@ class PropertyAttribute implements AttributeExtractorInterface
         return new String_($this->prop->name->toString());
     }
 
-    public function createAssignExpression(string $getterName): Expression
+    public function createGetQueryParamExpressionForCompile(): Expression
+    {
+
+        return new Expression(
+            new Assign(
+                new PropertyFetch(new Variable('this'), $this->getName()),
+                new MethodCall(
+                    new PropertyFetch(new Variable('this'), 'runtime'),
+                    'getQueryParam',
+                    [
+                        new Arg(new String_($this->getDecoratorAttributeParamValue() ?? $this->getName())),
+                    ]
+                )
+            )
+        );
+    }
+
+    public function createGetContainerExpressionForCompile(): Expression
     {
         return new Expression(
             new Assign(
                 new PropertyFetch(new Variable('this'), $this->getName()),
                 new MethodCall(
                     new PropertyFetch(new Variable('this'), 'runtime'),
-                    $getterName,
-                    [new Arg($this->getArg())]
+                    'getContainer',
+                    [
+                        new Arg($this->getArg()),
+                    ]
                 )
+            )
+        );
+    }
+
+    public function createGetDataExpressionForCompile(string $dataSection): Expression
+    {
+        $paramName = $this->getDecoratorAttributeParamValue() ?? $this->getName();
+
+        return new Expression(
+            new Assign(
+                new PropertyFetch(new Variable('this'), $this->getName()),
+                new MethodCall(
+                    new PropertyFetch(new Variable('this'), 'runtime'),
+                    'getData',
+                    [
+                        new Arg(new String_($dataSection)),
+                        new Arg(new String_($paramName)),
+                    ]
+                )
+            )
+        );
+    }
+
+    public function createSeteDataExpressionForPolyfill(string $dataSection): Expression
+    {
+        $paramName = $this->getDecoratorAttributeParamValue() ?? $this->getName();
+        return new Expression(
+            new MethodCall(
+                new Variable('this'),
+                'setData',
+                [
+                    new Arg(new String_($dataSection)),
+                    new Arg(new String_($paramName)),
+                    new Arg(new Variable($paramName)),
+                ]
             )
         );
     }

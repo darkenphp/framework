@@ -18,11 +18,7 @@ use Throwable;
  */
 abstract class Runtime
 {
-    private array $routeParams = [];
-
-    private array $argumentParams = [];
-
-    private array $slots = [];
+    private array $data = [];
 
     public function __toString(): string
     {
@@ -33,34 +29,17 @@ abstract class Runtime
 
     abstract public function renderFilePath(): string;
 
-    public function setRouteParams(array $routeParams): void
+    public function setData(string $section, string $key, mixed $value): void
     {
-        $this->routeParams = $routeParams;
+        if (!isset($this->data[$section])) {
+            $this->data[$section] = [];
+        }
+        $this->data[$section][$key] = $value;
     }
 
-    public function getRouteParam(string $name): string|null
+    public function getData(string $section, string $key, mixed $defaultValue = null): mixed
     {
-        return $this->routeParams[$name] ?? null;
-    }
-
-    public function setArgumentParam(string $name, mixed $value): void
-    {
-        $this->argumentParams[$name] = $value;
-    }
-
-    public function getArgumentParam(string $name): mixed
-    {
-        return $this->argumentParams[$name] ?? null;
-    }
-
-    public function setSlot(string $name, string $value): void
-    {
-        $this->slots[$name] = $value;
-    }
-
-    public function getSlot(string $name): string|null
-    {
-        return $this->slots[$name] ?? null;
+        return $this->data[$section][$key] ?? $defaultValue;
     }
 
     public function getContainer($className): object

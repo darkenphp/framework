@@ -17,7 +17,7 @@ class QueryParamHook extends PropertyAttributeHook
 {
     public function compileConstructorHook(PropertyAttribute $attribute, ClassMethod $constructor): ClassMethod
     {
-        $constructor->stmts[] = $attribute->createAssignExpression('getQueryParam');
+        $constructor->stmts[] = $attribute->createGetQueryParamExpressionForCompile();
         return $constructor;
     }
 

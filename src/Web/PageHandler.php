@@ -71,11 +71,7 @@ class PageHandler implements RequestHandlerInterface
             return false;
         }
 
-        /** @var Runtime $object */
-        $object = $this->app->getContainerService()->createObject($className, $params);
-        $object->setRouteParams($params);
-        return $object;
-
+        return $this->app->getContainerService()->createObject($className, $params);
     }
 
     private function findRouteNode(string $url, array $trie): false|array

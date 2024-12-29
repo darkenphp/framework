@@ -115,7 +115,7 @@ class PropertyExtractor
         return new String_($this->prop->name->toString());
     }
 
-    public function createAssignExpression(string $getterName): Expression
+    public function createGetDataExpression(string $getterName): Expression
     {
         return new Expression(
             new Assign(

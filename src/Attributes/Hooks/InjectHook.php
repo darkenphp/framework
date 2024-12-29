@@ -22,7 +22,8 @@ class InjectHook extends PropertyAttributeHook
 
     public function compileConstructorHook(PropertyAttribute $attribute, ClassMethod $constructor): ClassMethod
     {
-        $constructor->stmts[] = $attribute->createAssignExpression('getContainer');
+        // renmove to "resolve" container
+        $constructor->stmts[] = $attribute->createGetContainerExpressionForCompile();
         return $constructor;
     }
 

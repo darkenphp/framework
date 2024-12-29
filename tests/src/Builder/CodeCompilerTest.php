@@ -49,10 +49,10 @@ $class = new class($this)
     public function __construct(\Darken\Code\Runtime $runtime)
     {
         $this->runtime = $runtime;
-        $this->arg1 = $this->runtime->getArgumentParam('arg1');
-        $this->namedArg2 = $this->runtime->getArgumentParam('nmdArgu2');
-        $this->slot1 = $this->runtime->getSlot('slot1');
-        $this->slot2 = $this->runtime->getSlot('nmdSlot2');
+        $this->arg1 = $this->runtime->getData('constructorParams', 'arg1');
+        $this->namedArg2 = $this->runtime->getData('constructorParams', 'nmdArgu2');
+        $this->slot1 = $this->runtime->getData('slots', 'slot1');
+        $this->slot2 = $this->runtime->getData('slots', 'nmdSlot2');
         $this->db1 = $this->runtime->getContainer(\Tests\data\di\Db::class);
         $this->db2 = $this->runtime->getContainer(\Tests\data\di\Db::class);
         $this->db3 = $this->runtime->getContainer(\Tests\data\di\Db::class);
@@ -138,8 +138,8 @@ class Layout1 extends \Darken\Code\Runtime
 {
     public function __construct(string $arg1, string $nmdArgu2)
     {
-        $this->setArgumentParam('arg1', $arg1);
-        $this->setArgumentParam('nmdArgu2', $nmdArgu2);
+        $this->setData('constructorParams', 'arg1', $arg1);
+        $this->setData('constructorParams', 'nmdArgu2', $nmdArgu2);
     }
     public function renderFilePath(): string
     {
@@ -152,7 +152,7 @@ class Layout1 extends \Darken\Code\Runtime
     }
     public function closeSlot1(): self
     {
-        $this->setSlot('slot1', ob_get_clean());
+        $this->setData('slots', 'slot1', ob_get_clean());
         return $this;
     }
     public function openNmdSlot2(): self
@@ -162,7 +162,7 @@ class Layout1 extends \Darken\Code\Runtime
     }
     public function closeNmdSlot2(): self
     {
-        $this->setSlot('nmdSlot2', ob_get_clean());
+        $this->setData('slots', 'nmdSlot2', ob_get_clean());
         return $this;
     }
 }

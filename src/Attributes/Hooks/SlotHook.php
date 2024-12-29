@@ -30,7 +30,7 @@ class SlotHook extends PropertyAttributeHook
 
     public function compileConstructorHook(PropertyAttribute $attribute, ClassMethod $constructor): ClassMethod
     {
-        $constructor->stmts[] = $attribute->createAssignExpression('getSlot');
+        $constructor->stmts[] = $attribute->createGetDataExpressionForCompile('slots');
         return $constructor;
     }
 
@@ -65,8 +65,9 @@ class SlotHook extends PropertyAttributeHook
             ->addStmt(
                 new MethodCall(
                     new Variable('this'),
-                    'setSlot',
+                    'setData',
                     [
+                        new Arg(new String_('slots')),
                         new Arg(new String_($methodName)),
                         new Arg(
                             new FuncCall(new Name('ob_get_clean'))

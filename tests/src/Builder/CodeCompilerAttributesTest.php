@@ -54,10 +54,10 @@ $x = new class($this)
     public function __construct(\Darken\Code\Runtime $runtime)
     {
         $this->runtime = $runtime;
-        $this->stringvar = $this->runtime->getArgumentParam('stringvar');
-        $this->zahl = $this->runtime->getArgumentParam('zahl');
-        $this->array = $this->runtime->getArgumentParam('array');
-        $this->array2 = $this->runtime->getArgumentParam('array2');
+        $this->stringvar = $this->runtime->getData('constructorParams', 'stringvar');
+        $this->zahl = $this->runtime->getData('constructorParams', 'zahl');
+        $this->array = $this->runtime->getData('constructorParams', 'array');
+        $this->array2 = $this->runtime->getData('constructorParams', 'array2');
     }
 };
 PHP;
@@ -78,10 +78,10 @@ class test extends \Darken\Code\Runtime
 {
     public function __construct(int $zahl, array $array, string $stringvar = 'test', array $array2 = [])
     {
-        $this->setArgumentParam('stringvar', $stringvar);
-        $this->setArgumentParam('zahl', $zahl);
-        $this->setArgumentParam('array', $array);
-        $this->setArgumentParam('array2', $array2);
+        $this->setData('constructorParams', 'stringvar', $stringvar);
+        $this->setData('constructorParams', 'zahl', $zahl);
+        $this->setData('constructorParams', 'array', $array);
+        $this->setData('constructorParams', 'array2', $array2);
     }
     public function renderFilePath(): string
     {
@@ -144,7 +144,7 @@ PHP, $polyfill->getBuildOutputContent());
                 $cfg = new ConfigApi(null, $this->config);
                 $data = $cfg->getConfig();
                 $this->config = $this->runtime->getContainer(\Tests\data\di\Db::class);
-                $this->slug = $this->runtime->getRouteParam('slug');
+                $this->slug = $this->runtime->getData('routeParams', 'slug');
             }
         };
         PHP, $output->getCode());

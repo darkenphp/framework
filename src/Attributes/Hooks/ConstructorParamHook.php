@@ -11,10 +11,6 @@ use Darken\Builder\Hooks\PropertyAttributeHook;
 use Darken\Builder\OutputPage;
 use PhpParser\Builder\Class_;
 use PhpParser\Builder\Method;
-use PhpParser\Node\Arg;
-use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 
 class ConstructorParamHook extends PropertyAttributeHook
@@ -26,24 +22,21 @@ class ConstructorParamHook extends PropertyAttributeHook
 
     public function compileConstructorHook(PropertyAttribute $attribute, ClassMethod $constructor): ClassMethod
     {
-        $constructor->stmts[] = $attribute->createAssignExpression('getArgumentParam');
+        // 1. assign the value from the runtime to the property in the constructor
+        $constructor->stmts[] = $attribute->createGetDataExpressionForCompile('constructorParams');
         return $constructor;
     }
 
     public function polyfillConstructorHook(PropertyAttribute $attribute, Method $constructor): Method
     {
+        // should be renamed to "first decorrator ..."
         $paramName = $attribute->getDecoratorAttributeParamValue() ?? $attribute->getName();
 
+        // 1. add the constructor param to the constructor
         $constructor->addParam($this->createParam($paramName, $attribute->getType(), $attribute->getDefaultValue()));
 
-        $constructor->addStmt(new MethodCall(
-            new Variable('this'),
-            'setArgumentParam',
-            [
-                new Arg(new String_($paramName)),
-                new Arg(new Variable($paramName)),
-            ]
-        ));
+        // 2. add the setter of the value into the runtime from the constructor
+        $constructor->addStmt($attribute->createSeteDataExpressionForPolyfill('constructorParams'));
 
         return $constructor;
     }

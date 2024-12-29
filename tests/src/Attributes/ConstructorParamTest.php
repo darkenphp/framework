@@ -44,8 +44,8 @@ class ConstructorParamTest extends TestCase
             public function __construct(\Darken\Code\Runtime $runtime)
             {
                 $this->runtime = $runtime;
-                $this->test = $this->runtime->getArgumentParam('test');
-                $this->id = $this->runtime->getArgumentParam('userId');
+                $this->test = $this->runtime->getData('constructorParams', 'test');
+                $this->id = $this->runtime->getData('constructorParams', 'userId');
             }
         };
         PHP, $output->getCode());
@@ -65,8 +65,8 @@ class ConstructorParamTest extends TestCase
         {
             public function __construct(mixed $test, mixed $userId)
             {
-                $this->setArgumentParam('test', $test);
-                $this->setArgumentParam('userId', $userId);
+                $this->setData('constructorParams', 'test', $test);
+                $this->setData('constructorParams', 'userId', $userId);
             }
             public function renderFilePath(): string
             {
