@@ -68,6 +68,8 @@ class PropertyAttribute implements AttributeExtractorInterface
     {
         if ($this->propertyNode->type instanceof NullableType) {
             return '?' . $this->propertyNode->type->type->toString();
+        } elseif ($this->propertyNode->type instanceof FullyQualified) {
+            return $this->useStatementCollector->ensureClassName($this->propertyNode->type->toString());
         } elseif ($this->propertyNode->type instanceof Identifier || $this->propertyNode->type instanceof Name) {
             return $this->propertyNode->type->toString();
         }
