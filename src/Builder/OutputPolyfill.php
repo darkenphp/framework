@@ -34,7 +34,7 @@ class OutputPolyfill implements FileSaveInterface
 
         $prettyPrinter = new Standard();
         $ast = [$node];
-        return $prettyPrinter->prettyPrintFile($ast);
+        return CodeCompiler::doNotModifyHint(false).$prettyPrinter->prettyPrintFile($ast);
     }
 
     public function getClassName(): string
