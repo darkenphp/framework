@@ -48,15 +48,6 @@ class GlobalVisitor extends NodeVisitorAbstract
                 foreach ($propertyNode->props as $prop) {
                     foreach ($propertyNode->attrGroups as $attrGroup) {
                         foreach ($attrGroup->attrs as $attr) {
-
-                            if ($attr->name instanceof FullyQualified) {
-                                $attrName = $attr->name->toString();
-                            } else {
-                                $attrName = $this->useStatementCollector->ensureClassName($attr->name->toString());
-                            }
-
-                            $attrName = ltrim($attrName, '\\');
-
                             $this->dataExtractorVisitor->addPropertyAttribute(new PropertyAttribute($this->useStatementCollector, $propertyNode, $prop, $attr));
                         }
                     }
@@ -85,7 +76,6 @@ class GlobalVisitor extends NodeVisitorAbstract
                 array_unshift($node->stmts, $contextProperty);
             }
 
-
             // Ensure there is a constructor
             $constructor = $node->getMethod('__construct');
             if (!$constructor) {
@@ -101,6 +91,7 @@ class GlobalVisitor extends NodeVisitorAbstract
             }
 
             // Ensure the constructor has a Darken\Page\Runtime $context parameter
+            // if defined it contains the index of the parameter $paramIndex
             $hasContextParam = false;
             foreach ($constructor->params as $paramIndex => $param) {
                 if ($param->var instanceof Variable && $param->var->name === 'runtime') {
@@ -120,6 +111,7 @@ class GlobalVisitor extends NodeVisitorAbstract
                 $constructor->params[$hasContextParam] = $contextParam;
             }
 
+            // Remove $this->runtime = $runtime; if it exists
             foreach ($constructor->stmts as $index => $stmt) {
                 /** @var Expression $stmt */
                 if ($stmt->expr instanceof Assign && $stmt->expr->var instanceof PropertyFetch) {
@@ -128,6 +120,10 @@ class GlobalVisitor extends NodeVisitorAbstract
                     }
                 }
             }
+
+            // get all existings statments and reset to null, so we can append them later
+            $existingStmts = array_values($constructor->stmts);
+            $constructor->stmts = [];
 
             $constructor = $this->dataExtractorVisitor->onCompileConstructorHook($constructor);
 
@@ -138,6 +134,11 @@ class GlobalVisitor extends NodeVisitorAbstract
                     new Variable('runtime')
                 )
             ));
+
+            // Append all existing statements
+            foreach ($existingStmts as $stmt) {
+                $constructor->stmts[] = $stmt;
+            }
         }
 
         return null;
