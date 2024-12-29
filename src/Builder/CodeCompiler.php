@@ -69,7 +69,16 @@ class CodeCompiler
 
             return new CodeCompilerOutput($code, $data);
         } catch (Throwable $e) {
-            throw new RuntimeException('Failed to compile ' . $file->filePath . ': ' . $e->getMessage(), 0, $e);
+            $errorMessage = sprintf(
+                "Failed to compile file: %s\n" .
+                "Error: %s\n" .
+                'File: %s:%d',
+                $file->filePath,
+                $e->getMessage(),
+                $e->getFile(),
+                $e->getLine()
+            );
+            throw new RuntimeException($errorMessage, 0, $e);
         }
     }
 }
