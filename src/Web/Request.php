@@ -9,4 +9,8 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class Request extends ServerRequest implements ServerRequestInterface
 {
+    public function getQueryParam(string $name, mixed $default = null): mixed
+    {
+        return $this->getQueryParams()[$name] ?? $default;
+    }
 }

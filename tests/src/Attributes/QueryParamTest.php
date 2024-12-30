@@ -49,9 +49,9 @@ class QueryParamTest extends TestCase
             public function __construct(\Darken\Code\Runtime $runtime)
             {
                 $this->runtime = $runtime;
-                $this->test = $this->runtime->getQueryParam('test');
-                $this->id = $this->runtime->getQueryParam('userId');
-                $this->test2 = $this->runtime->getQueryParam('test2');
+                $this->test = $this->runtime->getRequest()->getQueryParam('test');
+                $this->id = $this->runtime->getRequest()->getQueryParam('userId');
+                $this->test2 = $this->runtime->getRequest()->getQueryParam('test2');
             }
         };
         PHP, $output->getCode());
@@ -89,9 +89,9 @@ class QueryParamTest extends TestCase
             public function __construct(\Darken\Code\Runtime $runtime)
             {
                 $this->runtime = $runtime;
-                $this->test = $this->runtime->getQueryParam('test');
-                $this->id = $this->runtime->getQueryParam('userId');
-                $this->test2 = $this->runtime->getQueryParam('test2');
+                $this->test = $this->runtime->getRequest()->getQueryParam('test');
+                $this->id = $this->runtime->getRequest()->getQueryParam('userId');
+                $this->test2 = $this->runtime->getRequest()->getQueryParam('test2');
             }
         };
         var_dump($x->test);

@@ -6,7 +6,6 @@ namespace Darken\Code;
 
 use Darken\Kernel;
 use Darken\Web\Request;
-use Exception;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use Throwable;
@@ -20,43 +19,67 @@ abstract class Runtime
 {
     private array $data = [];
 
+    /**
+     * If the runtime is used as a string (using echo), the render() method is invoken.
+     * If the render() method returns an instance of ResponseInterface, the body of the response is returned as string by default.
+     */
     public function __toString(): string
     {
-        $response = $this->render();
-
-        return $response instanceof ResponseInterface ? $response->getBody()->getContents() : $response;
+        return ($response = $this->render()) instanceof ResponseInterface ? $response->getBody()->getContents() : (string) $response;
     }
 
+    /**
+     * The path to the compiled file that will be executed from the render() method inside the runtime polyfill.
+     */
     abstract public function renderFilePath(): string;
 
+    /**
+     * Exchange Bus between Runtime Polyfill and Compiled Code. Set data in the polyfill and access it in the compiled code.
+     */
     public function setData(string $section, string $key, mixed $value): void
     {
-        if (!isset($this->data[$section])) {
-            $this->data[$section] = [];
-        }
+        $this->data[$section] ??= [];
         $this->data[$section][$key] = $value;
     }
 
+    /**
+     * Exchange Bus between Runtime Polyfill and Compiled Code. Get data in the compiled code that was set in the polyfill.
+     */
     public function getData(string $section, string $key, mixed $defaultValue = null): mixed
     {
         return $this->data[$section][$key] ?? $defaultValue;
     }
 
+    /**
+     * Access the Kernels DI Container Service
+     */
     public function getContainer($className): object
     {
         return Kernel::getContainerService()->resolve($className);
     }
 
-    public function getQueryParam(string $name): string|null
-    {
-        return $this->getRequest()->getQueryParams()[$name] ?? null;
-    }
-
+    /**
+     * Helper method to access the Request object, resolved from the DI Container.
+     */
     public function getRequest(): Request
     {
         return Kernel::getContainerService()->resolve(Request::class);
     }
 
+    /**
+     * Create a new runtime instances.
+     *
+     * This "helper" ensures an object of type runtime (self) is returned and therefore the
+     * recommend way to create a new runtime instance.
+     */
+    public static function make(string $className, array $params = []): self
+    {
+        return Kernel::getContainerService()->createObject($className, $params);
+    }
+
+    /**
+     * Renders the compiled file from renderFilePath() as string or ResponseInterface.
+     */
     public function render(): string|ResponseInterface
     {
         $_file_ = $this->renderFilePath();
@@ -75,13 +98,6 @@ abstract class Runtime
         try {
             $x = require $_file_;
             $content = ob_get_clean();
-        } catch (Exception $e) {
-            while (ob_get_level() > $_obInitialLevel_) {
-                if (!@ob_end_clean()) {
-                    ob_clean();
-                }
-            }
-            throw $e;
         } catch (Throwable $e) {
             while (ob_get_level() > $_obInitialLevel_) {
                 if (!@ob_end_clean()) {
@@ -91,10 +107,7 @@ abstract class Runtime
             throw $e;
         }
 
-
-
         if (is_object($x) && is_callable($x)) {
-
             $response = $x();
             if ($response instanceof ResponseInterface) {
                 return $response;
@@ -102,7 +115,6 @@ abstract class Runtime
 
             $content .= $response;
         }
-
         // If the return value is an object that can be cast to a string (__toString):
         elseif (is_object($x) && method_exists($x, '__toString')) {
             $content .= $x;

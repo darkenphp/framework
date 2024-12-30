@@ -120,12 +120,14 @@ class PropertyAttribute implements AttributeExtractorInterface
 
     public function createGetQueryParamExpressionForCompile(): Expression
     {
-
         return new Expression(
             new Assign(
                 new PropertyFetch(new Variable('this'), $this->getName()),
                 new MethodCall(
-                    new PropertyFetch(new Variable('this'), 'runtime'),
+                    new MethodCall(
+                        new PropertyFetch(new Variable('this'), 'runtime'),
+                        'getRequest'
+                    ),
                     'getQueryParam',
                     [
                         new Arg(new String_($this->getDecoratorAttributeParamValue() ?? $this->getName())),
