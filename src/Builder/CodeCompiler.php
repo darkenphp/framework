@@ -26,12 +26,12 @@ class CodeCompiler
 
     public function __construct()
     {
-        $this->hooks[] = new ConstructorParamHook();
-        $this->hooks[] = new InjectHook();
-        $this->hooks[] = new RouteParamHook();
-        $this->hooks[] = new SlotHook();
-        $this->hooks[] = new MiddlewareHook();
-        $this->hooks[] = new QueryParamHook();
+        $this->registerHook(new ConstructorParamHook());
+        $this->registerHook(new InjectHook());
+        $this->registerHook(new RouteParamHook());
+        $this->registerHook(new SlotHook());
+        $this->registerHook(new MiddlewareHook());
+        $this->registerHook(new QueryParamHook());
     }
 
     public function registerHook(AttributeHookInterface $hook): void
