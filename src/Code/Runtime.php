@@ -15,7 +15,7 @@ use Throwable;
  *
  * lowest level of runtime is component runtime
  */
-abstract class Runtime
+abstract class Runtime implements RuntimeInterface
 {
     private array $data = [];
 
@@ -84,12 +84,8 @@ abstract class Runtime
     {
         $_file_ = $this->renderFilePath();
 
-        if (!file_exists($_file_)) {
-            throw new RuntimeException("File not found: $_file_");
-        }
-
-        if (!is_readable($_file_)) {
-            throw new RuntimeException("File not readable: $_file_");
+        if (!file_exists($_file_) || !is_readable($_file_)) {
+            throw new RuntimeException(sprintf('The file "%s" does not exist or is not readable.', $_file_));
         }
 
         $_obInitialLevel_ = ob_get_level();
