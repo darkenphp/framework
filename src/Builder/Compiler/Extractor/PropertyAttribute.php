@@ -137,6 +137,25 @@ class PropertyAttribute implements AttributeExtractorInterface
         );
     }
 
+    public function createPostParamExpressionForCompile(): Expression
+    {
+        return new Expression(
+            new Assign(
+                new PropertyFetch(new Variable('this'), $this->getName()),
+                new MethodCall(
+                    new MethodCall(
+                        new PropertyFetch(new Variable('this'), 'runtime'),
+                        'getRequest'
+                    ),
+                    'getPostParam',
+                    [
+                        new Arg(new String_($this->getDecoratorAttributeParamValue() ?? $this->getName())),
+                    ]
+                )
+            )
+        );
+    }
+
     public function createGetContainerExpressionForCompile(): Expression
     {
         return new Expression(

@@ -7,6 +7,7 @@ namespace Darken\Builder;
 use Darken\Attributes\Hooks\ConstructorParamHook;
 use Darken\Attributes\Hooks\InjectHook;
 use Darken\Attributes\Hooks\MiddlewareHook;
+use Darken\Attributes\Hooks\PostParamHook;
 use Darken\Attributes\Hooks\QueryParamHook;
 use Darken\Attributes\Hooks\RouteParamHook;
 use Darken\Attributes\Hooks\SlotHook;
@@ -32,6 +33,7 @@ class CodeCompiler
         $this->registerHook(new SlotHook());
         $this->registerHook(new MiddlewareHook());
         $this->registerHook(new QueryParamHook());
+        $this->registerHook(new PostParamHook());
     }
 
     public function registerHook(AttributeHookInterface $hook): void

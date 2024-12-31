@@ -7,6 +7,7 @@ use Darken\Console\Commands\Build;
 use Darken\Events\AfterBuildEvent;
 use Darken\Web\Application as WebApplication;
 use Darken\Web\PageHandler;
+use Darken\Web\Request;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionClass;
 use Tests\TestCase;
@@ -105,11 +106,25 @@ class BuildTest extends TestCase
                     'class' => 'Tests\Build\data\pages\hello',
                 ],
             ],
+            'params' =>  [
+                '_children' =>  [
+                    'middlewares' =>  [
+                        0 => [
+                            'class' => '\Darken\Middleware\CorsMiddlware',
+                            'params' => [],
+                            'position' => 'before',
+                        ],
+                    ],
+                    'class' => 'Tests\Build\data\pages\params',
+                ],
+            ],
         ], $content);
 
         // web app
         $web = new WebApplication($config);
         $web->whoops->unregister();
+
+        $web->getContainerService()->register(Request::class, $this->createServerRequest('/?query=foobar', 'GET'));
 
         foreach ([
             'index' => [
@@ -138,6 +153,9 @@ class BuildTest extends TestCase
             ],
             'api/auth' => [
                 200, '{"message":"auth-api"}' // middlware is not extraed and processed in page handler!
+            ],
+            'params' => [
+                200, 'pages/params'
             ],
         ] as $path => $def) {
 

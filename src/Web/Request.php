@@ -13,4 +13,9 @@ class Request extends ServerRequest implements ServerRequestInterface
     {
         return $this->getQueryParams()[$name] ?? $default;
     }
+
+    public function getPostParam(string $name, mixed $default = null): mixed
+    {
+        return $this->getParsedBody()[$name] ?? $default;
+    }
 }
