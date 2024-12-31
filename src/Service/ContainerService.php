@@ -6,18 +6,34 @@ namespace Darken\Service;
 
 use InvalidArgumentException;
 use ReflectionClass;
+use RuntimeException;
 
+/**
+ * A lightweight service container for managing dependencies.
+ *
+ * This class allows for registering and resolving services or objects, enabling
+ * dependency injection and improved application modularity.
+ */
 final class ContainerService
 {
+    /**
+     * @var array<string, object|array|callable> The registered containers indexed by their class names or identifiers.
+     */
     private array $containers = [];
 
     /**
-     * ->registr(new FooBar());
-     * ->register(FooBarInterface::class, new FooBar());
-     * ->register(FooBarInterface::class, ['param1' => 'value1', 'param2' => 'value2']);
-     * ->register(FooBarInterface::class, function() { return new FooBar(); });
+     * Registers a container by name or object.
+     *
+     * Usage examples:
+     *
+     * ```php
+     * $container->register(new FooBar());
+     * $container->register(FooBarInterface::class, new FooBar());
+     * $container->register(FooBarInterface::class, ['param1' => 'value1', 'param2' => 'value2']);
+     * $container->register(FooBarInterface::class, fn() => new FooBar());
+     * ```
      */
-    public function register(string|object|callable $name, object|null|array $container = null): self
+    public function register(string|object|callable $name, object|array|null $container = null): self
     {
         if (is_object($name)) {
             $class = get_class($name);
@@ -31,12 +47,20 @@ final class ContainerService
         return $this;
     }
 
+    /**
+     * Resolves a container by its name.
+     *
+     * If the container is callable, it will be executed and replaced with its result.
+     * If it is an array, it will be used to instantiate an object of the specified class.
+     *
+     * @throws RuntimeException If the container is not found.
+     */
     public function resolve(string $name): object
     {
         $resolve = $this->containers[$name] ?? null;
 
         if (!$resolve) {
-            throw new InvalidArgumentException('Container '.$name.' not found');
+            throw new RuntimeException(sprintf('Container "%s" not found. Register the container before accessing it.', $name));
         }
 
         if (is_callable($resolve)) {
@@ -51,29 +75,26 @@ final class ContainerService
     }
 
     /**
-     * Safely creates an object of the given class with the provided parameters.
+     * Creates an object of the specified class with the provided parameters.
+     *
+     * This method uses reflection to handle classes with constructors that require parameters.
      *
      * @throws InvalidArgumentException If required parameters are missing.
      */
-    public function createObject(string $className, array $params): object
+    public function createObject(string $className, array $params = []): object
     {
         $reflection = new ReflectionClass($className);
         $constructor = $reflection->getConstructor();
 
         if ($constructor) {
             $requiredParams = $constructor->getNumberOfRequiredParameters();
-            if (count($params) >= $requiredParams) {
-                // Create the object if parameters match
-                $object = new $className(...$params);
-            } else {
-                // Handle missing parameters, throw an exception
+            if (count($params) < $requiredParams) {
                 throw new InvalidArgumentException('Missing required parameters for constructor.');
             }
-        } else {
-            // Create the object without any parameters if there's no constructor
-            $object = new $className();
+
+            return $reflection->newInstanceArgs($params);
         }
 
-        return $object;
+        return $reflection->newInstance();
     }
 }
