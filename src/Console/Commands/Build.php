@@ -27,6 +27,7 @@ class Build implements CommandInterface
         try {
 
             $pages = [];
+            $files = [];
 
             foreach ($app->config->getBuildingFolders() as $folder) {
                 foreach (FileHelper::findFiles($folder, ['only' => ['php']]) as $file) {
@@ -47,6 +48,8 @@ class Build implements CommandInterface
                     if ($processed && $app->config instanceof PagesConfigInterface && $buildProcess->getIsPage()) {
                         $pages[] = $buildProcess->getPageOutput($app->config);
                     }
+
+                    $files[] = $buildProcess;
                 }
             }
 
@@ -83,7 +86,33 @@ class Build implements CommandInterface
         $compiledText = $app->stdTextGreen('✓') . ' Compiled ' . $filescount . ' files to ' . $app->config->getBuildOutputFolder();
         $app->stdOut($compiledText);
 
+        $this->saveFile($app->config->getBuildOutputFolder() . '/Darken.php', $this->createExtensionFileContent($files, $app));
+
         $app->getEventService()->dispatch(new AfterBuildEvent());
+    }
+
+    /**
+     * @param array<FileBuildProcess> $files
+     */
+    public function createExtensionFileContent(array $files, Application $app): string
+    {
+        $dumpFiles = [];
+        foreach ($files as $file) {
+            $dumpFiles[$file->getPolyfillOutput()->getFullQualifiedClassName()] = $file->getPolyfillOutput()->getBuildOutputFilePath();
+        }
+
+        $dump = var_export($dumpFiles, true);
+        $namespace = $app->config->getBuildOutputNamespace();
+        return <<<PHP
+            <?php
+
+            namespace $namespace;
+
+            class Darken implements \Darken\Service\ExtensionInterface
+            {
+                private array \$classMap = $dump; 
+            }
+            PHP;
     }
 
     public static function createFile(FileSaveInterface $save): bool

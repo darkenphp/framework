@@ -5,6 +5,7 @@ namespace Tests\src\Console\Commands;
 use Darken\Console\Application;
 use Darken\Console\Commands\Build;
 use Darken\Events\AfterBuildEvent;
+use Darken\Service\ExtensionInterface;
 use Darken\Web\Application as WebApplication;
 use Darken\Web\PageHandler;
 use Darken\Web\Request;
@@ -119,6 +120,13 @@ class BuildTest extends TestCase
                 ],
             ],
         ], $content);
+
+        $extensionFilePath = $config->getBuildOutputFolder() . '/Darken.php';
+
+        $this->assertTrue(file_exists($extensionFilePath));
+        $namespace = 'Tests\Build\Darken';
+        $obj = new $namespace();
+        $this->assertInstanceOf(ExtensionInterface::class, $obj);
 
         // web app
         $web = new WebApplication($config);
