@@ -10,6 +10,9 @@ use Darken\Config\PagesConfigInterface;
 use Darken\Console\Application;
 use Darken\Console\CommandInterface;
 use Darken\Events\AfterBuildEvent;
+
+use function Opis\Closure\serialize;
+
 use Throwable;
 use Yiisoft\Files\FileHelper;
 
@@ -102,15 +105,25 @@ class Build implements CommandInterface
         }
 
         $dump = var_export($dumpFiles, true);
+        $eventListeneres = base64_encode(serialize($app->getEventService()->getListeneres()));
+
         $namespace = $app->config->getBuildOutputNamespace();
         return <<<PHP
             <?php
 
             namespace $namespace;
 
-            class Darken implements \Darken\Service\ExtensionInterface
+            class Darken extends \Darken\Service\Extension
             {
-                private array \$classMap = $dump; 
+                public function getClassMap(): array
+                {
+                    return $dump;
+                }
+
+                public function getSerializedEvents(): string
+                {
+                    return '$eventListeneres';
+                }
             }
             PHP;
     }

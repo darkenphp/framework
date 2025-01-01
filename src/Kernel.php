@@ -9,6 +9,8 @@ use Darken\Service\ContainerService;
 use Darken\Service\ContainerServiceInterface;
 use Darken\Service\EventService;
 use Darken\Service\EventServiceInterface;
+use Darken\Service\ExtensionService;
+use Darken\Service\ExtensionServiceInterface;
 use Whoops\Run;
 
 abstract class Kernel
@@ -37,6 +39,11 @@ abstract class Kernel
         $container->register($event);
 
         self::$container = $container;
+
+        $extension = new ExtensionService($this);
+        if ($config instanceof ExtensionServiceInterface) {
+            $config->extensions($extension);
+        }
     }
 
     public static function getContainerService(): ContainerService

@@ -11,6 +11,14 @@ class EventService implements EventDispatcherInterface, ListenerProviderInterfac
 {
     private array $listeners = [];
 
+    /**
+     * @return array<string, array<callable>>
+     */
+    public function getListeneres(): array
+    {
+        return $this->listeners;
+    }
+
     public function dispatch(object $event): object
     {
         foreach ($this->getListenersForEvent($event) as $listener) {

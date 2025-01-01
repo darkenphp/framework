@@ -5,7 +5,11 @@ namespace Tests\src\Console\Commands;
 use Darken\Console\Application;
 use Darken\Console\Commands\Build;
 use Darken\Events\AfterBuildEvent;
+use Darken\Service\EventService;
+use Darken\Service\EventServiceInterface;
 use Darken\Service\ExtensionInterface;
+use Darken\Service\ExtensionService;
+use Darken\Service\ExtensionServiceInterface;
 use Darken\Web\Application as WebApplication;
 use Darken\Web\PageHandler;
 use Darken\Web\Request;
@@ -208,5 +212,25 @@ class BuildTest extends TestCase
 <div>SQLITE::MEMORY:</div>
 PHP, $renderTestPageWithComponentsAndLayouts->getBody()->__toString());
         $this->assertSame(200, $renderTestPageWithComponentsAndLayouts->getStatusCode());
+
+        $cfg = new class('foo', 'foo', 'foo', 'foor') extends TestConfig implements ExtensionServiceInterface
+        {
+            public function events(EventService $service): EventService
+            {
+                return $service;
+            }
+
+            public function extensions(ExtensionService $service): ExtensionService
+            {
+                return $service->register(new \Tests\Build\Darken());
+            }
+        };
+
+        $newApp = new Application($cfg);
+
+        $listeners = $newApp->getEventService()->getListeneres();
+
+        $this->assertArrayHasKey(AfterBuildEvent::class, $listeners);
+        
     }
 }
