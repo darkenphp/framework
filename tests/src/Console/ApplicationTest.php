@@ -35,4 +35,25 @@ class ApplicationTest extends TestCase
             $app->stdTextYellow('en')
         );
     }
+
+    public function testEmptyButDefinedArgv()
+    {
+        $_SERVER['argv'] = ['darken', 'build', '--clear', '--clear2=0', '--clear3=false', '--clear4=true', '--clear5=1'];
+
+        $app = new Application($this->createConfig());
+
+        $this->assertSame('darken', $app->getBin());
+        $this->assertSame('build', $app->getCommand());
+        $this->assertSame([
+            'clear' => true, 
+            'clear2' => 0,
+            'clear3' => false,
+            'clear4' => true,
+            'clear5' => 1
+        ], $app->getArguments());
+
+        $this->assertTrue($app->getArgument('clear', true));
+
+        $this->assertFalse($app->getArgument('nodefined', false));
+    }
 }

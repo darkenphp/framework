@@ -61,13 +61,13 @@ class Application extends Kernel
         $opts = [];
         foreach (array_slice($_SERVER['argv'] ?? [], 2) as $option) {
             $arg = explode('=', $option);
-            $opts[ltrim($arg[0], '--')] = is_numeric($arg[1]) ? (int) $arg[1] : $arg[1];
+            $opts[ltrim($arg[0], '--')] = $this->noramlizeArgumentValue($arg[1] ?? true);
         }
 
         return $opts;
     }
 
-    public function getArgument(string $name, string|int $defaultValue): string|int
+    public function getArgument(string $name, string|int|bool $defaultValue): string|int|bool
     {
         return $this->getArguments()[$name] ?? $defaultValue;
     }
@@ -114,5 +114,22 @@ class Application extends Kernel
     public function stdTextGreen(string $text): string
     {
         return self::COLOR_GREEN . $text . self::COLOR_RESET;
+    }
+
+    private function noramlizeArgumentValue(int|string|bool $value): string|int|bool
+    {
+        if (is_string($value) && strtolower($value) === 'true') {
+            return true;
+        }
+
+        if (is_string($value) && strtolower($value) === 'false') {
+            return false;
+        }
+
+        if (is_numeric($value)) {
+            return (int) $value;
+        }
+
+        return $value;
     }
 }
