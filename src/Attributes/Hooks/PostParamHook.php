@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Darken\Attributes\Hooks;
 
 use Darken\Attributes\PostParam;
-use Darken\Attributes\QueryParam;
 use Darken\Builder\Compiler\Extractor\AttributeExtractorInterface;
 use Darken\Builder\Compiler\Extractor\PropertyAttribute;
 use Darken\Builder\Hooks\PropertyAttributeHook;

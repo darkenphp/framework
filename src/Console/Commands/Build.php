@@ -6,6 +6,7 @@ namespace Darken\Console\Commands;
 
 use Darken\Builder\FileSaveInterface;
 use Darken\Builder\OutputPage;
+use Darken\Config\PagesConfigInterface;
 use Darken\Console\Application;
 use Darken\Console\CommandInterface;
 use Darken\Events\AfterBuildEvent;
@@ -43,34 +44,35 @@ class Build implements CommandInterface
                         }
                     }
 
-                    if ($processed && $buildProcess->getIsPage()) {
-                        $pages[] = $buildProcess->getPageOutput();
+                    if ($processed && $app->config instanceof PagesConfigInterface && $buildProcess->getIsPage()) {
+                        $pages[] = $buildProcess->getPageOutput($app->config);
                     }
                 }
             }
 
-            /**
-             * @var array<string, array{
-             *     _children: array<string, mixed>,
-             *     class?: string
-             * }> $trie
-             */
-            $trie = [];
-            foreach ($pages as $page) {
-                /** @var OutputPage $page */
-                $node = &$trie;
-                foreach ($page->getSegmentedTrieRoute() as $segment) {
-                    if (!isset($node[$segment])) {
-                        $node[$segment] = ['_children' => []];
+            if ($app->config instanceof PagesConfigInterface) {
+                /**
+                 * @var array<string, array{
+                 *     _children: array<string, mixed>,
+                 *     class?: string
+                 * }> $trie
+                 */
+                $trie = [];
+                foreach ($pages as $page) {
+                    /** @var OutputPage $page */
+                    $node = &$trie;
+                    foreach ($page->getSegmentedTrieRoute() as $segment) {
+                        if (!isset($node[$segment])) {
+                            $node[$segment] = ['_children' => []];
+                        }
+                        $node = &$node[$segment]['_children'];
                     }
-                    $node = &$node[$segment]['_children'];
+                    $node = [...$node, ...$page->getNodeData()];
                 }
-                $node = [...$node, ...$page->getNodeData()];
+                ksort($trie);
+                $this->saveFile($app->config->getBuildOutputFolder() . '/routes.php', '<?php' . PHP_EOL . 'return ' . var_export($trie, true) . ';' . PHP_EOL);
             }
 
-            ksort($trie);
-
-            $this->saveFile($app->config->getBuildOutputFolder() . '/routes.php', '<?php' . PHP_EOL . 'return ' . var_export($trie, true) . ';' . PHP_EOL);
         } catch (Throwable $e) {
             $errorMessage = $app->stdTextRed('ERROR: ') . $e->getMessage() . PHP_EOL .
             $app->stdTextYellow('File: ') . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL .

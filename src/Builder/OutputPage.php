@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Darken\Builder;
 
+use Darken\Config\PagesConfigInterface;
+
 class OutputPage
 {
     // use config and input instead
-    public function __construct(public OutputPolyfill $polyfill)
+    public function __construct(public OutputPolyfill $polyfill, public PagesConfigInterface $pagesConfig)
     {
 
     }
@@ -26,7 +28,7 @@ class OutputPage
 
     private function getRoute(): string
     {
-        $source = str_replace($this->polyfill->compiled->config->getPagesFolder(), '', $this->polyfill->compiled->input->filePath);
+        $source = str_replace($this->pagesConfig->getPagesFolder(), '', $this->polyfill->compiled->input->filePath);
 
         // if the pattern is [[...xyz]] then then match regex should match anything after the slash
         if (str_contains($source, '[[...')) {

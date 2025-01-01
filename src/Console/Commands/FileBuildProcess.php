@@ -11,6 +11,7 @@ use Darken\Builder\OutputCompiled;
 use Darken\Builder\OutputPage;
 use Darken\Builder\OutputPolyfill;
 use Darken\Config\ConfigInterface;
+use Darken\Config\PagesConfigInterface;
 
 class FileBuildProcess
 {
@@ -38,12 +39,12 @@ class FileBuildProcess
 
     public function getIsPage(): bool
     {
-        return $this->input->isInDirectory($this->config->getPagesFolder());
+        return $this->config instanceof PagesConfigInterface && $this->input->isInDirectory($this->config->getPagesFolder());
     }
 
-    public function getPageOutput(): OutputPage
+    public function getPageOutput(PagesConfigInterface $pagesConfig): OutputPage
     {
-        return new OutputPage($this->getPolyfillOutput());
+        return new OutputPage($this->getPolyfillOutput(), $pagesConfig);
     }
 
     public function getFilesToSaveSequenze(): array

@@ -2,8 +2,7 @@
 
 namespace Tests;
 
-use Darken\Config\ConfigHelperTrait;
-use Darken\Config\ConfigInterface;
+use Darken\Config\BaseConfig;
 use Darken\Service\ContainerService;
 use Darken\Service\ContainerServiceInterface;
 use Darken\Service\EventService;
@@ -12,10 +11,8 @@ use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
 use Tests\data\di\Db;
 
-class TestConfig implements ConfigInterface, ContainerServiceInterface, MiddlewareServiceInterface, EventServiceInterface
+class TestConfig extends BaseConfig implements ContainerServiceInterface, MiddlewareServiceInterface, EventServiceInterface
 {
-    use ConfigHelperTrait;
-
     public function __construct(private string $rootDirectoryPath, public string $pagesFolder, public string $builderOutputFolder, public string $componentsFolder)
     {
         $this->loadEnvFile();

@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Darken\Config\BaseConfig;
 use Darken\Config\ConfigHelperTrait;
 use Darken\Config\ConfigInterface;
 use Darken\Enum\MiddlewarePosition;
@@ -11,9 +12,8 @@ use Darken\Middleware\AddCustomHeaderMiddleware;
 use Darken\Service\ContainerServiceInterface;
 use Darken\Service\ContainerService;
 
-class Config implements ConfigInterface, MiddlewareServiceInterface, ContainerServiceInterface
+class Config extends BaseConfig implements MiddlewareServiceInterface, ContainerServiceInterface
 {
-    use ConfigHelperTrait;
 
     public function containers(ContainerService $service): ContainerService
     {
