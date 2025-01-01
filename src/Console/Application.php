@@ -33,6 +33,7 @@ class Application extends Kernel
         switch ($this->getCommand()) {
             case 'build':
                 $build = new Build();
+                $build->clear = $this->getArgument('clear', false);
                 $build->run($this);
                 break;
             case 'dev':

@@ -43,6 +43,7 @@ class Watch implements CommandInterface
 
             if ($changesDetected) {
                 $build = new Build();
+                $build->clear = $app->getArgument('clear', false);
                 $build->run($app);
             }
         }
@@ -55,7 +56,6 @@ class Watch implements CommandInterface
      */
     protected function hashDirectory(string $directory): string
     {
-        // todo use yii2 file helper
         if (!is_dir($directory)) {
             return '';
         }
