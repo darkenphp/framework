@@ -98,7 +98,7 @@ class Build implements CommandInterface
     {
         $dumpFiles = [];
         foreach ($files as $file) {
-            $dumpFiles[$file->getPolyfillOutput()->getFullQualifiedClassName()] = $file->getPolyfillOutput()->getBuildOutputFilePath();
+            $dumpFiles[$file->getPolyfillOutput()->getFullQualifiedClassName()] = $file->getPolyfillOutput()->getRelativeBildOutputFilepath();
         }
 
         $dump = var_export($dumpFiles, true);

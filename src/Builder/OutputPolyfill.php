@@ -19,6 +19,11 @@ class OutputPolyfill implements FileSaveInterface
         return $this->getNamespace() . '\\' . $this->getClassName();
     }
 
+    public function getRelativeBildOutputFilepath(): string
+    {
+        return str_replace($this->compiled->config->getBuildOutputFolder(), '', $this->getBuildOutputFilePath());
+    }
+
     // save interface
 
     public function getBuildOutputFilePath(): string
