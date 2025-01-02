@@ -6,7 +6,7 @@ namespace Darken\Service;
 
 use Darken\Kernel;
 
-class ExtensionService
+final class ExtensionService
 {
     public function __construct(private Kernel $kernel)
     {

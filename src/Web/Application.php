@@ -85,7 +85,7 @@ class Application extends Kernel
         foreach ($pageHandler->getMiddlewares() as $middlewareConfig) {
             $className = $middlewareConfig['class'];
             $object = $this->getContainerService()->createObject($className, $middlewareConfig['params'] ?? []);
-            $this->getMiddlwareService()->add($object, constant($middlewareConfig['position']));
+            $this->getMiddlwareService()->register($object, constant($middlewareConfig['position']));
             $temporaryMiddlwares[] = $object;
         }
 

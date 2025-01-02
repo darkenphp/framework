@@ -7,14 +7,14 @@ namespace Darken\Service;
 use Darken\Enum\MiddlewarePosition;
 use Psr\Http\Server\MiddlewareInterface;
 
-class MiddlewareService
+final class MiddlewareService
 {
     /**
      * @var MiddlewareInterface[]
      */
     private array $middlewares = [];
 
-    public function add(MiddlewareInterface $middleware, MiddlewarePosition $position): self
+    public function register(MiddlewareInterface $middleware, MiddlewarePosition $position): self
     {
         $item = [
             'object' => $middleware,

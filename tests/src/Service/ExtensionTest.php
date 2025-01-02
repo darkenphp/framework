@@ -83,7 +83,7 @@ class ExtensionTest extends TestCase
                     }
                 };
 
-                return $service->add($testMiddlware, MiddlewarePosition::AFTER);
+                return $service->register($testMiddlware, MiddlewarePosition::AFTER);
             }
         };
 

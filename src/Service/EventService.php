@@ -7,7 +7,7 @@ namespace Darken\Service;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 
-class EventService implements EventDispatcherInterface, ListenerProviderInterface
+final class EventService implements EventDispatcherInterface, ListenerProviderInterface
 {
     private array $listeners = [];
 

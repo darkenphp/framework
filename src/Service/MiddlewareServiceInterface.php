@@ -15,7 +15,7 @@ namespace Darken\Service;
  * ```php
  * public function middlewares(MiddlewareService $service): MiddlewareService
  * {
- *     return $service->add(new AddCustomHeaderMiddleware('Authorization', 'test'), MiddlewarePosition::BEFORE);
+ *     return $service->register(new AddCustomHeaderMiddleware('Authorization', 'test'), MiddlewarePosition::BEFORE);
  * }
  * ```
  *
@@ -39,7 +39,7 @@ interface MiddlewareServiceInterface
      *
      * Example:
      * ```php
-     * return $service->add(new AddCustomHeaderMiddleware('Authorization', 'test'), MiddlewarePosition::BEFORE);
+     * return $service->register(new AddCustomHeaderMiddleware('Authorization', 'test'), MiddlewarePosition::BEFORE);
      * ```
      */
     public function middlewares(MiddlewareService $service): MiddlewareService;
