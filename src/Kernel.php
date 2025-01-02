@@ -24,11 +24,11 @@ abstract class Kernel
         $this->whoops = new Run();
         $this->initalize();
 
-        $container = new ContainerService();
-        $container->register($config::class, $config);
+        self::$container = new ContainerService();
+        self::$container->register($config::class, $config);
 
         if ($config instanceof ContainerServiceInterface) {
-            $container = $config->containers($container);
+            self::$container = $config->containers(self::$container);
         }
 
         $event = new EventService();
@@ -36,12 +36,10 @@ abstract class Kernel
             $event = $config->events($event);
         }
 
-        $container->register($event);
+        self::$container->register($event);
 
-        self::$container = $container;
-
-        $extension = new ExtensionService($this);
         if ($config instanceof ExtensionServiceInterface) {
+            $extension = new ExtensionService($this);
             $config->extensions($extension);
         }
     }
