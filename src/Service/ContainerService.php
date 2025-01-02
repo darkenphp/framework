@@ -22,6 +22,19 @@ final class ContainerService
      */
     private array $containers = [];
 
+    private array $systemContainers = [];
+
+    public function definitions(bool $system = false): array
+    {
+        $names = array_keys($this->containers);
+        // if system is false, we remove all system containers from the list
+        if (!$system) {
+            $names = array_diff($names, $this->systemContainers);
+        }
+
+        return $names;
+    }
+
     /**
      * Registers a container by name or object.
      *
@@ -35,7 +48,7 @@ final class ContainerService
      * $container->register(FooBarInterface::class, fn() => new FooBar());
      * ```
      */
-    public function register(string|object|callable $objectOrName, object|array|null $objectOrParams = null): self
+    public function register(string|object|callable $objectOrName, object|array|null $objectOrParams = null, bool $system = false): self
     {
         if (is_object($objectOrName)) {
             $class = get_class($objectOrName);
@@ -46,6 +59,11 @@ final class ContainerService
         }
 
         $this->containers[$class] = $object;
+
+        if ($system) {
+            $this->systemContainers[] = $class;
+        }
+
         return $this;
     }
 

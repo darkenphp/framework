@@ -15,6 +15,7 @@ use Darken\Web\PageHandler;
 use Darken\Web\Request;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionClass;
+use Tests\data\di\Db;
 use Tests\TestCase;
 use Tests\TestConfig;
 use Yiisoft\Files\FileHelper;
@@ -128,8 +129,9 @@ class BuildTest extends TestCase
         $extensionFilePath = $config->getBuildOutputFolder() . '/Extension.php';
 
         $this->assertTrue(file_exists($extensionFilePath));
+
         $namespace = 'Tests\Build\Extension';
-        $obj = new $namespace();
+        $obj = new $namespace(new Db('dsn'));
         $this->assertInstanceOf(ExtensionInterface::class, $obj);
 
         // web app
@@ -222,7 +224,7 @@ PHP, $renderTestPageWithComponentsAndLayouts->getBody()->__toString());
 
             public function extensions(ExtensionService $service): ExtensionService
             {
-                return $service->register(new \Tests\Build\Extension());
+                return $service->register(new \Tests\Build\Extension(new Db('dsn')));
             }
         };
 

@@ -10,14 +10,25 @@ use function Opis\Closure\unserialize;
 
 abstract class Extension implements ExtensionInterface
 {
+    private $definitions = [];
+
     abstract public function getClassMap(): array;
 
     abstract public function getSerializedEvents(): string;
 
     abstract public function getSerializedMiddlewares(): string;
 
+    public function registerDefinition(string $containerName, object $object): void
+    {
+        $this->definitions[$containerName] = $object;
+    }
+
     public function activate(Kernel $kernel): void
     {
+        foreach ($this->definitions as $containerName => $object) {
+            $kernel->getContainerService()->register($containerName, $object);
+        }
+
         $events = base64_decode($this->getSerializedEvents());
         $eventHandlers = unserialize($events);
 

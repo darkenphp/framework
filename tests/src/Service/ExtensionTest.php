@@ -18,6 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Tests\data\di\Db;
 use Tests\data\di\TestEvent;
 use Tests\data\di\TestEventDispatch;
 use Tests\data\di\TestService;
@@ -101,7 +102,7 @@ class ExtensionTest extends TestCase
 
         // the tmp file with the class will be builded, and deleted after the test
         // therefore the IDE might say the file does not exists, but it does
-        $extension = new \Tests\Build\ExtensionTest;
+        $extension = new \Tests\Build\ExtensionTest(new Db('dsn'));
 
         $freshApp = new Application($this->createConfig());
         $freshApp->whoops->unregister();

@@ -38,6 +38,24 @@ class ExtensionFile implements FileSaveInterface
         $middlwares = base64_encode(serialize($this->app->getMiddlwareService()->retrieve()));
         $namespace = $this->app->config->getBuildOutputNamespace();
         $className = $this->className;
+
+        $containers = $this->app->getContainerService()->definitions();
+
+        $constructrorParams = [];
+        $constructorStmts = [];
+        foreach ($containers as $container) {
+            $parts = explode('\\', $container);
+            $classNameFromContainerName = end($parts);
+            $varName = lcfirst($classNameFromContainerName);
+            $fullContainerName = '\\' . $container;
+            $constructrorParams[] = $fullContainerName . ' $' . $varName;
+            $constructorStmts[] = '$this->registerDefinition(\'' . $container . '\', $'.$varName.');';
+        }
+        $constructror = 'public function __construct(';
+        $constructror .= implode(',', $constructrorParams);
+        $constructror .= ') {
+            ' . implode("\n", $constructorStmts) . '
+        }';
         return <<<PHP
             <?php
 
@@ -45,6 +63,8 @@ class ExtensionFile implements FileSaveInterface
 
             class $className extends \Darken\Service\Extension
             {
+                $constructror
+
                 public function getClassMap(): array
                 {
                     return $dump;
