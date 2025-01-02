@@ -6,12 +6,13 @@ namespace Darken\Web;
 
 use Darken\Kernel;
 use Darken\Service\MiddlewareService;
-use Darken\Service\MiddlewareServiceInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
 use Whoops\Handler\CallbackHandler;
 use Whoops\Handler\PrettyPageHandler;
@@ -80,21 +81,51 @@ class Application extends Kernel
         // Instantiate the final handler
         $pageHandler = new PageHandler($this, $request->getUri()->getPath());
 
-        // Instantiate the MiddlewareService with the final handler
-        $middlewareService = new MiddlewareService($pageHandler);
-
+        $temporaryMiddlwares = [];
         foreach ($pageHandler->getMiddlewares() as $middlewareConfig) {
             $className = $middlewareConfig['class'];
             $object = $this->getContainerService()->createObject($className, $middlewareConfig['params'] ?? []);
-            $middlewareService->add($object, constant($middlewareConfig['position']));
+            $this->getMiddlwareService()->add($object, constant($middlewareConfig['position']));
+            $temporaryMiddlwares[] = $object;
         }
 
-        if ($this->config instanceof MiddlewareServiceInterface) {
-            $middlewareService = $this->config->middlewares($middlewareService);
-        }
+        $requestHandler = new class($pageHandler, $this->getMiddlwareService()) implements RequestHandlerInterface {
+            public function __construct(private PageHandler $pageHandler, private MiddlewareService $middlewareService)
+            {
+            }
+
+            public function handle(ServerRequestInterface $request): ResponseInterface
+            {
+                $handler = $this->pageHandler;
+                // Iterate through the middlewares in reverse order to build the chain.
+                foreach ($this->middlewareService->getChain() as $middleware) {
+                    $handler = new class($middleware, $handler) implements RequestHandlerInterface {
+                        public function __construct(private MiddlewareInterface $middleware, private RequestHandlerInterface $handler)
+                        {
+                        }
+
+                        public function handle(ServerRequestInterface $request): ResponseInterface
+                        {
+                            return $this->middleware->process($request, $this->handler);
+                        }
+                    };
+                }
+
+                return $handler->handle($request);
+            }
+        };
 
         // Handle the request through the middleware stack
-        return $middlewareService->handle($request);
+        $response = $requestHandler->handle($request);
+
+        foreach ($temporaryMiddlwares as $middleware) {
+            $this->getMiddlwareService()->remove($middleware);
+            $this->getContainerService()->remove(get_class($middleware));
+        }
+
+        unset($requestHandler, $pageHandler, $temporaryMiddlwares);
+
+        return $response;
     }
 
     private function handleResponse(ResponseInterface $response): void

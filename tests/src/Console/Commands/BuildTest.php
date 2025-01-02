@@ -125,10 +125,10 @@ class BuildTest extends TestCase
             ],
         ], $content);
 
-        $extensionFilePath = $config->getBuildOutputFolder() . '/Darken.php';
+        $extensionFilePath = $config->getBuildOutputFolder() . '/Extension.php';
 
         $this->assertTrue(file_exists($extensionFilePath));
-        $namespace = 'Tests\Build\Darken';
+        $namespace = 'Tests\Build\Extension';
         $obj = new $namespace();
         $this->assertInstanceOf(ExtensionInterface::class, $obj);
 
@@ -222,7 +222,7 @@ PHP, $renderTestPageWithComponentsAndLayouts->getBody()->__toString());
 
             public function extensions(ExtensionService $service): ExtensionService
             {
-                return $service->register(new \Tests\Build\Darken());
+                return $service->register(new \Tests\Build\Extension());
             }
         };
 

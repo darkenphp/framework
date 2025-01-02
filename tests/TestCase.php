@@ -91,6 +91,20 @@ class TestCase extends FrameworkTestCase
         );
     }
 
+    public function tmpFile(string $path, string $content) : string
+    {
+        try {
+            FileHelper::unlink($path);
+        } catch (\Throwable $e) {
+            // remove all registered php error handler
+            restore_error_handler();
+            restore_exception_handler();
+        }
+        file_put_contents($path, $content);
+        
+        return $path;
+    }
+
     public function createTmpFile(ConfigInterface $config, string $fileName, string $content): string
     {
         $folder = FileHelper::normalizePath($config->getRootDirectoryPath() . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'generated');
@@ -98,15 +112,8 @@ class TestCase extends FrameworkTestCase
         FileHelper::ensureDirectory($folder);
 
         $fullPath = $folder . DIRECTORY_SEPARATOR . $fileName;
-        try {
-            FileHelper::unlink($fullPath);
-        } catch (\Throwable $e) {
-            // remove all registered php error handler
-            restore_error_handler();
-            restore_exception_handler();
-        }
-        file_put_contents($fullPath, $content);
-        return $fullPath;
+
+        return $this->tmpFile($fullPath, $content);
     }
 
     public function destoryTmpFile(string $path): void

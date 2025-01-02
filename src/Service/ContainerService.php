@@ -97,4 +97,10 @@ final class ContainerService
 
         return $reflection->newInstance();
     }
+
+    public function remove(string $name): self
+    {
+        unset($this->containers[$name]);
+        return $this;
+    }
 }

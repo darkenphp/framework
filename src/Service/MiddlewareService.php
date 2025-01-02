@@ -5,55 +5,54 @@ declare(strict_types=1);
 namespace Darken\Service;
 
 use Darken\Enum\MiddlewarePosition;
-use Darken\Web\PageHandler;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
-class MiddlewareService implements RequestHandlerInterface
+class MiddlewareService
 {
     /**
      * @var MiddlewareInterface[]
      */
     private array $middlewares = [];
 
-    private PageHandler $pageHandler;
-
-    public function __construct(PageHandler $pageHandler)
-    {
-        $this->pageHandler = $pageHandler;
-    }
-
     public function add(MiddlewareInterface $middleware, MiddlewarePosition $position): self
     {
+        $item = [
+            'object' => $middleware,
+            'position' => $position,
+        ];
+
         if ($position === MiddlewarePosition::BEFORE) {
-            array_unshift($this->middlewares, $middleware);
+            array_unshift($this->middlewares, $item);
         } else {
-            $this->middlewares[] = $middleware;
+            $this->middlewares[] = $item;
         }
 
         return $this;
     }
 
-    public function handle(ServerRequestInterface $request): ResponseInterface
+    public function remove(MiddlewareInterface $middleware): self
     {
-        $handler = $this->pageHandler;
-
-        // Iterate through the middlewares in reverse order to build the chain.
-        foreach (array_reverse($this->middlewares) as $middleware) {
-            $handler = new class($middleware, $handler) implements RequestHandlerInterface {
-                public function __construct(private MiddlewareInterface $middleware, private RequestHandlerInterface $handler)
-                {
-                }
-
-                public function handle(ServerRequestInterface $request): ResponseInterface
-                {
-                    return $this->middleware->process($request, $this->handler);
-                }
-            };
+        foreach ($this->middlewares as $key => $item) {
+            if ($item['object'] === $middleware) {
+                unset($this->middlewares[$key]);
+            }
         }
 
-        return $handler->handle($request);
+        return $this;
+    }
+
+    public function getChain(): array
+    {
+        $chain = [];
+        foreach (array_reverse($this->middlewares) as $middleware) {
+            $chain[] = $middleware['object'];
+        }
+
+        return $chain;
+    }
+
+    public function retrieve(): array
+    {
+        return $this->middlewares;
     }
 }

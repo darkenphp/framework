@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Darken\Console\Commands;
 
+use Darken\Builder\ExtensionFile;
 use Darken\Builder\FileSaveInterface;
 use Darken\Builder\OutputPage;
 use Darken\Config\PagesConfigInterface;
 use Darken\Console\Application;
 use Darken\Console\CommandInterface;
 use Darken\Events\AfterBuildEvent;
-
-use function Opis\Closure\serialize;
-
 use Throwable;
 use Yiisoft\Files\FileHelper;
 
@@ -89,43 +87,9 @@ class Build implements CommandInterface
         $compiledText = $app->stdTextGreen('✓') . ' Compiled ' . $filescount . ' files to ' . $app->config->getBuildOutputFolder();
         $app->stdOut($compiledText);
 
-        $this->saveFile($app->config->getBuildOutputFolder() . '/Darken.php', $this->createExtensionFileContent($files, $app));
+        $this->createFile(new ExtensionFile($files, $app));
 
         $app->getEventService()->dispatch(new AfterBuildEvent());
-    }
-
-    /**
-     * @param array<FileBuildProcess> $files
-     */
-    public function createExtensionFileContent(array $files, Application $app): string
-    {
-        $dumpFiles = [];
-        foreach ($files as $file) {
-            $dumpFiles[$file->getPolyfillOutput()->getFullQualifiedClassName()] = $file->getPolyfillOutput()->getRelativeBildOutputFilepath();
-        }
-
-        $dump = var_export($dumpFiles, true);
-        $eventListeneres = base64_encode(serialize($app->getEventService()->getListeneres()));
-
-        $namespace = $app->config->getBuildOutputNamespace();
-        return <<<PHP
-            <?php
-
-            namespace $namespace;
-
-            class Darken extends \Darken\Service\Extension
-            {
-                public function getClassMap(): array
-                {
-                    return $dump;
-                }
-
-                public function getSerializedEvents(): string
-                {
-                    return '$eventListeneres';
-                }
-            }
-            PHP;
     }
 
     public static function createFile(FileSaveInterface $save): bool
