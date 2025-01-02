@@ -6,6 +6,7 @@ use Darken\Service\ContainerService;
 use InvalidArgumentException;
 use RuntimeException;
 use stdClass;
+use Tests\data\di\AutoWireTestService;
 use Tests\data\di\Db;
 use Tests\data\di\TestService;
 use Tests\TestCase;
@@ -41,13 +42,26 @@ class ContainerServiceTest extends TestCase
     {
         $service = new ContainerService();
         $this->expectException(InvalidArgumentException::class);
-        $service->createObject(Db::class);
+        $service->create(Db::class);
     }
 
     public function testCreateObjectWithoutParams()
     {
         $service = new ContainerService();
-        $object = $service->createObject(TestService::class);
+        $object = $service->create(TestService::class);
         $this->assertInstanceOf(TestService::class, $object);
+    }
+
+    public function testAutoWirte()
+    {
+        $service = new ContainerService();
+        
+        $service->register(new TestService());
+
+        $object = $service->create(AutoWireTestService::class);
+        
+        $this->assertInstanceOf(AutoWireTestService::class, $object);
+
+        $this->assertSame('Tests\data\di\TestService', $object->testServiceName());
     }
 }

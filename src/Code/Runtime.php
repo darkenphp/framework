@@ -74,7 +74,7 @@ abstract class Runtime implements RuntimeInterface
      */
     public static function make(string $className, array $params = []): self
     {
-        return Kernel::getContainerService()->createObject($className, $params);
+        return Kernel::getContainerService()->create($className, $params);
     }
 
     /**

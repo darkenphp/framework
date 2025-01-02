@@ -6,6 +6,7 @@ namespace Darken\Service;
 
 use InvalidArgumentException;
 use ReflectionClass;
+use ReflectionNamedType;
 use RuntimeException;
 
 /**
@@ -68,10 +69,18 @@ final class ContainerService
         }
 
         if (is_array($resolve)) {
-            $this->containers[$name] = $this->createObject($name, $resolve);
+            $this->containers[$name] = $this->create($name, $resolve);
         }
 
         return $this->containers[$name];
+    }
+
+    /**
+     * Checks if a container is registered.
+     */
+    public function has(string $name): bool
+    {
+        return array_key_exists($name, $this->containers);
     }
 
     /**
@@ -81,21 +90,65 @@ final class ContainerService
      *
      * @throws InvalidArgumentException If required parameters are missing.
      */
-    public function createObject(string $className, array $params = []): object
+    public function create(string $className, array $params = []): object
     {
         $reflection = new ReflectionClass($className);
         $constructor = $reflection->getConstructor();
 
-        if ($constructor) {
-            $requiredParams = $constructor->getNumberOfRequiredParameters();
-            if (count($params) < $requiredParams) {
-                throw new InvalidArgumentException('Missing required parameters for constructor.');
-            }
-
-            return $reflection->newInstanceArgs($params);
+        // If there's no constructor, just return a new instance.
+        if (!$constructor) {
+            return $reflection->newInstance();
         }
 
-        return $reflection->newInstance();
+        $args = [];
+
+        foreach ($constructor->getParameters() as $parameter) {
+            $paramName = $parameter->getName();
+            $paramType = $parameter->getType();
+
+            // If the user explicitly provided the parameter in `$params`, just use it.
+            if (array_key_exists($paramName, $params)) {
+                $args[] = $params[$paramName];
+                continue;
+            }
+
+            // If the parameter has a type, try to resolve it from the container.
+            if ($paramType instanceof ReflectionNamedType && !$paramType->isBuiltin()) {
+                $depClass = $paramType->getName();
+
+                // If the dependency is in the container, resolve it.
+                if ($this->has($depClass)) {
+                    $args[] = $this->resolve($depClass);
+                }
+                // Otherwise, see if there’s a default value to use.
+                elseif ($parameter->isOptional()) {
+                    $args[] = $parameter->getDefaultValue();
+                }
+                // If we can’t resolve a non-optional class dependency, we must throw.
+                else {
+                    throw new InvalidArgumentException(sprintf(
+                        'Unable to resolve parameter "%s" for "%s". ' .
+                        'No matching container entry or default value.',
+                        $paramName,
+                        $className
+                    ));
+                }
+            } else {
+                // For built-in type or untyped parameters, fall back to default if optional.
+                if ($parameter->isOptional()) {
+                    $args[] = $parameter->getDefaultValue();
+                } else {
+                    throw new InvalidArgumentException(sprintf(
+                        'Missing required parameter "%s" for "%s".',
+                        $paramName,
+                        $className
+                    ));
+                }
+            }
+        }
+
+        // Finally, instantiate the class with the resolved dependencies.
+        return $reflection->newInstanceArgs($args);
     }
 
     public function remove(string $name): self
