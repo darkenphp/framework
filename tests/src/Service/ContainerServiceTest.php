@@ -64,4 +64,31 @@ class ContainerServiceTest extends TestCase
 
         $this->assertSame('Tests\data\di\TestService', $object->testServiceName());
     }
+
+    public function testEnsure()
+    {
+        $service = new ContainerService();
+        
+        $this->assertInstanceOf(TestService::class, $service->ensure(TestService::class));
+        $this->assertInstanceOf(TestService::class, $service->ensure(new TestService()));
+        $this->assertInstanceOf(TestService::class, $service->ensure([TestService::class]));
+
+        $service->register(AutoWireTestService::class);
+        // since AutoWireTestService needs to inject TestService, it needs to be registered first.
+        $service->register(TestService::class);
+
+        $this->assertInstanceOf(AutoWireTestService::class, $service->ensure(AutoWireTestService::class));
+    }
+
+    public function testEnsureInstanceOf()
+    {
+        $service = new ContainerService();
+        
+        $this->assertInstanceOf(TestService::class, $service->ensure(TestService::class, TestService::class));
+        $this->assertInstanceOf(TestService::class, $service->ensure(new TestService(), TestService::class));
+        $this->assertInstanceOf(TestService::class, $service->ensure([TestService::class], TestService::class));
+
+        $this->expectException(InvalidArgumentException::class);
+        $service->ensure(AutoWireTestService::class, TestService::class);
+    }
 }

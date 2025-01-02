@@ -31,7 +31,7 @@ abstract class Extension implements ExtensionInterface
         $middlewareHandlers = unserialize($middlewares);
 
         foreach ($middlewareHandlers as $middleware) {
-            $kernel->getMiddlwareService()->register($middleware['object'], $middleware['position']);
+            $kernel->getMiddlwareService()->register($middleware['container'], $middleware['position']);
         }
     }
 }

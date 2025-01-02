@@ -107,7 +107,7 @@ class ExtensionTest extends TestCase
 
         $firstMiddlwareFromAbove = $freshApp->getMiddlwareService()->retrieve()[0];
 
-        $this->assertInstanceOf(MiddlewareInterface::class, $firstMiddlwareFromAbove['object']);
+        $this->assertInstanceOf(MiddlewareInterface::class, $firstMiddlwareFromAbove['container']);
 
         $this->destoryTmpFile($tmpFile);
     }

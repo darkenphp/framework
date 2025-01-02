@@ -29,19 +29,20 @@ final class ContainerService
      *
      * ```php
      * $container->register(new FooBar());
+     * $container->register(FooBar::class);
      * $container->register(FooBarInterface::class, new FooBar());
      * $container->register(FooBarInterface::class, ['param1' => 'value1', 'param2' => 'value2']);
      * $container->register(FooBarInterface::class, fn() => new FooBar());
      * ```
      */
-    public function register(string|object|callable $name, object|array|null $container = null): self
+    public function register(string|object|callable $objectOrName, object|array|null $objectOrParams = null): self
     {
-        if (is_object($name)) {
-            $class = get_class($name);
-            $object = $name;
+        if (is_object($objectOrName)) {
+            $class = get_class($objectOrName);
+            $object = $objectOrName;
         } else {
-            $class = $name;
-            $object = $container;
+            $class = $objectOrName;
+            $object = $objectOrParams;
         }
 
         $this->containers[$class] = $object;
@@ -58,11 +59,12 @@ final class ContainerService
      */
     public function resolve(string $name): object
     {
-        $resolve = $this->containers[$name] ?? null;
-
-        if (!$resolve) {
+        if (!$this->has($name)) {
             throw new RuntimeException(sprintf('Container "%s" not found. Register the container before accessing it.', $name));
         }
+
+        // if $resolve is null, it means no objectOrParams are given and the class i registered by ::class
+        $resolve = $this->containers[$name] ?? null;
 
         if (is_callable($resolve)) {
             $this->containers[$name] = $resolve();
@@ -72,7 +74,40 @@ final class ContainerService
             $this->containers[$name] = $this->create($name, $resolve);
         }
 
+        if ($resolve === null) {
+            $this->containers[$name] = $this->create($name);
+        }
+
         return $this->containers[$name];
+    }
+
+    /**
+     * Ensure input is an object, resolving it if it's a string.
+     *
+     * 1. If the input is an object, return it.
+     * 2. If the input is a string and the container is registered, resolve it.
+     * 3. If the input is a string and the container is not registered, create it (but don't register it).
+     */
+    public function ensure(object|string|array $name, string|null $instanceOf = null): object
+    {
+        if (is_object($name)) {
+            $container = $name;
+        } elseif (is_string($name) && $this->has($name)) {
+            $container = $this->resolve($name);
+        } elseif (is_array($name)) {
+            $container = $this->create($name[0], $name[1] ?? []);
+        } else {
+            $container = $this->create($name);
+        }
+
+        if ($instanceOf && !$container instanceof $instanceOf) {
+            throw new InvalidArgumentException(sprintf(
+                'Container "%s" must be an instance of "%s".',
+                $name,
+                $instanceOf
+            ));
+        }
+        return $container;
     }
 
     /**
@@ -81,6 +116,15 @@ final class ContainerService
     public function has(string $name): bool
     {
         return array_key_exists($name, $this->containers);
+    }
+
+    /**
+     * Removes a container from the registry.
+     */
+    public function remove(string $name): self
+    {
+        unset($this->containers[$name]);
+        return $this;
     }
 
     /**
@@ -127,10 +171,11 @@ final class ContainerService
                 // If we can’t resolve a non-optional class dependency, we must throw.
                 else {
                     throw new InvalidArgumentException(sprintf(
-                        'Unable to resolve parameter "%s" for "%s". ' .
-                        'No matching container entry or default value.',
+                        'Unable to resolve parameter "%s" in "%s". ' .
+                        'No matching container for "%s" entry or default value.',
                         $paramName,
-                        $className
+                        $className,
+                        $depClass
                     ));
                 }
             } else {
@@ -149,11 +194,5 @@ final class ContainerService
 
         // Finally, instantiate the class with the resolved dependencies.
         return $reflection->newInstanceArgs($args);
-    }
-
-    public function remove(string $name): self
-    {
-        unset($this->containers[$name]);
-        return $this;
     }
 }

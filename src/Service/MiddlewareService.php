@@ -14,10 +14,15 @@ final class MiddlewareService
      */
     private array $middlewares = [];
 
-    public function register(MiddlewareInterface $middleware, MiddlewarePosition $position): self
+    public function __construct(private ContainerService $containerService)
+    {
+
+    }
+
+    public function register(MiddlewareInterface|string $middleware, MiddlewarePosition $position): self
     {
         $item = [
-            'object' => $middleware,
+            'container' => $middleware,
             'position' => $position,
         ];
 
@@ -33,7 +38,7 @@ final class MiddlewareService
     public function remove(MiddlewareInterface $middleware): self
     {
         foreach ($this->middlewares as $key => $item) {
-            if ($item['object'] === $middleware) {
+            if ($this->ensureContainer($item['container']) === $middleware) {
                 unset($this->middlewares[$key]);
             }
         }
@@ -45,7 +50,7 @@ final class MiddlewareService
     {
         $chain = [];
         foreach (array_reverse($this->middlewares) as $middleware) {
-            $chain[] = $middleware['object'];
+            $chain[] = $this->ensureContainer($middleware['container']);
         }
 
         return $chain;
@@ -54,5 +59,10 @@ final class MiddlewareService
     public function retrieve(): array
     {
         return $this->middlewares;
+    }
+
+    private function ensureContainer(mixed $container): MiddlewareInterface
+    {
+        return $this->containerService->ensure($container, MiddlewareInterface::class);
     }
 }

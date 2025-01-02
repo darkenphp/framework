@@ -35,7 +35,7 @@ abstract class Kernel
         }
 
         // middleware service
-        $middlewareService = new MiddlewareService();
+        $middlewareService = new MiddlewareService(self::$container);
         if ($this->config instanceof MiddlewareServiceInterface) {
             $middlewareService = $this->config->middlewares($middlewareService);
         }
