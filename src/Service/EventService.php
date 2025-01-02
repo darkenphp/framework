@@ -4,12 +4,20 @@ declare(strict_types=1);
 
 namespace Darken\Service;
 
+use Darken\Events\EventDispatchInterface;
+use Darken\Events\EventInterface;
+use InvalidArgumentException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 
 final class EventService implements EventDispatcherInterface, ListenerProviderInterface
 {
     private array $listeners = [];
+
+    public function __construct(private ContainerService $containerService)
+    {
+
+    }
 
     /**
      * @return array<string, array<callable>>
@@ -21,8 +29,17 @@ final class EventService implements EventDispatcherInterface, ListenerProviderIn
 
     public function dispatch(object $event): object
     {
+        if (!$event instanceof EventDispatchInterface) {
+            throw new InvalidArgumentException('Event must implement EventDispatchInterface');
+        }
+
         foreach ($this->getListenersForEvent($event) as $listener) {
-            $listener($event);
+            if (is_callable($listener)) {
+                $function = $listener;
+            } else {
+                $function = $this->containerService->ensure($listener, EventInterface::class);
+            }
+            $function($event);
         }
 
         return $event;
@@ -34,7 +51,7 @@ final class EventService implements EventDispatcherInterface, ListenerProviderIn
         return $this->listeners[$eventType] ?? [];
     }
 
-    public function on(string $eventType, callable $listener): self
+    public function on(string $eventType, callable|string|array $listener): self
     {
         $this->listeners[$eventType][] = $listener;
 

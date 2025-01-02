@@ -18,6 +18,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Tests\data\di\TestEvent;
+use Tests\data\di\TestEventDispatch;
 use Tests\data\di\TestService;
 use Tests\TestCase;
 use Tests\TestConfig;
@@ -33,7 +35,7 @@ class ExtensionTest extends TestCase
                 $ext = new class implements ExtensionInterface {
                     public function activate(Kernel $kernel): void
                     {
-                        $kernel->getEventService()->on(TestService::class, function () {
+                        $kernel->getEventService()->on(TestEventDispatch::class, function () {
                             echo "TestService event triggered";
                         });
                     }
@@ -49,7 +51,7 @@ class ExtensionTest extends TestCase
         restore_exception_handler();
 
         ob_start();
-        $app->getEventService()->dispatch(new TestService());
+        $app->getEventService()->dispatch(new TestEventDispatch());
         $output = ob_get_clean();
 
         $this->assertEquals('TestService event triggered', $output);

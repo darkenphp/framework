@@ -6,4 +6,5 @@ namespace Darken\Events;
 
 interface EventInterface
 {
+    public function __invoke(EventDispatchInterface $event): void;
 }

@@ -42,7 +42,7 @@ abstract class Kernel
         self::$container->register($middlewareService);
 
         // event service
-        $event = new EventService();
+        $event = new EventService(self::$container);
         if ($config instanceof EventServiceInterface) {
             $event = $config->events($event);
         }
