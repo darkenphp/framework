@@ -89,7 +89,7 @@ class Build implements CommandInterface
 
         $this->createFile(new ExtensionFile($files, $app));
 
-        $app->getEventService()->dispatch(new AfterBuildEvent());
+        $app->getEventService()->dispatch(new AfterBuildEvent($app));
     }
 
     public static function createFile(FileSaveInterface $save): bool
