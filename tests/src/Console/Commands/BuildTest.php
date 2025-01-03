@@ -116,7 +116,7 @@ class BuildTest extends TestCase
                 '_children' =>  [
                     'middlewares' =>  [
                         0 => [
-                            'class' => '\Darken\Middleware\CorsMiddlware',
+                            'class' => '\Darken\Middleware\CorsMiddleware',
                             'params' => [],
                             'position' => 'before',
                         ],
@@ -166,7 +166,7 @@ class BuildTest extends TestCase
                 200, 'pages/blogs/[[id]]/comments:1'
             ],
             'api/auth' => [
-                200, '{"message":"auth-api"}' // middlware is not extraed and processed in page handler!
+                200, '{"message":"auth-api"}' // middleware is not extracted and processed in page handler!
             ],
             'params' => [
                 200, 'pages/params'

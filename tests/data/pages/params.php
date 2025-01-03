@@ -6,10 +6,10 @@ use Darken\Attributes\Middleware;
 use Darken\Attributes\PostParam;
 use Darken\Attributes\QueryParam;
 use Darken\Attributes\Slot;
-use Darken\Middleware\CorsMiddlware;
+use Darken\Middleware\CorsMiddleware;
 use Tests\data\di\Db;
 
-$class = new #[Middleware(CorsMiddlware::class)] class
+$class = new #[Middleware(CorsMiddleware::class)] class
 {
     #[ConstructorParam]
     public string $init = 'init';

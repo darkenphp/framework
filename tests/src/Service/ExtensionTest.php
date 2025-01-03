@@ -59,7 +59,7 @@ class ExtensionTest extends TestCase
         
     }
 
-    public function testMiddlwareOfExtension(): void
+    public function testMiddlewareOfExtension(): void
     {
        
         $extConfig = new class (
@@ -71,7 +71,7 @@ class ExtensionTest extends TestCase
         {
             public function middlewares(MiddlewareService $service): MiddlewareService
             {
-                $testMiddlware = new class implements MiddlewareInterface
+                $testMiddleware = new class implements MiddlewareInterface
                 {
                     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
                     {
@@ -86,7 +86,7 @@ class ExtensionTest extends TestCase
                     }
                 };
 
-                return $service->register($testMiddlware, MiddlewarePosition::AFTER);
+                return $service->register($testMiddleware, MiddlewarePosition::AFTER);
             }
         };
 
@@ -108,9 +108,9 @@ class ExtensionTest extends TestCase
         $freshApp->whoops->unregister();
         $freshApp->getExtensionService()->register($extension);
 
-        $firstMiddlwareFromAbove = $freshApp->getMiddlwareService()->retrieve()[0];
+        $firstMiddlewareFromAbove = $freshApp->getMiddlewareService()->retrieve()[0];
 
-        $this->assertInstanceOf(MiddlewareInterface::class, $firstMiddlwareFromAbove['container']);
+        $this->assertInstanceOf(MiddlewareInterface::class, $firstMiddlewareFromAbove['container']);
 
         $this->destoryTmpFile($tmpFile);
     }

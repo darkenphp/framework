@@ -72,7 +72,7 @@ abstract class Kernel
         return self::getContainerService()->resolve(EventService::class);
     }
 
-    public function getMiddlwareService(): MiddlewareService
+    public function getMiddlewareService(): MiddlewareService
     {
         return self::getContainerService()->resolve(MiddlewareService::class);
     }

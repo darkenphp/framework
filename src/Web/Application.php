@@ -86,15 +86,15 @@ class Application extends Kernel
         // Instantiate the final handler
         $pageHandler = new PageHandler($this, $request->getUri()->getPath());
 
-        $temporaryMiddlwares = [];
+        $temporaryMiddlewares = [];
         foreach ($pageHandler->getMiddlewares() as $middlewareConfig) {
             $className = $middlewareConfig['class'];
             $object = $this->getContainerService()->create($className, $middlewareConfig['params'] ?? []);
-            $this->getMiddlwareService()->register($object, constant($middlewareConfig['position']));
-            $temporaryMiddlwares[] = $object;
+            $this->getMiddlewareService()->register($object, constant($middlewareConfig['position']));
+            $temporaryMiddlewares[] = $object;
         }
 
-        $requestHandler = new class($pageHandler, $this->getMiddlwareService()) implements RequestHandlerInterface {
+        $requestHandler = new class($pageHandler, $this->getMiddlewareService()) implements RequestHandlerInterface {
             public function __construct(private PageHandler $pageHandler, private MiddlewareService $middlewareService)
             {
             }
@@ -123,12 +123,12 @@ class Application extends Kernel
         // Handle the request through the middleware stack
         $response = $requestHandler->handle($request);
 
-        foreach ($temporaryMiddlwares as $middleware) {
-            $this->getMiddlwareService()->remove($middleware);
+        foreach ($temporaryMiddlewares as $middleware) {
+            $this->getMiddlewareService()->remove($middleware);
             $this->getContainerService()->remove(get_class($middleware));
         }
 
-        unset($requestHandler, $pageHandler, $temporaryMiddlwares);
+        unset($requestHandler, $pageHandler, $temporaryMiddlewares);
 
         return $response;
     }
