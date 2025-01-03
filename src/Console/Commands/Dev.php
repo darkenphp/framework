@@ -7,9 +7,15 @@ namespace Darken\Console\Commands;
 use Darken\Console\Application;
 use Darken\Console\CommandInterface;
 
+/**
+ * Class Dev
+ *
+ * This class is used to define the dev command for the application. It starts the development server
+ * and the watcher process to automatically rebuild the code when changes are detected.
+ */
 class Dev implements CommandInterface
 {
-    private $processes = [];
+    private array $processes = [];
 
     public function run(Application $app): void
     {
@@ -21,16 +27,10 @@ class Dev implements CommandInterface
 
         $app->stdOut('Starting development server on http://localhost:'.$port);
 
-
-        // Define the commands
         $webServerCmd = ['php', '-S', 'localhost:'.$port, '-t', 'public'];
-        // Uncomment the following line to add the watch command
         $watchCommand = ['php', 'darken', 'watch'];
 
-        // Start the Web Server process
         $this->processes[] = $this->startProcess($webServerCmd, 'Web Server');
-
-        // Start the Watcher process (if needed)
         $this->processes[] = $this->startProcess($watchCommand, 'Watcher');
 
         // Handle SIGINT (Ctrl+C) for graceful shutdown
@@ -70,11 +70,8 @@ class Dev implements CommandInterface
 
     /**
      * Reads output from the given pipes and echoes it to the console.
-     *
-     * @param array  $pipes Array containing the pipe resources.
-     * @param string $name  Name of the process for logging purposes.
      */
-    private function readOutput($pipes, string $name, Application $app)
+    private function readOutput(array $pipes, string $name, Application $app)
     {
         $read = [];
         if (isset($pipes[1]) && is_resource($pipes[1])) { // stdout
@@ -141,11 +138,6 @@ class Dev implements CommandInterface
 
     /**
      * Starts a subprocess with the given command and name.
-     *
-     * @param array  $command The command to execute as an array.
-     * @param string $name    The name of the process for logging purposes.
-     *
-     * @return array An associative array containing the process resource, pipes, and name.
      */
     private function startProcess(array $command, string $name): array
     {

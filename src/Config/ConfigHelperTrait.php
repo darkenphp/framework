@@ -7,19 +7,29 @@ namespace Darken\Config;
 use Throwable;
 use Yiisoft\Files\FileHelper;
 
+/**
+ * Trait ConfigHelperTrait
+ *
+ * This trait is used to provide helper methods for the configuration classes.
+ */
 trait ConfigHelperTrait
 {
     /**
-     * - Convert all directory separators into `/` (e.g. "\a/b\c" becomes "/a/b/c")
-     * - Remove trailing directory separators (e.g. "/a/b/c/" becomes "/a/b/c")
-     * - Turn multiple consecutive slashes into a single one (e.g. "/a///b/c" becomes "/a/b/c")
-     * - Remove ".." and "." based on their meanings (e.g. "/a/./b/../c" becomes "/a/c")
+     * Ensure that the path is normalized.
+     *
+     * + Convert all directory separators into `/` (e.g. "\a/b\c" becomes "/a/b/c")
+     * + Remove trailing directory separators (e.g. "/a/b/c/" becomes "/a/b/c")
+     * + Turn multiple consecutive slashes into a single one (e.g. "/a///b/c" becomes "/a/b/c")
+     * + Remove ".." and "." based on their meanings (e.g. "/a/./b/../c" becomes "/a/c")
      */
     public function path(string $path): string
     {
         return FileHelper::normalizePath($path);
     }
 
+    /**
+     * Load the environment variables from the .env file into the $_ENV superglobal.
+     */
     public function loadEnvFile(): void
     {
         try {
@@ -37,6 +47,9 @@ trait ConfigHelperTrait
         }
     }
 
+    /**
+     * Access the environment variables from the $_ENV superglobal using getenv().
+     */
     public function env(string $name, string|bool|int $default = ''): string|bool|int
     {
         return getenv($name) ?: $default;

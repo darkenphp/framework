@@ -8,6 +8,12 @@ use Darken\Console\Application;
 use Darken\Console\CommandInterface;
 use Yiisoft\Files\FileHelper;
 
+/**
+ * Class Watch
+ *
+ * This class is used to define the watch command for the application. It watches the
+ * building folders for changes and rebuilds the application whenever changes are detected.
+ */
 class Watch implements CommandInterface
 {
     public function run(Application $app): void

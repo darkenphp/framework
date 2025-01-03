@@ -15,6 +15,12 @@ use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
 use Whoops\Run;
 
+/**
+ * Kernel
+ *
+ * This class is the base class for the application. It provides the necessary
+ * methods to initalize the application and register the services.
+ */
 abstract class Kernel
 {
     public Run $whoops;

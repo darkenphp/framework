@@ -9,6 +9,11 @@ use Darken\Console\Commands\Dev;
 use Darken\Console\Commands\Watch;
 use Darken\Kernel;
 
+/**
+ * Console Application
+ *
+ * This class is used to define the application and its commands.
+ */
 class Application extends Kernel
 {
     // ANSI color codes

@@ -14,9 +14,17 @@ use Darken\Events\AfterBuildEvent;
 use Throwable;
 use Yiisoft\Files\FileHelper;
 
+/**
+ * Class Build
+ *
+ * This class is used to define the build command for the console application. It
+ * is used to compile the files in the building folders and save them to the build
+ * output folder. It also creates the routes file for the application if the config
+ * implements the PagesConfigInterface.
+ */
 class Build implements CommandInterface
 {
-    public $clear = false;
+    public bool $clear = false;
 
     public function run(Application $app): void
     {

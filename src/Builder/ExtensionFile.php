@@ -11,7 +11,7 @@ use function Opis\Closure\serialize;
 
 class ExtensionFile implements FileSaveInterface
 {
-    public $className = 'Extension';
+    public string $className = 'Extension';
 
     /**
      * @param array<FileBuildProcess> $files

@@ -17,6 +17,11 @@ use Throwable;
 use Whoops\Handler\CallbackHandler;
 use Whoops\Handler\PrettyPageHandler;
 
+/**
+ * Web Application
+ *
+ * This class is used to define the web application.
+ */
 class Application extends Kernel
 {
     public function initalize(): void

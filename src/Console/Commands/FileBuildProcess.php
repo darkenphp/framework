@@ -13,6 +13,13 @@ use Darken\Builder\OutputPolyfill;
 use Darken\Config\ConfigInterface;
 use Darken\Config\PagesConfigInterface;
 
+/**
+ * Class FileBuildProcess
+ *
+ * This class is used to define the build process for a file. It takes an input file
+ * and compiles it using the CodeCompiler. It then returns the compiled output and
+ * the polyfill output for the file.
+ */
 class FileBuildProcess
 {
     private InputFile $input;
