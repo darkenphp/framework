@@ -34,7 +34,7 @@ class ExtensionFile implements FileSaveInterface
         }
 
         $dump = var_export($dumpFiles, true);
-        $eventListeneres = base64_encode(serialize($this->app->getEventService()->getListeneres()));
+        $eventListeneres = base64_encode(serialize($this->app->getEventService()->getListeners()));
         $middlewares = base64_encode(serialize($this->app->getMiddlewareService()->retrieve()));
         $namespace = $this->app->config->getBuildOutputNamespace();
         $className = $this->className;

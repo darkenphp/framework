@@ -230,7 +230,7 @@ PHP, $renderTestPageWithComponentsAndLayouts->getBody()->__toString());
 
         $newApp = new Application($cfg);
 
-        $listeners = $newApp->getEventService()->getListeneres();
+        $listeners = $newApp->getEventService()->getListeners();
 
         $this->assertArrayHasKey(AfterBuildEvent::class, $listeners);
         

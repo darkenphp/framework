@@ -22,7 +22,7 @@ final class EventService implements EventDispatcherInterface, ListenerProviderIn
     /**
      * @return array<string, array<callable>>
      */
-    public function getListeneres(): array
+    public function getListeners(): array
     {
         return $this->listeners;
     }
