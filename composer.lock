@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ed4689510d0fe35bc6a058fc28587871",
+    "content-hash": "5cce8c7d8644372d7676518f3b3071c0",
     "packages": [
         {
             "name": "filp/whoops",
@@ -281,16 +281,16 @@
         },
         {
             "name": "opis/closure",
-            "version": "4.0.0",
+            "version": "4.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/opis/closure.git",
-                "reference": "db44177485cedcf5bbac186c98a61cd07703f2a3"
+                "reference": "1b26a1add089471e27859faab420c7291d23ea62"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/opis/closure/zipball/db44177485cedcf5bbac186c98a61cd07703f2a3",
-                "reference": "db44177485cedcf5bbac186c98a61cd07703f2a3",
+                "url": "https://api.github.com/repos/opis/closure/zipball/1b26a1add089471e27859faab420c7291d23ea62",
+                "reference": "1b26a1add089471e27859faab420c7291d23ea62",
                 "shasum": ""
             },
             "require": {
@@ -339,9 +339,9 @@
             ],
             "support": {
                 "issues": "https://github.com/opis/closure/issues",
-                "source": "https://github.com/opis/closure/tree/4.0.0"
+                "source": "https://github.com/opis/closure/tree/4.0.1"
             },
-            "time": "2024-12-28T21:45:16+00:00"
+            "time": "2025-01-04T14:12:31+00:00"
         },
         {
             "name": "psr/event-dispatcher",
