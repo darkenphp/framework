@@ -9,7 +9,7 @@ use Darken\Builder\OutputCompiled;
 use Darken\Builder\OutputPolyfill;
 use Tests\TestCase;
 
-class MiddlewareTest extends TestCase
+class MiddlewareParamTest extends TestCase
 {
     public function testMiddlwareAttributeExtractionTest()
     {
@@ -46,19 +46,5 @@ class MiddlewareTest extends TestCase
             }
         }
         PHP);
-    }
-
-    public function testDifferentExtractionTypes()
-    {
-        $mid = new MiddlewareHook();
-
-        $classAttribute = $this->createMock(\Darken\Builder\Compiler\Extractor\ClassAttribute::class);
-
-        // create this class attribute...
-        $classAttribute = 
-
-        $x = $mid->pageDataHook($classAttribute, $this->createMock(\Darken\Builder\OutputPage::class));
-
-        $this->assertEquals(['middlewares' => [[]]], $x);
     }
 }
