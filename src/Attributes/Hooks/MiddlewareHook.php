@@ -9,14 +9,12 @@ use Darken\Builder\Compiler\Extractor\AttributeExtractorInterface;
 use Darken\Builder\Compiler\Extractor\ClassAttribute;
 use Darken\Builder\Hooks\ClassAttributeHook;
 use Darken\Builder\OutputPage;
-use InvalidArgumentException;
 use PhpParser\Builder\Class_;
 use PhpParser\Builder\Method;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\ConstFetch;
-use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -64,8 +62,6 @@ class MiddlewareHook extends ClassAttributeHook
                 // First argument: Middleware Class
                 if ($value instanceof ClassConstFetch) {
                     $middlewareClass = $attribute->resolveAttributeName($attribute->useStatementCollector, $value->class);
-                } elseif ($value instanceof Name) {
-                    $middlewareClass = $attribute->resolveAttributeName($attribute->useStatementCollector, $value);
                 }
             } elseif ($index === 1) {
                 // Second argument: Params Array
@@ -76,8 +72,6 @@ class MiddlewareHook extends ClassAttributeHook
                 // Third argument: Position
                 if ($value instanceof ClassConstFetch) {
                     $position = $attribute->resolveAttributeName($attribute->useStatementCollector, $value->class) . '::' . $value->name->toString();
-                } elseif ($value instanceof ConstFetch) {
-                    $position = $this->resolveConstFetch($value);
                 } elseif ($value instanceof String_) {
                     $position = $value->value;
                 }
@@ -112,7 +106,7 @@ class MiddlewareHook extends ClassAttributeHook
             } elseif ($item->key instanceof Int_) {
                 $key = $item->key->value;
             } else {
-                throw new InvalidArgumentException('Only string and integer keys are supported for middwlare attribute defintions..');
+                continue;
             }
 
             $value = $this->getValueFromExpr($attribute, $item->value);

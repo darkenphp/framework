@@ -2,11 +2,6 @@
 
 namespace Tests\src\Attributes;
 
-use Darken\Attributes\Hooks\ConstructorParamHook;
-use Darken\Attributes\Hooks\MiddlewareHook;
-use Darken\Builder\CodeCompiler;
-use Darken\Builder\OutputCompiled;
-use Darken\Builder\OutputPolyfill;
 use Tests\TestCase;
 
 class MiddlewareParamTest extends TestCase

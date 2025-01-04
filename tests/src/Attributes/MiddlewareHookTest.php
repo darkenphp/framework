@@ -4,23 +4,16 @@ namespace Tests\src\Attributes;
 
 use Darken\Attributes\Middleware;
 use Darken\Attributes\Hooks\MiddlewareHook;
-use Darken\Builder\Compiler\Extractor\AttributeExtractorInterface;
 use Darken\Builder\Compiler\Extractor\ClassAttribute;
 use Darken\Builder\Compiler\UseStatementCollector;
 use Darken\Builder\OutputPage;
-use InvalidArgumentException;
-use PhpParser\BuilderFactory;
 use PhpParser\Node\Attribute;
 use PhpParser\Node\Expr\ClassConstFetch;
-use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Expr\Array_;
-use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrayItem;
-use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Stmt\ClassMethod;
 use Tests\TestCase;
 
 class MiddlewareHookTest extends TestCase
@@ -35,6 +28,10 @@ class MiddlewareHookTest extends TestCase
                 new ArrayItem(new Array_([
                     new ArrayItem(new String_('param1'), new String_('key1')),
                     new ArrayItem(new Int_(42), new String_('key2')),
+                    new ArrayItem(new String_('param3'), new Int_(2)),
+                    new ArrayItem(new Array_([
+                        new ArrayItem(new String_('param4'), new String_('key4')),
+                    ]), new String_('key3')),
                 ]), new String_('params')),
                 new ArrayItem(new String_('before'), new String_('position')),
         ]);
@@ -52,6 +49,10 @@ class MiddlewareHookTest extends TestCase
                     'params'   => [
                         'key1' => 'param1',
                         'key2' => 42,
+                        2 => 'param3',
+                        'key3' => [
+                            'key4' => 'param4',
+                        ],
                     ],
                     'position' => 'before',
                 ]
