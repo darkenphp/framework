@@ -19,7 +19,7 @@ class PageHandler implements RequestHandlerInterface
 
     public function __construct(public Application $app, string $path)
     {
-        $routesFile = $this->app->config->getBuildOutputFolder() . '/routes.php';
+        $routesFile = $this->getRoutesFile();
 
         if (file_exists($routesFile) && !is_readable($routesFile)) {
             throw new RuntimeException('Routes file is not readable');
@@ -60,6 +60,11 @@ class PageHandler implements RequestHandlerInterface
         return new Response(200, [
             'Content-Type' => 'text/html',
         ], $content);
+    }
+
+    private function getRoutesFile(): string
+    {
+        return $this->app->config->getBuildOutputFolder() . DIRECTORY_SEPARATOR . 'routes.php';
     }
 
     private function createRuntime(array $node, array $params): false|Runtime

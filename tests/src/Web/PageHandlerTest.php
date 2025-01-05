@@ -2,14 +2,15 @@
 
 namespace Tests\src\Web;
 
+use Darken\Web\Application;
 use Darken\Web\PageHandler;
 use ReflectionClass;
+use RuntimeException;
 use Tests\TestCase;
+use Tests\TestConfig;
 
 class PageHandlerTest extends TestCase
 {
-    private PageHandler $pageHandler;
-
     public function findRoutes() {
         
         $pageHandler = $this->getMockBuilder(PageHandler::class)
@@ -209,5 +210,47 @@ class PageHandlerTest extends TestCase
             ['class' => 'blogscomment'],
             [],
         ], $this->findRoutes('blogs/comments', $trie));
+    }
+
+    public function testMissingRouteFileException()
+    {
+        $errorConfig = $this->createConfig();
+
+        $web = new Application($errorConfig);
+        $web->whoops->unregister();
+
+        $routesFile = $errorConfig->getBuildOutputFolder() . DIRECTORY_SEPARATOR . 'routes.php';
+        $this->destoryTmpFile($routesFile);
+        $this->assertFalse(file_exists($routesFile));
+
+        $this->tmpFile($routesFile, '<?php return [];');
+        $this->assertTrue(file_exists($routesFile));
+
+        $x = chmod($routesFile, 000);
+        /*
+        chmod does not work
+        $this->assertFalse(is_readable($routesFile));
+
+        $this->expectException(RuntimeException::class);
+        new PageHandler($web, 'doesnotexsts.json');
+        */
+    }
+
+    public function testFalseCreateRuntime()
+    {
+        $pageHandler = $this->getMockBuilder(PageHandler::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $reflection = new ReflectionClass($pageHandler);
+        $method = $reflection->getMethod('createRuntime');
+        $method->setAccessible(true);
+
+        $args = [
+            ['middlewares' => []],
+            [],
+        ];
+
+        $this->assertFalse($method->invoke($pageHandler, $args[0], $args[1]));
     }
 }
