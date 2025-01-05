@@ -51,4 +51,17 @@ class ApplicationTest extends TestCase
         $this->assertEquals(['x' => 'test'], $request->getQueryParams());
     }
 
+    public function testExceptionPage()
+    {
+        $app = new Application($this->createConfig());
+        $app->whoops->unregister();
+
+        $this->destoryTmpFile($app->config->getBuildOutputFolder() . DIRECTORY_SEPARATOR . 'routes.php');
+
+        ob_start();
+        $app->run();
+        $output = ob_get_clean();
+
+        $this->assertSame('Page not found', $output);
+    }
 }

@@ -234,5 +234,6 @@ PHP, $renderTestPageWithComponentsAndLayouts->getBody()->__toString());
 
         $this->assertArrayHasKey(AfterBuildEvent::class, $listeners);
         
+        $this->destoryTmpFile($app->config->getBuildOutputFolder() . DIRECTORY_SEPARATOR . 'routes.php');
     }
 }
