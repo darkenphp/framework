@@ -2,24 +2,42 @@
 
 namespace Tests\src\Web;
 
+use Darken\Enum\MiddlewarePosition;
 use Darken\Web\Application;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Tests\TestCase;
 
 class ApplicationTest extends TestCase
 {
-    /*
     public function testApplicationGlobals()
     {
-        $app = new Application($this->createConfig());
+        $cfg = $this->createConfig();
+        $cfg->setDebugMode(true);
+
+        $app = new Application($cfg);
+
+        $mid = new class implements MiddlewareInterface
+        {
+            public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+            {
+                $request->withAddedHeader('X-Test', 'test');
+                return $handler->handle($request);
+            }
+        };
+
+        $app->getMiddlewareService()->register($mid, MiddlewarePosition::BEFORE);
         $app->whoops->unregister();
 
         ob_start();
         $app->run();
         $output = ob_get_clean();
 
-        $this->assertSame('pages/[[...slug]]:', $output);
+        $this->assertSame('Page not found', $output);
     }
-
+    /*
     public function test404Application()
     {
         $cfg = $this->createConfig();
