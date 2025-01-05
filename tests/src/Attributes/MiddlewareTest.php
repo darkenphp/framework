@@ -2,10 +2,18 @@
 
 namespace Tests\src\Attributes;
 
+use Darken\Attributes\Middleware;
+use Darken\Enum\MiddlewarePosition;
 use Tests\TestCase;
 
 class MiddlewareTest extends TestCase
 {
+    public function testConstructor()
+    {
+        $mid = new Middleware('class', ['test'], MiddlewarePosition::AFTER);
+        $this->assertInstanceOf(Middleware::class, $mid);
+    }
+    
     public function testMiddlwareAttributeExtractionTest()
     {
         $this->createCompileTest($this->createConfig(), <<<'PHP'

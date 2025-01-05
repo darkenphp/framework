@@ -8,6 +8,12 @@ use Tests\TestCase;
 
 class QueryParamTest extends TestCase
 {
+    public function testConstructor()
+    {
+        $mid = new QueryParamHook();
+        $this->assertInstanceOf(QueryParamHook::class, $mid);
+    }
+    
     public function testExtractors()
     {
         $config = $this->createConfig();
