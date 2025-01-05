@@ -16,7 +16,7 @@ use Throwable;
 use Yiisoft\Files\FileHelper;
 
 /**
- * Class Build
+ * Compile Builder
  *
  * This class is used to define the build command for the console application. It
  * is used to compile the files in the building folders and save them to the build
