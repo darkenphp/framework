@@ -14,7 +14,7 @@ class MiddlewareTest extends TestCase
         $this->assertInstanceOf(Middleware::class, $mid);
     }
     
-    public function testMiddlwareAttributeExtractionTest()
+    public function testMiddlewareAttributeExtractionTest()
     {
         $this->createCompileTest($this->createConfig(), <<<'PHP'
         <?php

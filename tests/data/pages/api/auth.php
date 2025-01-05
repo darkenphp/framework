@@ -2,12 +2,11 @@
 
 use Darken\Code\InvokeResponseInterface;
 use Darken\Enum\MiddlewarePosition;
-use Darken\Middleware\AddCustomHeaderMiddleware;
-use Darken\Middleware\AuthenticationMiddleware;
+use Darken\Middleware\CorsMiddleware;
 use Darken\Web\Response;
 
 return new 
-#[\Darken\Attributes\Middleware(AuthenticationMiddleware::class, ['authHeader' => 'Authorization', 'expectedToken' => 'FooBar'], MiddlewarePosition::BEFORE)]
+#[\Darken\Attributes\Middleware(CorsMiddleware::class, [], MiddlewarePosition::BEFORE)]
 class implements InvokeResponseInterface
 {
     public function __invoke(): Response

@@ -56,11 +56,8 @@ class BuildTest extends TestCase
                         '_children' => [
                             'middlewares' => [
                                 [
-                                    'class' => '\Darken\Middleware\AuthenticationMiddleware',
-                                    'params' => [
-                                        'authHeader' => 'Authorization',
-                                        'expectedToken' => 'FooBar',
-                                    ],
+                                    'class' => '\Darken\Middleware\CorsMiddleware',
+                                    'params' => [],
                                     'position' => '\Darken\Enum\MiddlewarePosition::BEFORE',
                                 ],
                             ],
@@ -77,11 +74,8 @@ class BuildTest extends TestCase
                                 '_children' => [
                                     'middlewares' => [
                                         [
-                                            'class' => '\Darken\Middleware\AddCustomHeaderMiddleware',
-                                            'params' => [
-                                                'name' => 'X-Foo',
-                                                'value' => 'X-Bar',
-                                            ],
+                                            'class' => '\Darken\Middleware\CorsMiddleware',
+                                            'params' => [],
                                             'position' => '\Darken\Enum\MiddlewarePosition::AFTER',
                                         ],
                                     ],
@@ -187,15 +181,21 @@ class BuildTest extends TestCase
         $method->setAccessible(true);
 
         $apiAuthResponse = $method->invoke($web, $this->createServerRequest('api/auth', 'GET'));
-        $this->assertSame('{"error":"Unauthorized"}', $apiAuthResponse->getBody()->__toString());
-        $this->assertSame(401, $apiAuthResponse->getStatusCode());
+        $this->assertSame([
+            'Access-Control-Allow-Origin' => ['*'],
+            'Access-Control-Allow-Methods' => ['GET, POST, PUT, DELETE, OPTIONS'],
+            'Access-Control-Allow-Headers' => ['X-Requested-With, Content-Type, Accept, Origin, Authorization'],
+        ], $apiAuthResponse->getHeaders());
+        $this->assertSame(200, $apiAuthResponse->getStatusCode());
 
         $blogCommentsResponse = $method->invoke($web, $this->createServerRequest('blogs/1/comments', 'GET'));
         $this->assertSame('pages/blogs/[[id]]/comments:1', $blogCommentsResponse->getBody()->__toString());
         $this->assertSame(200, $blogCommentsResponse->getStatusCode());
         $this->assertSame([
             'Content-Type' => ['text/html'],
-            'X-Foo' => ['X-Bar'],
+            'Access-Control-Allow-Origin' => ['*'],
+            'Access-Control-Allow-Methods' => ['GET, POST, PUT, DELETE, OPTIONS'],
+            'Access-Control-Allow-Headers' => ['X-Requested-With, Content-Type, Accept, Origin, Authorization'],
         ], $blogCommentsResponse->getHeaders());
         
         $renderTestPageWithComponentsAndLayouts = $method->invoke($web, $this->createServerRequest('components-test', 'GET'));

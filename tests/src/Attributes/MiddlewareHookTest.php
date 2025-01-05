@@ -25,7 +25,7 @@ class MiddlewareHookTest extends TestCase
     public function testParseMiddlewareAttribute_WithClassConstFetchArrayAndString()
     {
         $attribute = new Attribute(new Name(Middleware::class), [
-                new ArrayItem(new ClassConstFetch(new Name('Resolved\\MiddlewareClass'), 'middlwareclass'), new String_('class')),
+                new ArrayItem(new ClassConstFetch(new Name('Resolved\\MiddlewareClass'), 'middlewareclass'), new String_('class')),
                 new ArrayItem(new Array_([
                     new ArrayItem(new String_('param1'), new String_('key1')),
                     new ArrayItem(new Int_(42), new String_('key2')),
