@@ -23,8 +23,9 @@ class ApplicationTest extends TestCase
         {
             public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
             {
-                $request->withAddedHeader('X-Test', 'test');
-                return $handler->handle($request);
+                $response = $handler->handle($request);
+                $response->withHeader('X-Test', 'test');
+                return $response;
             }
         };
 
