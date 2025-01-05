@@ -48,10 +48,10 @@ class Application extends Kernel
 
     public function run(): int
     {
-        $command = array_key_exists($this->getCommand(), $this->commands) ? $this->commands[$this->getCommand()] : null;
+        $command = array_key_exists($this->getCommandName(), $this->commands) ? $this->commands[$this->getCommandName()] : null;
 
         if (!$command) {
-            $this->stdOut($this->stdTextRed(sprintf('Command "%s" not found.', $this->getCommand())));
+            $this->stdOut($this->stdTextRed(sprintf('Command "%s" not found.', $this->getCommandName())));
             return ConsoleExit::INVALID_INPUT->value;
         }
 
@@ -71,7 +71,7 @@ class Application extends Kernel
         return $_SERVER['argv'][0];
     }
 
-    public function getCommand(): ?string
+    public function getCommandName(): ?string
     {
         return $_SERVER['argv'][1] ?? null;
     }

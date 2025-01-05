@@ -16,7 +16,7 @@ class ApplicationTest extends TestCase
         $app = new Application($this->createConfig());
 
         $this->assertSame('darken', $app->getBin());
-        $this->assertSame('build', $app->getCommand());
+        $this->assertSame('build', $app->getCommandName());
         $this->assertSame(['foo' => 1, 'bar' => 'test'], $app->getArguments());
         $this->assertSame(1, $app->getArgument('foo', 'default'));
         $this->assertSame('default', $app->getArgument('doesnotexists', 'default'));
@@ -45,7 +45,7 @@ class ApplicationTest extends TestCase
         $app = new Application($this->createConfig());
 
         $this->assertSame('darken', $app->getBin());
-        $this->assertSame('build', $app->getCommand());
+        $this->assertSame('build', $app->getCommandName());
         $this->assertSame([
             'clear' => true, 
             'clear2' => 0,
