@@ -2,7 +2,7 @@
 
 namespace Tests\src\Attributes;
 
-use Darken\Attributes\Hooks\QueryParamHook;
+use Darken\Attributes\QueryParam;
 use Darken\Builder\CodeCompiler;
 use Tests\TestCase;
 
@@ -10,8 +10,8 @@ class QueryParamTest extends TestCase
 {
     public function testConstructor()
     {
-        $mid = new QueryParamHook();
-        $this->assertInstanceOf(QueryParamHook::class, $mid);
+        $mid = new QueryParam();
+        $this->assertInstanceOf(QueryParam::class, $mid);
     }
     
     public function testExtractors()
