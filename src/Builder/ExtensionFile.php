@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Darken\Builder;
 
 use Darken\Console\Application;
-use Darken\Console\Commands\FileBuildProcess;
 
 use function Opis\Closure\serialize;
 

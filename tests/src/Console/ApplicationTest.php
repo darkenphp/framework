@@ -56,4 +56,20 @@ class ApplicationTest extends TestCase
 
         $this->assertFalse($app->getArgument('nodefined', false));
     }
+
+    public function testRunBuild()
+    {
+        $config = $this->createConfig();
+        $config->setDebugMode(true);
+        $app = new Application($config);
+
+        $_SERVER['argv'] = ['darken', 'build', '--clear'];
+        ob_start();
+        $app->run();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Compiled', $output);
+
+        $this->clear();
+    }
 }

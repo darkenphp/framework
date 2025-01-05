@@ -60,14 +60,16 @@ class TestConfig extends BaseConfig implements ContainerServiceInterface, Middle
         return $this->path($this->rootDirectoryPath);
     }
 
-    /**
-     * ```
-     * return (bool) $this->env('DARKEN_DEBUG', false);
-     * ```
-     */
+    private $_debug = false;
+
     public function getDebugMode(): bool
     {
-        return false;
+        return $this->_debug;
+    }
+
+    public function setDebugMode(bool $debugMode): void
+    {
+        $this->_debug = $debugMode;
     }
 
     /**

@@ -14,7 +14,7 @@ use Darken\Builder\OutputPolyfill;
 use Darken\Code\Runtime;
 use Darken\Config\ConfigInterface;
 use Darken\Console\Commands\Build;
-use Darken\Console\Commands\FileBuildProcess;
+use Darken\Builder\FileBuildProcess;
 use Darken\Web\Application;
 use Darken\Web\Request;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -89,6 +89,12 @@ class TestCase extends FrameworkTestCase
             componentsFolder: 'data/components',
             builderOutputFolder: '.build',
         );
+    }
+
+    public function clear()
+    {
+        restore_error_handler();
+        restore_exception_handler();
     }
 
     public function tmpFile(string $path, string $content) : string

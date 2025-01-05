@@ -69,6 +69,36 @@ class Dev implements CommandInterface
     }
 
     /**
+     * Terminates all running processes and closes their pipes.
+     */
+    public function terminateProcesses()
+    {
+        foreach ($this->processes as $proc) {
+            $status = proc_get_status($proc['process']);
+            if ($status['running']) {
+                proc_terminate($proc['process']);
+                echo "Terminated {$proc['name']} process.\n";
+            }
+
+            // Close all pipes except stdin (already closed)
+            foreach ($proc['pipes'] as $key => $pipe) {
+                if ($key === 0) { // stdin, already closed
+                    continue;
+                }
+                if (is_resource($pipe)) {
+                    fclose($pipe);
+                }
+            }
+
+            // Close the process resource
+            proc_close($proc['process']);
+        }
+
+        // Clear the processes array to prevent further operations
+        $this->processes = [];
+    }
+
+    /**
      * Reads output from the given pipes and echoes it to the console.
      */
     private function readOutput(array $pipes, string $name, Application $app)
@@ -104,36 +134,6 @@ class Dev implements CommandInterface
             echo $app->stdTextYellow("[{$name}]");
             echo ' ' . $data;
         }
-    }
-
-    /**
-     * Terminates all running processes and closes their pipes.
-     */
-    private function terminateProcesses()
-    {
-        foreach ($this->processes as $proc) {
-            $status = proc_get_status($proc['process']);
-            if ($status['running']) {
-                proc_terminate($proc['process']);
-                echo "Terminated {$proc['name']} process.\n";
-            }
-
-            // Close all pipes except stdin (already closed)
-            foreach ($proc['pipes'] as $key => $pipe) {
-                if ($key === 0) { // stdin, already closed
-                    continue;
-                }
-                if (is_resource($pipe)) {
-                    fclose($pipe);
-                }
-            }
-
-            // Close the process resource
-            proc_close($proc['process']);
-        }
-
-        // Clear the processes array to prevent further operations
-        $this->processes = [];
     }
 
     /**

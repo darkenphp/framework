@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Darken\Console\Commands;
 
 use Darken\Builder\ExtensionFile;
+use Darken\Builder\FileBuildProcess;
 use Darken\Builder\FileSaveInterface;
 use Darken\Builder\OutputPage;
 use Darken\Config\PagesConfigInterface;

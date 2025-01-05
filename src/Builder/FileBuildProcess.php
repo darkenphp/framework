@@ -2,14 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Darken\Console\Commands;
+namespace Darken\Builder;
 
-use Darken\Builder\CodeCompiler;
-use Darken\Builder\CodeCompilerOutput;
-use Darken\Builder\InputFile;
-use Darken\Builder\OutputCompiled;
-use Darken\Builder\OutputPage;
-use Darken\Builder\OutputPolyfill;
+;
+
 use Darken\Config\ConfigInterface;
 use Darken\Config\PagesConfigInterface;
 

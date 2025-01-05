@@ -2,10 +2,8 @@
 
 namespace Tests\src\Service;
 
-use App\Test;
 use Darken\Builder\ExtensionFile;
 use Darken\Console\Application as ConsoleApplication;
-use Darken\Console\Commands\FileBuildProcess;
 use Darken\Enum\MiddlewarePosition;
 use Darken\Kernel;
 use Darken\Service\ExtensionInterface;
