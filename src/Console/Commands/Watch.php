@@ -33,7 +33,7 @@ class Watch implements CommandInterface
                 $build = new Build();
                 $build->clear = $app->getArgument('clear', false);
                 $build->run($app);
-                unset ($build);
+                unset($build);
             }
         }
     }

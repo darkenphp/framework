@@ -4,7 +4,6 @@ namespace Tests\src\Builder;
 
 use PhpParser\Node\Scalar\String_;
 use Darken\Builder\CodeCompiler;
-use Darken\Builder\Compiler\PropertyExtractor;
 use Darken\Builder\OutputCompiled;
 use Darken\Builder\OutputPolyfill;
 use PhpParser\Error;
@@ -140,7 +139,6 @@ echo $class->db3->getUpperDsn();
 PHP, $output->getCode());
 
         
-        /** @var PropertyExtractor $constructor1 */
         $constructor1 = $output->data->getPropertyAttributes()[0];
         $this->assertSame('arg1', $constructor1->getName());
         $this->assertSame('string', $constructor1->getType());
