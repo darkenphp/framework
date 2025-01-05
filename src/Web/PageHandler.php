@@ -37,6 +37,11 @@ class PageHandler implements RequestHandlerInterface
         return $this->node[0]['middlewares'] ?? [];
     }
 
+    public function getMethods(): array
+    {
+        return $this->node[0]['methods'] ?? [];
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $node = $this->node;

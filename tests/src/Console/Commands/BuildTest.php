@@ -102,6 +102,10 @@ class BuildTest extends TestCase
             ],
             'hello' => [
                 '_children' => [
+                    'methods' => [
+                        'GET',
+                        'POST',
+                    ],
                     'class' => 'Tests\Build\data\pages\hello',
                 ],
             ],
@@ -178,6 +182,19 @@ class BuildTest extends TestCase
         $reflection = new ReflectionClass($web);
         $method = $reflection->getMethod('handleServerRequest');
         $method->setAccessible(true);
+
+
+
+        // test hello with different http methods then GET & POST, should be invalid.
+
+        $helloGetResponse = $method->invoke($web, $this->createServerRequest('hello', 'GET'));
+        $this->assertSame('pages/hello', $helloGetResponse->getBody()->getContents());
+
+        $helloPostResponse = $method->invoke($web, $this->createServerRequest('hello', 'POST'));
+        $this->assertSame('pages/hello', $helloPostResponse->getBody()->getContents());
+
+        $helloDeleteResponse = $method->invoke($web, $this->createServerRequest('hello', 'DELETE'));
+        $this->assertSame(405, $helloDeleteResponse->getStatusCode());
 
         $apiAuthResponse = $method->invoke($web, $this->createServerRequest('api/auth', 'GET'));
         $this->assertSame([

@@ -86,6 +86,13 @@ class Application extends Kernel
         // Instantiate the final handler
         $pageHandler = new PageHandler($this, $request->getUri()->getPath());
 
+        $currentRequestHttpMethod = $request->getMethod();
+        $allowedHttpMethods = $pageHandler->getMethods();
+
+        if (count($allowedHttpMethods) > 0 && !in_array($currentRequestHttpMethod, $allowedHttpMethods)) {
+            return new Response(405, [], 'Method Not Allowed');
+        }
+
         $temporaryMiddlewares = [];
         foreach ($pageHandler->getMiddlewares() as $middlewareConfig) {
             $className = $middlewareConfig['class'];
