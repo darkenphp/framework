@@ -14,7 +14,6 @@ use PhpParser\Builder\Method;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ClassConstFetch;
-use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -66,7 +65,7 @@ class MiddlewareHook extends ClassAttributeHook
             } elseif ($index === 1) {
                 // Second argument: Params Array
                 if ($value instanceof Array_) {
-                    $params = $this->parseArray($attribute, $value);
+                    $params = $this->parseArray($value);
                 }
             } elseif ($index === 2) {
                 // Third argument: Position
@@ -86,31 +85,18 @@ class MiddlewareHook extends ClassAttributeHook
     }
 
     /**
-     * Resolve ConstFetch expressions like BEFORE
-     */
-    private function resolveConstFetch(ConstFetch $node): string
-    {
-        return $node->name->toString();
-    }
-
-    /**
      * Parse an Array_ node into a PHP associative array.
      */
-    private function parseArray(ClassAttribute $attribute, Array_ $array): array
+    private function parseArray(Array_ $array): array
     {
         $result = [];
 
         foreach ($array->items as $item) {
             if ($item->key instanceof String_) {
-                $key = $item->key->value;
+                $result[$item->key->value] = $this->getValueFromExpr($item->value);
             } elseif ($item->key instanceof Int_) {
-                $key = $item->key->value;
-            } else {
-                continue;
+                $result[$item->key->value] = $this->getValueFromExpr($item->value);
             }
-
-            $value = $this->getValueFromExpr($attribute, $item->value);
-            $result[$key] = $value;
         }
 
         return $result;
@@ -119,21 +105,16 @@ class MiddlewareHook extends ClassAttributeHook
     /**
      * Extract value from an expression node.
      */
-    private function getValueFromExpr(ClassAttribute $attribute, Expr $expr)
+    private function getValueFromExpr(Expr $expr): string|int|array|null
     {
         if ($expr instanceof String_) {
             return $expr->value;
         } elseif ($expr instanceof Int_) {
             return $expr->value;
-        } elseif ($expr instanceof ConstFetch) {
-            return $this->resolveConstFetch($expr);
-        } elseif ($expr instanceof ClassConstFetch) {
-            return $attribute->resolveAttributeName($attribute->useStatementCollector, $expr->class);
         } elseif ($expr instanceof Array_) {
-            return $this->parseArray($attribute, $expr);
+            return $this->parseArray($expr);
         }
 
-        // Add more cases as needed
         return null;
     }
 }

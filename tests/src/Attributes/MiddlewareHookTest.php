@@ -14,6 +14,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayItem;
+use PhpParser\Node\Expr\ConstFetch;
 use Tests\TestCase;
 
 class MiddlewareHookTest extends TestCase
@@ -32,6 +33,8 @@ class MiddlewareHookTest extends TestCase
                     new ArrayItem(new Array_([
                         new ArrayItem(new String_('param4'), new String_('key4')),
                     ]), new String_('key3')),
+                    // new entry with key and value is null
+                    new ArrayItem(new ConstFetch(new Name('null')), new String_('key5')),
                 ]), new String_('params')),
                 new ArrayItem(new String_('before'), new String_('position')),
         ]);
@@ -53,6 +56,7 @@ class MiddlewareHookTest extends TestCase
                         'key3' => [
                             'key4' => 'param4',
                         ],
+                        'key5' => null,
                     ],
                     'position' => 'before',
                 ]
