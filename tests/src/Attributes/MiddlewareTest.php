@@ -4,7 +4,7 @@ namespace Tests\src\Attributes;
 
 use Tests\TestCase;
 
-class MiddlewareParamTest extends TestCase
+class MiddlewareTest extends TestCase
 {
     public function testMiddlwareAttributeExtractionTest()
     {

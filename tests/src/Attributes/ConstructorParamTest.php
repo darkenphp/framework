@@ -2,7 +2,7 @@
 
 namespace Tests\src\Attributes;
 
-use Darken\Attributes\Hooks\ConstructorParamHook;
+use Darken\Attributes\ConstructorParam;
 use Darken\Builder\CodeCompiler;
 use Darken\Builder\OutputCompiled;
 use Darken\Builder\OutputPolyfill;
@@ -10,6 +10,11 @@ use Tests\TestCase;
 
 class ConstructorParamTest extends TestCase
 {
+    public function testConstructor()
+    {
+        $x = new ConstructorParam('test');
+        $this->assertInstanceOf(ConstructorParam::class, $x);
+    }
     public function testExtractors()
     {
         $config = $this->createConfig();
