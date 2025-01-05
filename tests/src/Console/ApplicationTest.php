@@ -3,6 +3,8 @@
 namespace Tests\src\Console;
 
 use Darken\Console\Application;
+use Darken\Console\CommandInterface;
+use Darken\Enum\ConsoleExit;
 use Tests\TestCase;
 
 class ApplicationTest extends TestCase
@@ -71,5 +73,63 @@ class ApplicationTest extends TestCase
         $this->assertStringContainsString('Compiled', $output);
 
         $this->clear();
+    }
+
+    public function testRegisterCommand()
+    {
+        $app = new Application($this->createConfig());
+
+        $cmd = new class implements CommandInterface
+        {
+            public function run(Application $app): ConsoleExit
+            {
+                $app->stdOut('Hello World');
+                return ConsoleExit::SUCCESS;
+            }
+        };
+
+        $app->registerCommand('hello', $cmd);
+        $_SERVER['argv'] = ['darken', 'hello'];
+
+        ob_start();
+        $app->run();
+        $output = ob_get_clean();
+
+        $this->assertSame('Hello World', trim($output));
+    }
+
+    public function testUnknownCommand()
+    {
+        $app = new Application($this->createConfig());
+
+        $_SERVER['argv'] = ['darken', 'unknown'];
+
+        ob_start();
+        $app->run();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Command "unknown" not found.', $output);
+    }
+
+    public function testCommandWhichThrowsAnException()
+    {
+        $app = new Application($this->createConfig());
+
+        $cmd = new class implements CommandInterface
+        {
+            public function run(Application $app): ConsoleExit
+            {
+                throw new \Exception('Test Exception');
+            }
+        };
+
+        $app->registerCommand('exception', $cmd);
+        $_SERVER['argv'] = ['darken', 'exception'];
+
+        ob_start();
+        $app->run();
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Test Exception', $output);
     }
 }

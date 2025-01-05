@@ -11,6 +11,7 @@ use Darken\Builder\OutputPage;
 use Darken\Config\PagesConfigInterface;
 use Darken\Console\Application;
 use Darken\Console\CommandInterface;
+use Darken\Enum\ConsoleExit;
 use Darken\Events\AfterBuildEvent;
 use Throwable;
 use Yiisoft\Files\FileHelper;
@@ -25,11 +26,9 @@ use Yiisoft\Files\FileHelper;
  */
 class Build implements CommandInterface
 {
-    public bool $clear = false;
-
-    public function run(Application $app): void
+    public function run(Application $app): ConsoleExit
     {
-        if ($this->clear) {
+        if ($app->getArgument('clear', false)) {
             FileHelper::clearDirectory($app->config->getBuildOutputFolder());
         }
 
@@ -99,6 +98,8 @@ class Build implements CommandInterface
         $this->createFile(new ExtensionFile($files, $app));
 
         $app->getEventService()->dispatch(new AfterBuildEvent($app));
+
+        return ConsoleExit::SUCCESS;
     }
 
     public static function createFile(FileSaveInterface $save): bool

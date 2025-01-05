@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Darken\Console;
 
+use Darken\Enum\ConsoleExit;
+
 /**
  * Interface CommandInterface
  *
@@ -11,5 +13,5 @@ namespace Darken\Console;
  */
 interface CommandInterface
 {
-    public function run(Application $app): void;
+    public function run(Application $app): ConsoleExit;
 }

@@ -6,6 +6,7 @@ namespace Darken\Console\Commands;
 
 use Darken\Console\Application;
 use Darken\Console\CommandInterface;
+use Darken\Enum\ConsoleExit;
 
 /**
  * Class Dev
@@ -17,7 +18,7 @@ class Dev implements CommandInterface
 {
     private array $processes = [];
 
-    public function run(Application $app): void
+    public function run(Application $app): ConsoleExit
     {
         $app->stdOut('Build code');
         $build = new Build();
@@ -66,6 +67,9 @@ class Dev implements CommandInterface
             // Sleep briefly to prevent high CPU usage
             usleep(100000); // 0.1 seconds
         }
+
+        // @phpstan-ignore-next-line
+        return ConsoleExit::SUCCESS;
     }
 
     /**

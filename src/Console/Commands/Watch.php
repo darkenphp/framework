@@ -6,6 +6,7 @@ namespace Darken\Console\Commands;
 
 use Darken\Console\Application;
 use Darken\Console\CommandInterface;
+use Darken\Enum\ConsoleExit;
 use Yiisoft\Files\FileHelper;
 
 /**
@@ -16,7 +17,7 @@ use Yiisoft\Files\FileHelper;
  */
 class Watch implements CommandInterface
 {
-    public function run(Application $app): void
+    public function run(Application $app): ConsoleExit
     {
         $app->stdOut('Watching for changes...');
 
@@ -31,10 +32,12 @@ class Watch implements CommandInterface
             if ($nowTime > $lastTime) {
                 $lastTime = $nowTime;
                 $build = new Build();
-                $build->clear = $app->getArgument('clear', false);
                 $build->run($app);
                 unset($build);
             }
         }
+
+        // @phpstan-ignore-next-line
+        return ConsoleExit::SUCCESS;
     }
 }

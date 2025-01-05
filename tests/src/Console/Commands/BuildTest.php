@@ -38,7 +38,6 @@ class BuildTest extends TestCase
         });
 
         $build = new Build();
-        $build->clear = true;
 
         $build->run($app);
         

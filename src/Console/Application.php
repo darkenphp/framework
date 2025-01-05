@@ -7,7 +7,9 @@ namespace Darken\Console;
 use Darken\Console\Commands\Build;
 use Darken\Console\Commands\Dev;
 use Darken\Console\Commands\Watch;
+use Darken\Enum\ConsoleExit;
 use Darken\Kernel;
+use Exception;
 
 /**
  * Console Application
@@ -25,30 +27,42 @@ class Application extends Kernel
 
     private const COLOR_RESET = "\033[0m";
 
+    private $commands = [];
+
     public function initalize(): void
     {
         if ($this->config->getDebugMode()) {
             $this->whoops->pushHandler(new \Whoops\Handler\PlainTextHandler());
             $this->whoops->register();
         }
+
+        $this->registerCommand('build', Build::class);
+        $this->registerCommand('dev', Dev::class);
+        $this->registerCommand('watch', Watch::class);
     }
 
-    public function run(): void
+    public function registerCommand(string $name, string|CommandInterface $object, array $params = []): void
     {
-        switch ($this->getCommand()) {
-            case 'build':
-                $build = new Build();
-                $build->clear = $this->getArgument('clear', false);
-                $build->run($this);
-                break;
-            case 'dev':
-                $build = new Dev();
-                $build->run($this);
-                break;
-            case 'watch':
-                $build = new Watch();
-                $build->run($this);
-                break;
+        $this->commands[$name] = is_object($object) ? $object : [$object, $params];
+    }
+
+    public function run(): int
+    {
+        $command = array_key_exists($this->getCommand(), $this->commands) ? $this->commands[$this->getCommand()] : null;
+
+        if (!$command) {
+            $this->stdOut($this->stdTextRed(sprintf('Command "%s" not found.', $this->getCommand())));
+            return ConsoleExit::INVALID_INPUT->value;
+        }
+
+
+        try {
+            /** @var CommandInterface $object */
+            $object = $this->getContainerService()->ensure($command, CommandInterface::class);
+            return $object->run($this)->value;
+        } catch (Exception $e) {
+            $this->stdOut($this->stdTextRed($e->getMessage()));
+            return ConsoleExit::ERROR->value;
         }
     }
 

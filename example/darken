@@ -6,5 +6,7 @@ require __DIR__ . '/vendor/autoload.php';
 $config = new Config(
     rootDirectoryPath: getcwd(),
 );
-$kernel = new Application($config);
-$kernel->run();
+$exitCode = (new Application($config))
+    ->run();
+
+exit($exitCode);
