@@ -6,13 +6,13 @@ use Darken\Console\Application;
 use Darken\Console\Commands\Build;
 use Darken\Events\AfterBuildEvent;
 use Darken\Service\EventService;
-use Darken\Service\EventServiceInterface;
 use Darken\Service\ExtensionInterface;
 use Darken\Service\ExtensionService;
 use Darken\Service\ExtensionServiceInterface;
 use Darken\Web\Application as WebApplication;
 use Darken\Web\PageHandler;
 use Darken\Web\Request;
+use Darken\Web\RouteExtractor;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionClass;
 use Tests\data\di\Db;
@@ -46,21 +46,29 @@ class BuildTest extends TestCase
         $this->assertSame([
             '<slug:.+>' => [
                 '_children' => [
-                    'class' => 'Tests\Build\data\pages\slug',
+                    'methods' => [
+                        '*' => [
+                            'class' => 'Tests\Build\data\pages\slug',
+                        ]
+                    ]
                 ],
             ],
             'api' => [
                 '_children' => [
                     'auth' => [
                         '_children' => [
-                            'middlewares' => [
-                                [
-                                    'class' => '\Darken\Middleware\CorsMiddleware',
-                                    'params' => [],
-                                    'position' => '\Darken\Enum\MiddlewarePosition::BEFORE',
-                                ],
-                            ],
-                            'class' => 'Tests\Build\data\pages\api\auth',
+                            'methods' => [
+                                '*' => [
+                                    'middlewares' => [
+                                        [
+                                            'class' => '\Darken\Middleware\CorsMiddleware',
+                                            'params' => [],
+                                            'position' => '\Darken\Enum\MiddlewarePosition::BEFORE',
+                                        ],
+                                    ],
+                                    'class' => 'Tests\Build\data\pages\api\auth',
+                                ]
+                            ]
                         ],
                     ],
                 ],
@@ -71,54 +79,85 @@ class BuildTest extends TestCase
                         '_children' => [
                             'comments' => [
                                 '_children' => [
-                                    'middlewares' => [
-                                        [
-                                            'class' => '\Darken\Middleware\CorsMiddleware',
-                                            'params' => [],
-                                            'position' => '\Darken\Enum\MiddlewarePosition::AFTER',
+                                    'methods' => [
+                                        '*' => [
+                                            'middlewares' => [
+                                                [
+                                                    'class' => '\Darken\Middleware\CorsMiddleware',
+                                                    'params' => [],
+                                                    'position' => '\Darken\Enum\MiddlewarePosition::AFTER',
+                                                ],
+                                            ],
+                                            'class' => 'Tests\Build\data\pages\blogs\id\comments',
                                         ],
                                     ],
-                                    'class' => 'Tests\Build\data\pages\blogs\id\comments',
                                 ],
                             ],
                             'index' => [
                                 '_children' => [
-                                    'class' => 'Tests\Build\data\pages\blogs\id\index',
+                                    'methods' => [
+                                        '*' => [
+                                            'class' => 'Tests\Build\data\pages\blogs\id\index',
+                                        ],
+                                    ],
                                 ],
                             ],
                         ],
                     ],
                     'index' => [
                         '_children' => [
-                            'class' => 'Tests\Build\data\pages\blogs\index',
+                            'methods' => [
+                                '*' => [
+                                    'class' => 'Tests\Build\data\pages\blogs\index',
+                                ],
+                            ],
                         ],
                     ],
                 ],
             ],
             'components-test' => [
                 '_children' => [
-                    'class' => 'Tests\Build\data\pages\componentstest',
+                    'methods' => [
+                        '*' => [
+                            'class' => 'Tests\Build\data\pages\componentstest',
+                        ]
+                    ]
                 ],
             ],
             'hello' => [
                 '_children' => [
                     'methods' => [
-                        'GET',
-                        'POST',
-                    ],
-                    'class' => 'Tests\Build\data\pages\hello',
+                        'GET' => [
+                            'methods' => [
+                                'GET',
+                                'POST',
+                            ],
+                            'class' => 'Tests\Build\data\pages\hello',
+                        ],
+                        'POST' => [
+                            'methods' => [
+                                'GET',
+                                'POST',
+                            ],
+                            'class' => 'Tests\Build\data\pages\hello',
+                        ]
+                    ]
                 ],
             ],
             'params' =>  [
                 '_children' =>  [
-                    'middlewares' =>  [
-                        0 => [
-                            'class' => '\Darken\Middleware\CorsMiddleware',
-                            'params' => [],
-                            'position' => 'before',
+                    'methods' => [
+                        '*' => [
+                            'middlewares' =>  [
+                                0 => [
+                                    'class' => '\Darken\Middleware\CorsMiddleware',
+                                    'params' => [],
+                                    'position' => 'before',
+                                ],
+                            ],
+                            'class' => 'Tests\Build\data\pages\params',
                         ],
                     ],
-                    'class' => 'Tests\Build\data\pages\params',
                 ],
             ],
         ], $content);
@@ -170,7 +209,9 @@ class BuildTest extends TestCase
             ],
         ] as $path => $def) {
 
-            $handler = new PageHandler($web, $path);
+            $extractor = new RouteExtractor($web, $this->createServerRequest($path, 'GET'));
+
+            $handler = new PageHandler($extractor);
             $response = $handler->handle($this->createServerRequest($path, 'GET'));
 
             $this->assertInstanceOf(ResponseInterface::class, $response);

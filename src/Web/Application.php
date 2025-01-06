@@ -83,18 +83,13 @@ class Application extends Kernel
     {
         $this->getContainerService()->register(Request::class, $request);
 
+        $routeExtractor = new RouteExtractor($this, $request);
+
         // Instantiate the final handler
-        $pageHandler = new PageHandler($this, $request->getUri()->getPath());
-
-        $currentRequestHttpMethod = $request->getMethod();
-        $allowedHttpMethods = $pageHandler->getMethods();
-
-        if (count($allowedHttpMethods) > 0 && !in_array($currentRequestHttpMethod, $allowedHttpMethods)) {
-            return new Response(405, [], 'Method Not Allowed');
-        }
+        $pageHandler = new PageHandler($routeExtractor);
 
         $temporaryMiddlewares = [];
-        foreach ($pageHandler->getMiddlewares() as $middlewareConfig) {
+        foreach ($routeExtractor->getMiddlewares() as $middlewareConfig) {
             $className = $middlewareConfig['class'];
             $object = $this->getContainerService()->create($className, $middlewareConfig['params'] ?? []);
             $this->getMiddlewareService()->register($object, constant($middlewareConfig['position']));

@@ -13,6 +13,11 @@ class InputFile
 
     public function getFileName(): string
     {
+        return basename($this->filePath);
+    }
+
+    public function getEnsuredFileName(): string
+    {
         $fileName = basename($this->filePath);
 
         return preg_replace('/[^a-zA-Z0-9]/', '', str_replace('.php', '', $fileName)) . '.php';

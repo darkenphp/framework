@@ -36,6 +36,6 @@ class OutputCompiled implements FileSaveInterface
 
     private function getFilePath(): string
     {
-        return $this->getRelativeDirectory() . DIRECTORY_SEPARATOR . $this->input->getFileName();
+        return $this->getRelativeDirectory() . DIRECTORY_SEPARATOR . $this->input->getEnsuredFileName();
     }
 }

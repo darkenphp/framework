@@ -4,6 +4,7 @@ namespace Tests\src\Web;
 
 use Darken\Web\Application;
 use Darken\Web\PageHandler;
+use Darken\Web\RouteExtractor;
 use ReflectionClass;
 use RuntimeException;
 use Tests\TestCase;
@@ -13,7 +14,7 @@ class PageHandlerTest extends TestCase
 {
     public function findRoutes() {
         
-        $pageHandler = $this->getMockBuilder(PageHandler::class)
+        $pageHandler = $this->getMockBuilder(RouteExtractor::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -234,23 +235,5 @@ class PageHandlerTest extends TestCase
         $this->expectException(RuntimeException::class);
         new PageHandler($web, 'doesnotexsts.json');
         */
-    }
-
-    public function testFalseCreateRuntime()
-    {
-        $pageHandler = $this->getMockBuilder(PageHandler::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $reflection = new ReflectionClass($pageHandler);
-        $method = $reflection->getMethod('createRuntime');
-        $method->setAccessible(true);
-
-        $args = [
-            ['middlewares' => []],
-            [],
-        ];
-
-        $this->assertFalse($method->invoke($pageHandler, $args[0], $args[1]));
     }
 }

@@ -58,6 +58,6 @@ class OutputPolyfill implements FileSaveInterface
 
     public function getRelativeBuildOutputFilePath(): string
     {
-        return str_replace('.php', '.compiled.php', $this->compiled->input->getFileName());
+        return str_replace('.php', '.compiled.php', $this->compiled->input->getEnsuredFileName());
     }
 }

@@ -79,7 +79,25 @@ class Build implements CommandInterface
                         }
                         $node = &$node[$segment]['_children'];
                     }
-                    $node = [...$node, ...$page->getNodeData()];
+
+                    // Initialize the 'methods' key if it doesn't exist
+                    if (!isset($node['methods'])) {
+                        $node['methods'] = [];
+                    }
+
+
+                    $verbs = $page->getVerbs(); // or ['POST'] or could be ['GET', 'POST']
+
+                    foreach ($verbs as $verb) {
+                        // Ensure the verb is uppercase (standard HTTP method format)
+                        $method = strtoupper($verb);
+
+                        // Assign the handler class for this method
+                        // You might need to adjust how you retrieve the handler class based on your OutputPage implementation
+                        $node['methods'][$method] = $page->getNodeData(); // Ensure getHandlerClass() returns the correct handler
+                    }
+
+                    //$node = [...$node, ...$page->getNodeData()];
                 }
                 ksort($trie);
                 $this->saveFile($app->config->getBuildOutputFolder() . '/routes.php', '<?php' . PHP_EOL . 'return ' . var_export($trie, true) . ';' . PHP_EOL);
