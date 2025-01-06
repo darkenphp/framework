@@ -6,6 +6,10 @@ namespace Darken\Builder\Hooks;
 
 use PhpParser\Builder\Param;
 use PhpParser\BuilderFactory;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\String_;
 
 trait HookHelperTrait
 {
@@ -28,5 +32,39 @@ trait HookHelperTrait
 
         return $param;
 
+    }
+
+    /**
+     * Parse an Array_ node into a PHP associative array.
+     */
+    public function parseArray(Array_ $array): array
+    {
+        $result = [];
+
+        foreach ($array->items as $item) {
+            if ($item->key instanceof String_) {
+                $result[$item->key->value] = $this->getValueFromExpr($item->value);
+            } elseif ($item->key instanceof Int_) {
+                $result[$item->key->value] = $this->getValueFromExpr($item->value);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Extract value from an expression node.
+     */
+    public function getValueFromExpr(Expr $expr): string|int|array|null
+    {
+        if ($expr instanceof String_) {
+            return $expr->value;
+        } elseif ($expr instanceof Int_) {
+            return $expr->value;
+        } elseif ($expr instanceof Array_) {
+            return $this->parseArray($expr);
+        }
+
+        return null;
     }
 }
