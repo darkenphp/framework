@@ -33,7 +33,7 @@ abstract class Kernel
         $this->initalize();
 
         self::$container = new ContainerService();
-        self::$container->register($config::class, $config, true);
+        self::$container->register([$config::class, ConfigInterface::class], $config, true);
 
         // register containers from config
         if ($config instanceof ContainerServiceInterface) {
@@ -45,21 +45,21 @@ abstract class Kernel
         if ($this->config instanceof MiddlewareServiceInterface) {
             $middlewareService = $this->config->middlewares($middlewareService);
         }
-        self::$container->register($middlewareService, null, true);
+        self::$container->register($middlewareService::class, $middlewareService, true);
 
         // event service
         $event = new EventService(self::$container);
         if ($config instanceof EventServiceInterface) {
             $event = $config->events($event);
         }
-        self::$container->register($event, null, true);
+        self::$container->register($event::class, $event, true);
 
         // extension service
         $extension = new ExtensionService($this);
         if ($config instanceof ExtensionServiceInterface) {
             $extension = $config->extensions($extension);
         }
-        self::$container->register($extension, null, true);
+        self::$container->register($extension::class, $extension, true);
     }
 
     public static function getContainerService(): ContainerService

@@ -18,9 +18,14 @@ use RuntimeException;
 final class ContainerService
 {
     /**
-     * @var array<string, object|array|callable> The registered containers indexed by their class names or identifiers.
+     * @var array<string, int> The registered containers indexed by their class names or identifiers.
      */
     private array $containers = [];
+
+    /**
+     * @var array<int, object|array|callable> The resolved objects indexed by their container index.
+     */
+    private array $objects = [];
 
     private array $systemContainers = [];
 
@@ -41,28 +46,33 @@ final class ContainerService
      * Usage examples:
      *
      * ```php
-     * $container->register(new FooBar());
-     * $container->register(FooBar::class);
+     *$container->register(FooBar::class));
      * $container->register(FooBarInterface::class, new FooBar());
      * $container->register(FooBarInterface::class, ['param1' => 'value1', 'param2' => 'value2']);
      * $container->register(FooBarInterface::class, fn() => new FooBar());
      * ```
+     *
+     * Its also possible to alias multiple containers to the same object:
+     *
+     * ```php
+     * $container->register([FooBarInterface::class, FooBar::class], new FooBar());
+     * ```
+     *
+     * Now you can either resolve the container by its interface or class name.
      */
-    public function register(string|object|callable $objectOrName, object|array|null $objectOrParams = null, bool $system = false): self
+    public function register(string|array $name, object|array|null $definition = null, bool $system = false): self
     {
-        if (is_object($objectOrName)) {
-            $class = get_class($objectOrName);
-            $object = $objectOrName;
-        } else {
-            $class = $objectOrName;
-            $object = $objectOrParams;
+        $index = count($this->containers) + 1;
+
+        foreach ((array) $name as $containerName) {
+            $this->containers[$containerName] = $index;
+
+            if ($system) {
+                $this->systemContainers[] = $containerName;
+            }
         }
 
-        $this->containers[$class] = $object;
-
-        if ($system) {
-            $this->systemContainers[] = $class;
-        }
+        $this->objects[$index] = $definition;
 
         return $this;
     }
@@ -81,22 +91,24 @@ final class ContainerService
             throw new RuntimeException(sprintf('Container "%s" not found. Register the container before accessing it.', $name));
         }
 
+        $indexFromName = $this->containers[$name];
+
         // if $resolve is null, it means no objectOrParams are given and the class i registered by ::class
-        $resolve = $this->containers[$name] ?? null;
+        $resolve = $this->objects[$indexFromName] ?? null;
 
         if (is_callable($resolve)) {
-            $this->containers[$name] = $resolve();
+            $this->objects[$indexFromName] = $resolve();
         }
 
         if (is_array($resolve)) {
-            $this->containers[$name] = $this->create($name, $resolve);
+            $this->objects[$indexFromName] = $this->create($name, $resolve);
         }
 
         if ($resolve === null) {
-            $this->containers[$name] = $this->create($name);
+            $this->objects[$indexFromName] = $this->create($name);
         }
 
-        return $this->containers[$name];
+        return $this->objects[$indexFromName];
     }
 
     /**

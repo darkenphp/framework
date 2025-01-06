@@ -42,7 +42,7 @@ class TestConfig extends BaseConfig implements ContainerServiceInterface, Middle
 
     public function containers(ContainerService $service): ContainerService
     {
-        return $service->register(new Db('sqlite::memory:'));
+        return $service->register(Db::class, new Db('sqlite::memory:'));
     }
 
     public function middlewares(MiddlewareService $service): MiddlewareService

@@ -2,6 +2,7 @@
 
 namespace Tests\src\Web;
 
+use Darken\Config\ConfigInterface;
 use Darken\Enum\MiddlewarePosition;
 use Darken\Web\Application;
 use Psr\Http\Message\ResponseInterface;
@@ -9,6 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Tests\TestCase;
+use Tests\TestConfig;
 
 class ApplicationTest extends TestCase
 {
@@ -37,6 +39,9 @@ class ApplicationTest extends TestCase
         $output = ob_get_clean();
 
         $this->assertSame('Page not found', $output);
+
+        $this->assertInstanceOf(TestConfig::class, $app->getContainerService()->resolve(TestConfig::class));
+        $this->assertInstanceOf(ConfigInterface::class, $app->getContainerService()->resolve(ConfigInterface::class));
     }
     /*
     public function test404Application()

@@ -15,7 +15,7 @@ namespace Darken\Service;
  * ```php
  * public function containers(ContainerService $service): ContainerService
  * {
- *     return $service->register(new Test('foo bar'));
+ *     return $service->register(Test::class, fn() => new Test($this->env('DARKEN_TEST', 'test')));
  * }
  * ```
  *
@@ -35,7 +35,7 @@ interface ContainerServiceInterface
      *
      * Example:
      * ```php
-     * return $service->register(new Test($this->env('DARKEN_TEST', 'test')));
+     * return $service->register(Test::class, fn() => new Test($this->env('DARKEN_TEST', 'test')));
      * ```
      */
     public function containers(ContainerService $service): ContainerService;

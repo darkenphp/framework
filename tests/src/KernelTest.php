@@ -2,6 +2,7 @@
 
 namespace Tests\src;
 
+use Darken\Config\ConfigInterface;
 use Darken\Kernel;
 use Tests\TestCase;
 use Whoops\Run;

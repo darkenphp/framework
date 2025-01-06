@@ -56,7 +56,7 @@ class ContainerServiceTest extends TestCase
     {
         $service = new ContainerService();
         
-        $service->register(new TestService());
+        $service->register(TestService::class, new TestService());
 
         $object = $service->create(AutoWireTestService::class);
         
