@@ -78,6 +78,7 @@ class Build implements CommandInterface
                             $node[$segment] = ['_children' => []];
                         }
                         $node = &$node[$segment]['_children'];
+
                     }
 
                     // Initialize the 'methods' key if it doesn't exist
@@ -95,6 +96,8 @@ class Build implements CommandInterface
                         // You might need to adjust how you retrieve the handler class based on your OutputPage implementation
                         $node['methods'][$method] = $page->getNodeData(); // Ensure getHandlerClass() returns the correct handler
                     }
+
+                    ksort($node);
 
                     //$node = [...$node, ...$page->getNodeData()];
                 }
