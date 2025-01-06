@@ -19,7 +19,7 @@ final class MiddlewareService
 
     }
 
-    public function register(MiddlewareInterface|string $middleware, MiddlewarePosition $position): self
+    public function register(MiddlewareInterface|string|array $middleware, MiddlewarePosition $position): self
     {
         $item = [
             'container' => $middleware,
@@ -61,7 +61,7 @@ final class MiddlewareService
         return $this->middlewares;
     }
 
-    private function ensureContainer(mixed $container): MiddlewareInterface
+    private function ensureContainer(MiddlewareInterface|string|array $container): MiddlewareInterface
     {
         return $this->containerService->ensure($container, MiddlewareInterface::class);
     }
