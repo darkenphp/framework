@@ -85,8 +85,7 @@ class Build implements CommandInterface
                         $node['methods'] = [];
                     }
 
-
-                    $verbs = $page->getVerbs(); // or ['POST'] or could be ['GET', 'POST']
+                    $verbs = $page->getVerbs();
 
                     foreach ($verbs as $verb) {
                         // Ensure the verb is uppercase (standard HTTP method format)

@@ -53,7 +53,10 @@ class OutputPage
          * /i                       Case-insensitive
          */
         if (preg_match('/^((?:\[[^]]*\]|[^.])*)\.([^.]+)\.php$/i', $this->polyfill->compiled->input->getFileName(), $matches)) {
-            $verbs[] = $matches[1];
+            $methodsMatch = $matches[2];
+            foreach (explode('|', $methodsMatch) as $verb) {
+                $verbs[] = $verb;
+            }
         }
 
         foreach ($this->getNodeData()['methods'] ?? [] as $verb) {
@@ -63,9 +66,8 @@ class OutputPage
         if (count($verbs) === 0) {
             $verbs[] = '*';
         }
-        // extract verbs from the file .get .post
-        // or from getNodeData?
-        return $verbs;
+
+        return array_map('strtoupper', $verbs);
     }
 
     private function getRoute(): string
@@ -82,7 +84,7 @@ class OutputPage
         // if the file ends with .get.php (but could also be .post.php, .put.php, etc)
         // its basically two dots extract this information and replace .php
         // here is the problem with the <>.
-        $pattern = preg_replace('/\.[a-zA-Z0-9_]+\.php$/', '.php', $pattern);
+        $pattern = preg_replace('/\.[a-zA-Z0-9_\|]+\.php$/', '.php', $pattern);
 
         // an easy way to convert /blogs/[[slug]] to a matcahable regex like /blogs/<slug:[\w+]>
         return str_replace('.php', '', $pattern);

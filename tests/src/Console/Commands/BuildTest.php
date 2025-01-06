@@ -160,6 +160,34 @@ class BuildTest extends TestCase
                     ],
                 ],
             ],
+            'users' => [
+                '_children' => [
+                    '<test:[a-zA-Z0-9\-]+>-methods' => [
+                        '_children' => [
+                            'methods' => [
+                                'GET' => [
+                                    'class' => 'Tests\Build\data\pages\users\testmethodsgetpost',
+                                ],
+                                'POST' => [
+                                    'class' => 'Tests\Build\data\pages\users\testmethodsgetpost',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'index' => [
+                        '_children' => [
+                            'methods' => [
+                                'GET' => [
+                                    'class' => 'Tests\Build\data\pages\users\indexget',
+                                ],
+                                'POST' => [
+                                    'class' => 'Tests\Build\data\pages\users\indexpost',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ], $content);
 
         $extensionFilePath = $config->getBuildOutputFolder() . '/Extension.php';
