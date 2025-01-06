@@ -21,7 +21,7 @@ class Config extends BaseConfig
     }
     public function getDebugMode(): bool
     {
-        return (bool) $this->env('DARKEN_DEBUG', false);
+        return true;
     }
     public function getPagesFolder(): string
     {
