@@ -93,6 +93,9 @@ class Build implements CommandInterface
                         $node['methods'][$method] = $page->getNodeData();
                     }
                 }
+
+                // Sort methods arrays to ensure consistent ordering
+                $this->sortMethodsRecursively($trie);
                 ksort($trie);
                 $this->saveFile($app->config->getBuildOutputFolder() . '/routes.php', '<?php' . PHP_EOL . 'return ' . var_export($trie, true) . ';' . PHP_EOL);
             }
@@ -124,5 +127,27 @@ class Build implements CommandInterface
     public static function saveFile(string $file, string $content): bool
     {
         return file_put_contents($file, $content) !== false;
+    }
+
+    /**
+     * Recursively sort methods arrays in the trie to ensure consistent ordering
+     *
+     * @param array<string, mixed> $trie
+     */
+    private function sortMethodsRecursively(array &$trie): void
+    {
+        foreach ($trie as &$node) {
+            if (!is_array($node)) {
+                continue;
+            }
+
+            if (isset($node['methods'])) {
+                ksort($node['methods']);
+            }
+
+            if (isset($node['_children'])) {
+                $this->sortMethodsRecursively($node['_children']);
+            }
+        }
     }
 }
