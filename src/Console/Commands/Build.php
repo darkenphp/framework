@@ -136,14 +136,17 @@ class Build implements CommandInterface
      */
     private function sortMethodsRecursively(array &$trie): void
     {
-        foreach ($trie as $key => &$node) {
-            if (is_array($node)) {
-                if (isset($node['methods']) && is_array($node['methods'])) {
-                    ksort($node['methods']);
-                }
-                if (isset($node['_children']) && is_array($node['_children'])) {
-                    $this->sortMethodsRecursively($node['_children']);
-                }
+        foreach ($trie as &$node) {
+            if (!is_array($node)) {
+                continue;
+            }
+
+            if (isset($node['methods'])) {
+                ksort($node['methods']);
+            }
+
+            if (isset($node['_children'])) {
+                $this->sortMethodsRecursively($node['_children']);
             }
         }
     }

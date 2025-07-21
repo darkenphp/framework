@@ -144,6 +144,29 @@ class BuildTest extends TestCase
                     ]
                 ],
             ],
+            'nested' => [
+                '_children' => [
+                    '<level1:[a-zA-Z0-9\-]+>' => [
+                        '_children' => [
+                            '<level2:[a-zA-Z0-9\-]+>' => [
+                                '_children' => [
+                                    'methods' => [
+                                        'GET' => [
+                                            'class' => 'Tests\Build\data\pages\nested\level1\level2getpostput',
+                                        ],
+                                        'POST' => [
+                                            'class' => 'Tests\Build\data\pages\nested\level1\level2getpostput',
+                                        ],
+                                        'PUT' => [
+                                            'class' => 'Tests\Build\data\pages\nested\level1\level2getpostput',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
             'params' =>  [
                 '_children' =>  [
                     'methods' => [
@@ -189,6 +212,9 @@ class BuildTest extends TestCase
                 ],
             ],
         ], $content);
+
+        // Specific test for method sorting in nested structures
+        $this->assertMethodsSortedCorrectly($content);
 
         $extensionFilePath = $config->getBuildOutputFolder() . '/Extension.php';
 
@@ -320,5 +346,49 @@ PHP, $renderTestPageWithComponentsAndLayouts->getBody()->__toString());
         $this->assertArrayHasKey(AfterBuildEvent::class, $listeners);
         
         $this->destoryTmpFile($app->config->getBuildOutputFolder() . DIRECTORY_SEPARATOR . 'routes.php');
+    }
+
+    /**
+     * Test that methods arrays are correctly sorted at all levels of nesting
+     */
+    private function assertMethodsSortedCorrectly(array $routes): void
+    {
+        // Test top-level methods sorting
+        if (isset($routes['hello']['_children']['methods'])) {
+            $methods = array_keys($routes['hello']['_children']['methods']);
+            $sortedMethods = $methods;
+            sort($sortedMethods);
+            $this->assertEquals($sortedMethods, $methods, 'Top-level methods should be sorted');
+        }
+
+        // Test nested methods sorting (users/index with GET and POST)
+        if (isset($routes['users']['_children']['index']['_children']['methods'])) {
+            $methods = array_keys($routes['users']['_children']['index']['_children']['methods']);
+            $sortedMethods = $methods;
+            sort($sortedMethods);
+            $this->assertEquals($sortedMethods, $methods, 'Nested methods should be sorted');
+            
+            // Specifically verify GET comes before POST
+            $this->assertEquals(['GET', 'POST'], $methods, 'GET should come before POST in nested structure');
+        }
+
+        // Test deeply nested methods sorting (users/[[test]]-methods with GET and POST)
+        if (isset($routes['users']['_children']['<test:[a-zA-Z0-9\-]+>-methods']['_children']['methods'])) {
+            $methods = array_keys($routes['users']['_children']['<test:[a-zA-Z0-9\-]+>-methods']['_children']['methods']);
+            $sortedMethods = $methods;
+            sort($sortedMethods);
+            $this->assertEquals($sortedMethods, $methods, 'Deeply nested methods should be sorted');
+        }
+
+        // Test very deeply nested methods sorting (nested/[[level1]]/[[level2]] with GET, POST, PUT)
+        if (isset($routes['nested']['_children']['<level1:[a-zA-Z0-9\-]+>']['_children']['<level2:[a-zA-Z0-9\-]+>']['_children']['methods'])) {
+            $methods = array_keys($routes['nested']['_children']['<level1:[a-zA-Z0-9\-]+>']['_children']['<level2:[a-zA-Z0-9\-]+>']['_children']['methods']);
+            $sortedMethods = $methods;
+            sort($sortedMethods);
+            $this->assertEquals($sortedMethods, $methods, 'Very deeply nested methods should be sorted');
+            
+            // Specifically verify GET comes before POST comes before PUT
+            $this->assertEquals(['GET', 'POST', 'PUT'], $methods, 'Methods should be alphabetically sorted in very deep nested structure');
+        }
     }
 }
