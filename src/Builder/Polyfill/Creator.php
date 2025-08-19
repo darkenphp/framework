@@ -98,13 +98,17 @@ class Creator
         }
         
         // 5) Sort each group considering explicit order first, then alphabetically
-        usort($required, function($a, $b) use ($paramOrders) {
-            return $this->compareParameters($a, $b, $paramOrders);
-        });
-        
-        usort($optional, function($a, $b) use ($paramOrders) {
-            return $this->compareParameters($a, $b, $paramOrders);
-        });
+        // Only apply sorting if explicit ordering is used; otherwise preserve declaration order
+        if ($this->hasExplicitOrdering($paramOrders)) {
+            usort($required, function($a, $b) use ($paramOrders) {
+                return $this->compareParameters($a, $b, $paramOrders);
+            });
+            
+            usort($optional, function($a, $b) use ($paramOrders) {
+                return $this->compareParameters($a, $b, $paramOrders);
+            });
+        }
+        // If no explicit ordering, keep original declaration order (backward compatibility)
 
         // 6) Merge them in required-first order
         $sortedParams = array_merge($required, $optional);
@@ -167,6 +171,14 @@ class Creator
         
         // If neither has an order, sort alphabetically
         return strcmp($nameA, $nameB);
+    }
+
+    /**
+     * Check if any parameters have explicit order values
+     */
+    private function hasExplicitOrdering(array $paramOrders): bool
+    {
+        return !empty($paramOrders);
     }
 
     private function getConstructorMethod(DataExtractorVisitor $extractor): Method
