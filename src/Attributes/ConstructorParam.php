@@ -42,10 +42,14 @@ class ConstructorParam
     /**
      * @param string|null $name The name of the constructor parameter to map to this property.
      *                          If null, the property name itself is used.
+     * @param int|null $order The explicit order position for this parameter in the constructor.
+     *                        Parameters with explicit orders are sorted by order value.
+     *                        Parameters without explicit orders are sorted alphabetically.
      */
-    public function __construct(public ?string $name = null)
+    public function __construct(public ?string $name = null, public ?int $order = null)
     {
         // If $name is specified, that exact parameter name will be resolved.
         // Otherwise, the name of the property will be used as the parameter name.
+        // If $order is specified, the parameter will be positioned according to that order.
     }
 }

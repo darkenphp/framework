@@ -47,6 +47,15 @@ class PropertyAttribute implements AttributeExtractorInterface
         return $this->createDecoratorAttributeParamValue($this->useStatementCollector, $this->decoratorAttribute);
     }
 
+    public function getDecoratorAttributeOrderValue(): int|null
+    {
+        $args = $this->getDecoratorAttributeArguments();
+        if (isset($args[1]) && $args[1]->value instanceof \PhpParser\Node\Scalar\LNumber) {
+            return $args[1]->value->value;
+        }
+        return null;
+    }
+
     public function getDecoratorAttributeName(): string|false
     {
         return $this->createDecoratorAttributeParamName($this->useStatementCollector, $this->decoratorAttribute);
