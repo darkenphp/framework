@@ -4,7 +4,16 @@ on: [push, pull_request]
 
 jobs:
   phpstan:
+    name: PHPStan on PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4', '8.5']
+        include:
+          - php: '8.5'
+            experimental: true
 
     steps:
     - name: Checkout code
@@ -13,7 +22,7 @@ jobs:
     - name: Set up PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.3'
+        php-version: ${{ matrix.php }}
         extensions: mbstring
         tools: composer:v2
 
