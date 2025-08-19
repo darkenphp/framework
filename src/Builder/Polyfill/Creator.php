@@ -93,10 +93,20 @@ class Creator
                 $optional[] = $param;
             }
         }
-        // Merge them in required-first order
+        
+        // 4) Sort each group alphabetically by parameter name for consistent ordering
+        usort($required, function($a, $b) {
+            return strcmp($a->var->name, $b->var->name);
+        });
+        
+        usort($optional, function($a, $b) {
+            return strcmp($a->var->name, $b->var->name);
+        });
+
+        // 5) Merge them in required-first order
         $sortedParams = array_merge($required, $optional);
 
-        // 4) Build a brand-new Method builder with sorted params + original statements
+        // 6) Build a brand-new Method builder with sorted params + original statements
         $factory = new BuilderFactory();
 
         return $factory
