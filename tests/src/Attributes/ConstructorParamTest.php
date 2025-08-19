@@ -177,7 +177,7 @@ class ConstructorParamTest extends TestCase
     public function testConstructorParamDeclarationOrder()
     {
         // Test case 1: Properties declared in order alpha, beta - preserve order
-        $this->createCompileTest($this->createConfig(), <<<'PHP'
+        $this->createCompileTestWithFileName($this->createConfig(), 'declarationorder1.php', <<<'PHP'
         <?php
         $x = new class {
             #[\Darken\Attributes\ConstructorParam('alpha')]
@@ -223,7 +223,7 @@ class ConstructorParamTest extends TestCase
         PHP);
 
         // Test case 2: Properties declared in REVERSE order beta, alpha - preserve order (backward compatibility)
-        $this->createCompileTest($this->createConfig(), <<<'PHP'
+        $this->createCompileTestWithFileName($this->createConfig(), 'declarationorder2.php', <<<'PHP'
         <?php
         $x = new class {
             #[\Darken\Attributes\ConstructorParam('beta')]
@@ -273,7 +273,7 @@ class ConstructorParamTest extends TestCase
     {
         // When explicit order is used, alphabetical sorting is enabled for consistency
         // Test case: Properties declared as beta, alpha but with explicit order values
-        $this->createCompileTest($this->createConfig(), <<<'PHP'
+        $this->createCompileTestWithFileName($this->createConfig(), 'orderingwithexplicit.php', <<<'PHP'
         <?php
         $x = new class {
             #[\Darken\Attributes\ConstructorParam('beta', 2)]
@@ -323,7 +323,7 @@ class ConstructorParamTest extends TestCase
     {
         // Test explicit ordering: gamma(order=1), alpha(order=3), beta(order=2)
         // Expected result: gamma, beta, alpha
-        $this->createCompileTest($this->createConfig(), <<<'PHP'
+        $this->createCompileTestWithFileName($this->createConfig(), 'explicitorder.php', <<<'PHP'
         <?php
         $x = new class {
             #[\Darken\Attributes\ConstructorParam('gamma', 1)]
@@ -380,7 +380,7 @@ class ConstructorParamTest extends TestCase
     {
         // Test mixed ordering: some with explicit order, some without
         // Expected: ordered parameters first (by order), then unordered alphabetically
-        $this->createCompileTest($this->createConfig(), <<<'PHP'
+        $this->createCompileTestWithFileName($this->createConfig(), 'mixedorder.php', <<<'PHP'
         <?php
         $x = new class {
             #[\Darken\Attributes\ConstructorParam('zulu')]  // No order - should be last (alphabetically)

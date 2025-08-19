@@ -113,7 +113,10 @@ class Creator
         // 6) Merge them in required-first order
         $sortedParams = array_merge($required, $optional);
 
-        // 7) Build a brand-new Method builder with sorted params + original statements
+        // 7) Reorder statements to match the new parameter order
+        $sortedStmts = $this->reorderStatements($oldNode->stmts, $oldNode->params, $sortedParams, $paramOrders);
+
+        // 8) Build a brand-new Method builder with sorted params + reordered statements
         $factory = new BuilderFactory();
 
         return $factory
@@ -121,8 +124,8 @@ class Creator
             ->makePublic()
             // Add sorted parameters
             ->addParams($sortedParams)
-            // Reuse the method body/statement block
-            ->addStmts($oldNode->stmts);
+            // Add reordered statements
+            ->addStmts($sortedStmts);
     }
 
     /**
@@ -179,6 +182,38 @@ class Creator
     private function hasExplicitOrdering(array $paramOrders): bool
     {
         return !empty($paramOrders);
+    }
+
+    /**
+     * Reorder statements to match the new parameter order
+     */
+    private function reorderStatements(array $originalStmts, array $originalParams, array $sortedParams, array $paramOrders): array
+    {
+        // If no explicit ordering was used, preserve original statement order
+        if (!$this->hasExplicitOrdering($paramOrders)) {
+            return $originalStmts;
+        }
+
+        // Create a mapping from parameter name to statement index
+        $paramToStmtMap = [];
+        for ($i = 0; $i < count($originalParams); $i++) {
+            $paramName = $originalParams[$i]->var->name;
+            $paramToStmtMap[$paramName] = $i;
+        }
+
+        // Reorder statements based on the new parameter order
+        $reorderedStmts = [];
+        foreach ($sortedParams as $param) {
+            $paramName = $param->var->name;
+            if (isset($paramToStmtMap[$paramName])) {
+                $stmtIndex = $paramToStmtMap[$paramName];
+                if (isset($originalStmts[$stmtIndex])) {
+                    $reorderedStmts[] = $originalStmts[$stmtIndex];
+                }
+            }
+        }
+
+        return $reorderedStmts;
     }
 
     private function getConstructorMethod(DataExtractorVisitor $extractor): Method
