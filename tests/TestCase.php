@@ -142,7 +142,12 @@ class TestCase extends FrameworkTestCase
 
     public function createCompileTest(TestConfig $config, string $content, string $expecedCompiledCode, string $expectedPolyfillCode): string
     {
-        $tmpFile = $this->createTmpFile($config, 'test.php', $content);
+        return $this->createCompileTestWithFileName($config, 'test.php', $content, $expecedCompiledCode, $expectedPolyfillCode);
+    }
+
+    public function createCompileTestWithFileName(TestConfig $config, string $fileName, string $content, string $expecedCompiledCode, string $expectedPolyfillCode): string
+    {
+        $tmpFile = $this->createTmpFile($config, $fileName, $content);
 
         $file = $this->createInputFile($tmpFile);
 
