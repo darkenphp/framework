@@ -103,23 +103,13 @@ use Attribute;
  *     public bool $autoName;
  * }
  * ```
- *
- * ## Best Practices
- *
- * 1. **Always use explicit ordering** for classes that may be refactored
- * 2. **Use consistent numbering** (1, 2, 3... or 10, 20, 30... for easier insertion)
- * 3. **Group related parameters** with similar order numbers
- * 4. **Document parameter purposes** in your class comments
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class ConstructorParam
 {
     /**
-     * @param string|null $name The name of the constructor parameter to map to this property.
-     *                          If null, the property name itself is used.
-     * @param int|null $order The explicit order position for this parameter in the constructor.
-     *                        Parameters with explicit orders are sorted by order value.
-     *                        Parameters without explicit orders are sorted alphabetically.
+     * @param string|null $name The name of the constructor parameter to map to this property. If null, the property name itself is used.
+     * @param int|null $order The explicit order position for this parameter in the constructor. Parameters with explicit orders are sorted by order value. Parameters without explicit orders are sorted alphabetically.
      */
     public function __construct(public ?string $name = null, public ?int $order = null)
     {
