@@ -21,20 +21,20 @@ use Attribute;
  * // Version 1: Properties in one order
  * class Example {
  *     #[ConstructorParam('bar')]
- *     public string $someBar;
+ *     public string $bar;
  *
  *     #[ConstructorParam('baz')]
- *     public int $someBaz;
+ *     public int $baz;
  * }
  * // Generated: new Example($bar, $baz)
  *
  * // Version 2: Same class, properties rearranged for readability
  * class Example {
  *     #[ConstructorParam('baz')]  // Moved this first
- *     public int $someBaz;
+ *     public int $baz;
  *
  *     #[ConstructorParam('bar')]  // Now this is second
- *     public string $someBar;
+ *     public string $bar;
  * }
  * // Generated: new Example($baz, $bar)  // ❌ BREAKS COMPATIBILITY!
  * ```
@@ -46,13 +46,13 @@ use Attribute;
  * ```php
  * class Example {
  *     #[ConstructorParam('bar', 2)]    // Explicit order: position 2
- *     public string $someBar;
+ *     public string $bar;
  *
  *     #[ConstructorParam('baz', 1)]    // Explicit order: position 1
- *     public int $someBaz;
+ *     public int $baz;
  *
  *     #[ConstructorParam('flag', 3)]   // Explicit order: position 3
- *     public bool $someFlag;
+ *     public bool $flag;
  * }
  * // Always generates: new Example($baz, $bar, $flag)
  * // Order remains consistent regardless of property arrangement
@@ -72,22 +72,22 @@ use Attribute;
  * ```php
  * class MixedExample {
  *     #[ConstructorParam('zulu')]      // No order - will be last alphabetically
- *     public $last;
+ *     public $zulu;
  *
  *     #[ConstructorParam('alpha', 2)]  // Order 2 - second position
- *     public $second;
+ *     public $alpha;
  *
  *     #[ConstructorParam('beta')]      // No order - will be after ordered params
- *     public $unordered;
+ *     public $beta;
  *
  *     #[ConstructorParam('gamma', 1)]  // Order 1 - first position
- *     public $first;
+ *     public $gamma;
  * }
  * // Generated: new MixedExample($gamma, $alpha, $beta, $zulu)
  * //             ordered: ↑gamma(1), ↑alpha(2)  unordered: ↑beta, ↑zulu (alphabetical)
  * ```
  *
- * ## Basic Usage Without Order (Legacy)
+ * ## Basic Usage Without Order
  *
  * For simple cases where order doesn't matter, you can omit the order parameter:
  *
@@ -110,11 +110,6 @@ use Attribute;
  * 2. **Use consistent numbering** (1, 2, 3... or 10, 20, 30... for easier insertion)
  * 3. **Group related parameters** with similar order numbers
  * 4. **Document parameter purposes** in your class comments
- *
- * ## Backward Compatibility
- *
- * Existing code without `$order` parameters continues to work unchanged.
- * The new ordering feature only activates when at least one `$order` parameter is used.
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
 class ConstructorParam

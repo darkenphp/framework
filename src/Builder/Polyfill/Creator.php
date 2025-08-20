@@ -96,15 +96,15 @@ class Creator
                 $optional[] = $param;
             }
         }
-        
+
         // 5) Sort each group considering explicit order first, then alphabetically
         // Only apply sorting if explicit ordering is used; otherwise preserve declaration order
         if ($this->hasExplicitOrdering($paramOrders)) {
-            usort($required, function($a, $b) use ($paramOrders) {
+            usort($required, function ($a, $b) use ($paramOrders) {
                 return $this->compareParameters($a, $b, $paramOrders);
             });
-            
-            usort($optional, function($a, $b) use ($paramOrders) {
+
+            usort($optional, function ($a, $b) use ($paramOrders) {
                 return $this->compareParameters($a, $b, $paramOrders);
             });
         }
@@ -153,25 +153,25 @@ class Creator
     {
         $nameA = $paramA->var->name;
         $nameB = $paramB->var->name;
-        
+
         $orderA = $paramOrders[$nameA] ?? null;
         $orderB = $paramOrders[$nameB] ?? null;
-        
+
         // If both have explicit orders, sort by order
         if ($orderA !== null && $orderB !== null) {
             return $orderA <=> $orderB;
         }
-        
+
         // If only A has an order, A comes first
         if ($orderA !== null && $orderB === null) {
             return -1;
         }
-        
+
         // If only B has an order, B comes first
         if ($orderA === null && $orderB !== null) {
             return 1;
         }
-        
+
         // If neither has an order, sort alphabetically
         return strcmp($nameA, $nameB);
     }
