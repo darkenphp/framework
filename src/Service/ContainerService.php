@@ -60,7 +60,7 @@ final class ContainerService
      *
      * Now you can either resolve the container by its interface or class name.
      */
-    public function register(string|array $name, object|array|null $definition = null, bool $system = false): self
+    public function register(string|array $name, object|array|callable|null $definition = null, bool $system = false): self
     {
         $index = count($this->containers) + 1;
 
@@ -88,6 +88,10 @@ final class ContainerService
     public function resolve(string $name): object
     {
         if (!$this->has($name)) {
+            // if $name is an instantiable class, then try to create it
+            if (class_exists($name)) {
+                return $this->create($name);
+            }
             throw new RuntimeException(sprintf('Container "%s" not found. Register the container before accessing it.', $name));
         }
 
@@ -117,27 +121,33 @@ final class ContainerService
      * 1. If the input is an object, return it.
      * 2. If the input is a string and the container is registered, resolve it.
      * 3. If the input is a string and the container is not registered, create it (but don't register it).
+     *
+     * @param object|string|array{0:string,1?:array} $name Object, class name, or [class, params]
+     * @param string|null $instanceOf Optional interface/class to assert against
+     * @throws InvalidArgumentException
      */
-    public function ensure(object|string|array $name, string|null $instanceOf = null): object
+    public function ensure(object|string|array $name, ?string $instanceOf = null): object
     {
         if (is_object($name)) {
-            $container = $name;
+            $obj = $name;
         } elseif (is_string($name) && $this->has($name)) {
-            $container = $this->resolve($name);
-        } elseif (is_array($name)) {
-            $container = $this->create($name[0], $name[1] ?? []);
+            $obj = $this->resolve($name);
+        } elseif (is_array($name) && isset($name[0]) && is_string($name[0])) {
+            $obj = $this->create($name[0], $name[1] ?? []);
+        } elseif (is_string($name)) {
+            $obj = $this->create($name);
         } else {
-            $container = $this->create($name);
+            throw new InvalidArgumentException('Invalid argument for ensure(): expected object|string|[class, params].');
         }
 
-        if ($instanceOf && !$container instanceof $instanceOf) {
+        if ($instanceOf !== null && !$obj instanceof $instanceOf) {
             throw new InvalidArgumentException(sprintf(
                 'Container "%s" must be an instance of "%s".',
-                $name,
+                is_string($name) ? $name : get_debug_type($name),
                 $instanceOf
             ));
         }
-        return $container;
+        return $obj;
     }
 
     /**
@@ -153,7 +163,7 @@ final class ContainerService
      */
     public function remove(string $name): self
     {
-        unset($this->containers[$name]);
+        unset($this->containers[$name], $this->systemContainers[$name]);
         return $this;
     }
 

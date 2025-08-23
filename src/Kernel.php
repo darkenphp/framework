@@ -12,7 +12,6 @@ use Darken\Service\EventServiceInterface;
 use Darken\Service\ExtensionService;
 use Darken\Service\ExtensionServiceInterface;
 use Darken\Service\LogService;
-use Darken\Service\LogServiceInterface;
 use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
 use Whoops\Run;

@@ -43,6 +43,7 @@
         }
     ],
     "scripts": {
+        "prepare" : "composer cs && composer phpstan && composer test",
         "test": "./vendor/bin/phpunit --coverage-clover coverage.xml",
         "cs": "vendor/bin/php-cs-fixer fix src",
         "phpstan": "vendor/bin/phpstan"
