@@ -9,9 +9,11 @@ use Darken\Service\EventService;
 use Darken\Service\EventServiceInterface;
 use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
+use Darken\Service\RouteService;
+use Darken\Service\RouteServiceInterface;
 use Tests\data\di\Db;
 
-class TestConfig extends BaseConfig implements ContainerServiceInterface, MiddlewareServiceInterface, EventServiceInterface
+class TestConfig extends BaseConfig implements ContainerServiceInterface, MiddlewareServiceInterface, EventServiceInterface, RouteServiceInterface
 {
     public function __construct(private string $rootDirectoryPath, public string $pagesFolder, public string $builderOutputFolder, public string $componentsFolder)
     {
@@ -46,6 +48,11 @@ class TestConfig extends BaseConfig implements ContainerServiceInterface, Middle
     }
 
     public function middlewares(MiddlewareService $service): MiddlewareService
+    {
+        return $service;
+    }
+
+    public function routes(RouteService $service): RouteService
     {
         return $service;
     }

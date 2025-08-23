@@ -13,6 +13,8 @@ use Darken\Service\ExtensionService;
 use Darken\Service\ExtensionServiceInterface;
 use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
+use Darken\Service\RouteService;
+use Darken\Service\RouteServiceInterface;
 use Whoops\Run;
 
 /**
@@ -60,6 +62,13 @@ abstract class Kernel
             $extension = $config->extensions($extension);
         }
         self::$container->register($extension::class, $extension, true);
+
+        // route service
+        $routeService = new RouteService(self::$container, $config);
+        if ($config instanceof RouteServiceInterface) {
+            $routeService = $config->routes($routeService);
+        }
+        self::$container->register($routeService::class, $routeService, true);
     }
 
     public static function getContainerService(): ContainerService
@@ -80,6 +89,11 @@ abstract class Kernel
     public function getExtensionService(): ExtensionService
     {
         return self::getContainerService()->resolve(ExtensionService::class);
+    }
+
+    public function getRouteService(): RouteService
+    {
+        return self::getContainerService()->resolve(RouteService::class);
     }
 
     abstract public function initalize(): void;
