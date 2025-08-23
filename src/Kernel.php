@@ -11,6 +11,8 @@ use Darken\Service\EventService;
 use Darken\Service\EventServiceInterface;
 use Darken\Service\ExtensionService;
 use Darken\Service\ExtensionServiceInterface;
+use Darken\Service\LogService;
+use Darken\Service\LogServiceInterface;
 use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
 use Whoops\Run;
@@ -54,6 +56,13 @@ abstract class Kernel
         }
         self::$container->register($event::class, $event, true);
 
+        // log service
+        $log = new LogService(self::$container);
+        if ($config instanceof LogServiceInterface) {
+            $log = $config->logs($log);
+        }
+        self::$container->register($log::class, $log, true);
+
         // extension service
         $extension = new ExtensionService($this);
         if ($config instanceof ExtensionServiceInterface) {
@@ -75,6 +84,11 @@ abstract class Kernel
     public function getMiddlewareService(): MiddlewareService
     {
         return self::getContainerService()->resolve(MiddlewareService::class);
+    }
+
+    public function getLogService(): LogService
+    {
+        return self::getContainerService()->resolve(LogService::class);
     }
 
     public function getExtensionService(): ExtensionService

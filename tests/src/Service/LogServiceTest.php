@@ -1,0 +1,195 @@
+<?php
+
+namespace Tests\src\Service;
+
+use Darken\Service\ContainerService;
+use Darken\Service\LogService;
+use Psr\Log\LogLevel;
+use Tests\TestCase;
+
+class LogServiceTest extends TestCase
+{
+    public function testLogServiceImplementsLoggerInterface()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $this->assertInstanceOf(\Psr\Log\LoggerInterface::class, $logService);
+    }
+
+    public function testEmergencyLog()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->emergency('Emergency message', ['context' => 'test']);
+        
+        $logs = $logService->getLogs();
+        $this->assertCount(1, $logs);
+        $this->assertEquals(LogLevel::EMERGENCY, $logs[0]['level']);
+        $this->assertEquals('Emergency message', $logs[0]['message']);
+        $this->assertEquals(['context' => 'test'], $logs[0]['context']);
+        $this->assertIsFloat($logs[0]['timestamp']);
+    }
+
+    public function testAlertLog()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->alert('Alert message');
+        
+        $logs = $logService->getLogs();
+        $this->assertCount(1, $logs);
+        $this->assertEquals(LogLevel::ALERT, $logs[0]['level']);
+        $this->assertEquals('Alert message', $logs[0]['message']);
+    }
+
+    public function testCriticalLog()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->critical('Critical message');
+        
+        $logs = $logService->getLogs();
+        $this->assertCount(1, $logs);
+        $this->assertEquals(LogLevel::CRITICAL, $logs[0]['level']);
+    }
+
+    public function testErrorLog()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->error('Error message');
+        
+        $logs = $logService->getLogs();
+        $this->assertCount(1, $logs);
+        $this->assertEquals(LogLevel::ERROR, $logs[0]['level']);
+    }
+
+    public function testWarningLog()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->warning('Warning message');
+        
+        $logs = $logService->getLogs();
+        $this->assertCount(1, $logs);
+        $this->assertEquals(LogLevel::WARNING, $logs[0]['level']);
+    }
+
+    public function testNoticeLog()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->notice('Notice message');
+        
+        $logs = $logService->getLogs();
+        $this->assertCount(1, $logs);
+        $this->assertEquals(LogLevel::NOTICE, $logs[0]['level']);
+    }
+
+    public function testInfoLog()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->info('Info message');
+        
+        $logs = $logService->getLogs();
+        $this->assertCount(1, $logs);
+        $this->assertEquals(LogLevel::INFO, $logs[0]['level']);
+    }
+
+    public function testDebugLog()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->debug('Debug message');
+        
+        $logs = $logService->getLogs();
+        $this->assertCount(1, $logs);
+        $this->assertEquals(LogLevel::DEBUG, $logs[0]['level']);
+    }
+
+    public function testGenericLog()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->log('custom', 'Custom message', ['key' => 'value']);
+        
+        $logs = $logService->getLogs();
+        $this->assertCount(1, $logs);
+        $this->assertEquals('custom', $logs[0]['level']);
+        $this->assertEquals('Custom message', $logs[0]['message']);
+        $this->assertEquals(['key' => 'value'], $logs[0]['context']);
+    }
+
+    public function testMultipleLogs()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->info('First message');
+        $logService->error('Second message');
+        $logService->debug('Third message');
+        
+        $logs = $logService->getLogs();
+        $this->assertCount(3, $logs);
+    }
+
+    public function testGetLogsByLevel()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->info('Info message 1');
+        $logService->error('Error message');
+        $logService->info('Info message 2');
+        
+        $infoLogs = $logService->getLogsByLevel(LogLevel::INFO);
+        $errorLogs = $logService->getLogsByLevel(LogLevel::ERROR);
+        
+        $this->assertCount(2, $infoLogs);
+        $this->assertCount(1, $errorLogs);
+        $this->assertEquals('Info message 1', $infoLogs[0]['message']);
+        $this->assertEquals('Info message 2', $infoLogs[1]['message']);
+        $this->assertEquals('Error message', $errorLogs[0]['message']);
+    }
+
+    public function testClearLogs()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->info('Message 1');
+        $logService->error('Message 2');
+        $this->assertCount(2, $logService->getLogs());
+        
+        $logService->clearLogs();
+        $this->assertCount(0, $logService->getLogs());
+    }
+
+    public function testStringableMessage()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $stringableMessage = new class implements \Stringable {
+            public function __toString(): string {
+                return 'Stringable message';
+            }
+        };
+        
+        $logService->info($stringableMessage);
+        
+        $logs = $logService->getLogs();
+        $this->assertEquals('Stringable message', $logs[0]['message']);
+    }
+}
