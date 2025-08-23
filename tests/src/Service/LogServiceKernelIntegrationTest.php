@@ -25,7 +25,7 @@ class LogServiceKernelIntegrationTest extends TestCase
         $resolvedService = $container->resolve(LogService::class);
         
         $this->assertSame($logService, $resolvedService);
-        $this->assertInstanceOf(\Darken\Service\LoggerInterface::class, $resolvedService);
+        $this->assertInstanceOf(\Psr\Log\LoggerInterface::class, $resolvedService);
     }
 
     public function testLogServiceRegistersCorrectlyInContainer()
@@ -61,6 +61,6 @@ class LogServiceKernelIntegrationTest extends TestCase
         $this->assertSame($logService, $resolved);
         
         // 4. Implements expected interface
-        $this->assertInstanceOf(\Darken\Service\LoggerInterface::class, $logService);
+        $this->assertInstanceOf(\Psr\Log\LoggerInterface::class, $logService);
     }
 }

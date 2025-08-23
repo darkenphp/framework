@@ -13,7 +13,7 @@ class LogServiceTest extends TestCase
         $containerService = new ContainerService();
         $logService = new LogService($containerService);
         
-        $this->assertInstanceOf(\Darken\Service\LoggerInterface::class, $logService);
+        $this->assertInstanceOf(\Psr\Log\LoggerInterface::class, $logService);
     }
 
     public function testEmergencyLog()
@@ -190,5 +190,55 @@ class LogServiceTest extends TestCase
         
         $logs = $logService->getLogs();
         $this->assertEquals('Stringable message', $logs[0]['message']);
+    }
+
+    public function testMessageInterpolation()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->info('User {username} performed {action}', [
+            'username' => 'john_doe',
+            'action' => 'login',
+            'extra' => 'ignored'
+        ]);
+        
+        $logs = $logService->getLogs();
+        $this->assertEquals('User john_doe performed login', $logs[0]['message']);
+        $this->assertEquals(['username' => 'john_doe', 'action' => 'login', 'extra' => 'ignored'], $logs[0]['context']);
+    }
+
+    public function testMessageInterpolationWithInvalidValues()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $logService->info('User {username} has {items} items and {data}', [
+            'username' => 'john',
+            'items' => 5,
+            'data' => ['not' => 'interpolated'], // Array should not be interpolated
+            'missing' => 'value'
+        ]);
+        
+        $logs = $logService->getLogs();
+        // Should interpolate username and items, but leave {data} as-is since it's an array
+        $this->assertEquals('User john has 5 items and {data}', $logs[0]['message']);
+    }
+
+    public function testMessageInterpolationWithStringableObject()
+    {
+        $containerService = new ContainerService();
+        $logService = new LogService($containerService);
+        
+        $stringableValue = new class implements \Stringable {
+            public function __toString(): string {
+                return 'stringable_value';
+            }
+        };
+        
+        $logService->info('Object value: {value}', ['value' => $stringableValue]);
+        
+        $logs = $logService->getLogs();
+        $this->assertEquals('Object value: stringable_value', $logs[0]['message']);
     }
 }
