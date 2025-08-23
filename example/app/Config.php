@@ -9,8 +9,12 @@ use Darken\Service\MiddlewareServiceInterface;
 use Darken\Middleware\AddCustomHeaderMiddleware;
 use Darken\Service\ContainerServiceInterface;
 use Darken\Service\ContainerService;
-class Config extends BaseConfig 
+class Config extends BaseConfig  implements ContainerServiceInterface
 {
+    public function containers(ContainerService $service): ContainerService
+    {
+        return $service->register(Test::class);
+    }
     public function __construct(private readonly string $rootDirectoryPath)
     {
         $this->loadEnvFile();
