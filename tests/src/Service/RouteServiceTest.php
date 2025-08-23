@@ -109,6 +109,66 @@ class RouteServiceTest extends TestCase
         $this->assertFalse($emptyRouteService->hasRoutes());
     }
 
+    public function testCreateNestedRoutes()
+    {
+        $routes = [
+            [
+                'path' => '/api/users',
+                'class' => 'ApiUsersController',
+                'methods' => ['GET', 'POST'],
+                'middlewares' => ['auth'],
+            ],
+            [
+                'path' => '/api/users/<id:[0-9]+>',
+                'class' => 'ApiUserController',
+                'methods' => ['GET', 'PUT', 'DELETE'],
+            ],
+            [
+                'path' => '/',
+                'class' => 'HomeController',
+            ],
+        ];
+
+        $nestedRoutes = $this->routeService->createNestedRoutes($routes);
+
+        $this->assertIsArray($nestedRoutes);
+        $this->assertArrayHasKey('api', $nestedRoutes);
+        $this->assertArrayHasKey('index', $nestedRoutes);
+        
+        // Check nested structure for API routes
+        $this->assertArrayHasKey('_children', $nestedRoutes['api']);
+        $this->assertArrayHasKey('users', $nestedRoutes['api']['_children']);
+        
+        // Check methods are properly set
+        $this->assertArrayHasKey('methods', $nestedRoutes['api']['_children']['users']['_children']);
+        $apiUsersMethods = $nestedRoutes['api']['_children']['users']['_children']['methods'];
+        $this->assertArrayHasKey('GET', $apiUsersMethods);
+        $this->assertArrayHasKey('POST', $apiUsersMethods);
+        $this->assertEquals('ApiUsersController', $apiUsersMethods['GET']['class']);
+        $this->assertEquals(['auth'], $apiUsersMethods['GET']['middlewares']);
+    }
+
+    public function testGetFlatRoutes()
+    {
+        $flatRoutes = $this->routeService->getFlatRoutes();
+        
+        $this->assertIsArray($flatRoutes);
+        $this->assertNotEmpty($flatRoutes);
+        
+        // Find the blogs route
+        $blogsRoute = null;
+        foreach ($flatRoutes as $route) {
+            if ($route['path'] === '/blogs') {
+                $blogsRoute = $route;
+                break;
+            }
+        }
+        
+        $this->assertNotNull($blogsRoute);
+        $this->assertEquals('Build\\pages\\blogs\\index', $blogsRoute['class']);
+        $this->assertContains('*', $blogsRoute['methods']);
+    }
+
     private function getTestRoutesContent(): string
     {
         return '<?php

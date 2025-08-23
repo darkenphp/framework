@@ -10,6 +10,30 @@ namespace Darken\Service;
  * This interface defines methods for configuring route services and
  * managing route definitions. It enables the creation and customization
  * of routes for enhanced request routing.
+ * 
+ * The RouteService provides several key capabilities:
+ * 
+ * 1. **Route Loading**: Automatically loads routes from the compiled routes.php file
+ * 2. **Route Creation**: Create individual routes and nested route structures
+ * 3. **Route Extraction**: Factory for RouteExtractor instances used in request processing
+ * 4. **Route Introspection**: Methods to find, list, and analyze routes
+ * 
+ * Implementation example:
+ * ```php
+ * class AppConfig implements RouteServiceInterface 
+ * {
+ *     public function routes(RouteService $service): RouteService 
+ *     {
+ *         // Customize the route service if needed
+ *         return $service;
+ *     }
+ * }
+ * ```
+ * 
+ * The service is automatically registered in the Kernel and can be accessed via:
+ * ```php
+ * $routeService = $app->getRouteService();
+ * ```
  */
 interface RouteServiceInterface
 {

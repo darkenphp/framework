@@ -13,6 +13,36 @@ use Psr\Http\Message\ServerRequestInterface;
  *
  * This service provides methods to create routes, resolve route extractors,
  * and manage route definitions loaded from the compiled routes.php file.
+ * 
+ * Key features:
+ * - Load and manage routes from the compiled routes.php file
+ * - Create RouteExtractor instances for request processing
+ * - Create route definitions with support for HTTP methods and middlewares
+ * - Build nested route structures compatible with the framework's format
+ * - Extract flat route listings for debugging and introspection
+ * - Route finding and matching utilities
+ * 
+ * Example usage:
+ * ```php
+ * // Get the service from Kernel
+ * $routeService = $app->getRouteService();
+ * 
+ * // Create a simple route
+ * $route = $routeService->createRoute('/api/users', 'UserController', ['GET', 'POST'], ['auth']);
+ * 
+ * // Create nested routes structure
+ * $routes = [
+ *     ['path' => '/api/users', 'class' => 'UserController', 'methods' => ['GET', 'POST']],
+ *     ['path' => '/api/posts', 'class' => 'PostController'],
+ * ];
+ * $nestedRoutes = $routeService->createNestedRoutes($routes);
+ * 
+ * // Get all routes as flat array
+ * $allRoutes = $routeService->getFlatRoutes();
+ * 
+ * // Find a specific route
+ * $found = $routeService->findRoute('/api/users');
+ * ```
  */
 final class RouteService
 {
@@ -82,6 +112,106 @@ final class RouteService
         }
 
         return $routeDefinition;
+    }
+
+    /**
+     * Create a nested route structure suitable for routes.php format.
+     *
+     * @param array $routes Array of route definitions with 'path', 'class', 'methods', and optional 'middlewares'
+     * @return array The nested route structure
+     */
+    public function createNestedRoutes(array $routes): array
+    {
+        $nestedRoutes = [];
+
+        foreach ($routes as $route) {
+            $path = trim($route['path'], '/');
+            $segments = $path ? explode('/', $path) : [];
+            $segments[] = 'index'; // Add index for consistency with the framework pattern
+
+            $current = &$nestedRoutes;
+            foreach ($segments as $i => $segment) {
+                if ($i === count($segments) - 1) {
+                    // Last segment - add the methods
+                    $current[$segment]['_children']['methods'] = [];
+                    $methods = $route['methods'] ?? ['*'];
+                    
+                    $routeConfig = ['class' => $route['class']];
+                    if (!empty($route['middlewares'])) {
+                        $routeConfig['middlewares'] = $route['middlewares'];
+                    }
+
+                    foreach ($methods as $method) {
+                        $current[$segment]['_children']['methods'][$method] = $routeConfig;
+                    }
+                } else {
+                    // Intermediate segment
+                    if (!isset($current[$segment])) {
+                        $current[$segment] = ['_children' => []];
+                    }
+                    $current = &$current[$segment]['_children'];
+                }
+            }
+        }
+
+        return $nestedRoutes;
+    }
+
+    /**
+     * Get all available routes as a flat array with their paths and classes.
+     *
+     * @return array Array of routes with 'path', 'class', 'methods', and 'middlewares'
+     */
+    public function getFlatRoutes(): array
+    {
+        return $this->flattenRoutes($this->routes);
+    }
+
+    /**
+     * Recursively flatten the nested route structure.
+     *
+     * @param array $routes The nested routes structure
+     * @param string $basePath The base path for current level
+     * @return array Flattened routes
+     */
+    private function flattenRoutes(array $routes, string $basePath = ''): array
+    {
+        $flatRoutes = [];
+
+        foreach ($routes as $segment => $data) {
+            $currentPath = $basePath ? $basePath . '/' . $segment : $segment;
+
+            if (isset($data['_children']['methods'])) {
+                // This is a route endpoint
+                $methods = array_keys($data['_children']['methods']);
+                $routeData = reset($data['_children']['methods']); // Get first method data
+
+                $route = [
+                    'path' => '/' . str_replace('/index', '', $currentPath),
+                    'class' => $routeData['class'],
+                    'methods' => $methods,
+                ];
+
+                if (!empty($routeData['middlewares'])) {
+                    $route['middlewares'] = $routeData['middlewares'];
+                }
+
+                $flatRoutes[] = $route;
+            }
+
+            if (isset($data['_children']) && is_array($data['_children'])) {
+                // Recursively process children, but skip 'methods' key
+                $children = array_filter($data['_children'], function($key) {
+                    return $key !== 'methods';
+                }, ARRAY_FILTER_USE_KEY);
+
+                if (!empty($children)) {
+                    $flatRoutes = array_merge($flatRoutes, $this->flattenRoutes($children, $currentPath));
+                }
+            }
+        }
+
+        return $flatRoutes;
     }
 
     /**
