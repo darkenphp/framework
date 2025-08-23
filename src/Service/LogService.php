@@ -60,15 +60,6 @@ final class LogService extends AbstractLogger
     private array $logs = [];
 
     /**
-     * Constructor.
-     * 
-     * @param ContainerService $containerService The container service for dependency injection
-     */
-    public function __construct(private ContainerService $containerService)
-    {
-    }
-
-    /**
      * Get all stored logs.
      * 
      * Returns an array of all log entries with their level, message, context, and timestamp.

@@ -56,12 +56,7 @@ abstract class Kernel
         }
         self::$container->register($event::class, $event, true);
 
-        // log service
-        $log = new LogService(self::$container);
-        if ($config instanceof LogServiceInterface) {
-            $log = $config->logs($log);
-        }
-        self::$container->register($log::class, $log, true);
+        self::$container->register(LogService::class, null, true);
 
         // extension service
         $extension = new ExtensionService($this);

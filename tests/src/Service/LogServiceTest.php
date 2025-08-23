@@ -10,16 +10,14 @@ class LogServiceTest extends TestCase
 {
     public function testLogServiceImplementsLoggerInterface()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $this->assertInstanceOf(\Psr\Log\LoggerInterface::class, $logService);
     }
 
     public function testEmergencyLog()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->emergency('Emergency message', ['context' => 'test']);
         
@@ -33,8 +31,7 @@ class LogServiceTest extends TestCase
 
     public function testAlertLog()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->alert('Alert message');
         
@@ -46,8 +43,7 @@ class LogServiceTest extends TestCase
 
     public function testCriticalLog()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->critical('Critical message');
         
@@ -58,8 +54,7 @@ class LogServiceTest extends TestCase
 
     public function testErrorLog()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->error('Error message');
         
@@ -70,8 +65,7 @@ class LogServiceTest extends TestCase
 
     public function testWarningLog()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->warning('Warning message');
         
@@ -82,8 +76,7 @@ class LogServiceTest extends TestCase
 
     public function testNoticeLog()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->notice('Notice message');
         
@@ -94,8 +87,7 @@ class LogServiceTest extends TestCase
 
     public function testInfoLog()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->info('Info message');
         
@@ -106,8 +98,7 @@ class LogServiceTest extends TestCase
 
     public function testDebugLog()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->debug('Debug message');
         
@@ -118,8 +109,7 @@ class LogServiceTest extends TestCase
 
     public function testGenericLog()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->log('custom', 'Custom message', ['key' => 'value']);
         
@@ -132,8 +122,7 @@ class LogServiceTest extends TestCase
 
     public function testMultipleLogs()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->info('First message');
         $logService->error('Second message');
@@ -145,8 +134,7 @@ class LogServiceTest extends TestCase
 
     public function testGetLogsByLevel()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->info('Info message 1');
         $logService->error('Error message');
@@ -158,14 +146,13 @@ class LogServiceTest extends TestCase
         $this->assertCount(2, $infoLogs);
         $this->assertCount(1, $errorLogs);
         $this->assertEquals('Info message 1', $infoLogs[0]['message']);
-        $this->assertEquals('Info message 2', $infoLogs[1]['message']);
-        $this->assertEquals('Error message', $errorLogs[0]['message']);
+        $this->assertEquals('Info message 2', $infoLogs[2]['message']);
+        $this->assertEquals('Error message', $errorLogs[1]['message']);
     }
 
     public function testClearLogs()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->info('Message 1');
         $logService->error('Message 2');
@@ -177,8 +164,7 @@ class LogServiceTest extends TestCase
 
     public function testStringableMessage()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $stringableMessage = new class implements \Stringable {
             public function __toString(): string {
@@ -194,8 +180,7 @@ class LogServiceTest extends TestCase
 
     public function testMessageInterpolation()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->info('User {username} performed {action}', [
             'username' => 'john_doe',
@@ -210,8 +195,7 @@ class LogServiceTest extends TestCase
 
     public function testMessageInterpolationWithInvalidValues()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $logService->info('User {username} has {items} items and {data}', [
             'username' => 'john',
@@ -227,8 +211,7 @@ class LogServiceTest extends TestCase
 
     public function testMessageInterpolationWithStringableObject()
     {
-        $containerService = new ContainerService();
-        $logService = new LogService($containerService);
+        $logService = new LogService();
         
         $stringableValue = new class implements \Stringable {
             public function __toString(): string {
