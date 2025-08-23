@@ -4,7 +4,6 @@ namespace Tests\src\Service;
 
 use Darken\Service\ContainerService;
 use Darken\Service\LogService;
-use Psr\Log\LogLevel;
 use Tests\TestCase;
 
 class LogServiceTest extends TestCase
@@ -14,7 +13,7 @@ class LogServiceTest extends TestCase
         $containerService = new ContainerService();
         $logService = new LogService($containerService);
         
-        $this->assertInstanceOf(\Psr\Log\LoggerInterface::class, $logService);
+        $this->assertInstanceOf(\Darken\Service\LoggerInterface::class, $logService);
     }
 
     public function testEmergencyLog()
@@ -26,7 +25,7 @@ class LogServiceTest extends TestCase
         
         $logs = $logService->getLogs();
         $this->assertCount(1, $logs);
-        $this->assertEquals(LogLevel::EMERGENCY, $logs[0]['level']);
+        $this->assertEquals('emergency', $logs[0]['level']);
         $this->assertEquals('Emergency message', $logs[0]['message']);
         $this->assertEquals(['context' => 'test'], $logs[0]['context']);
         $this->assertIsFloat($logs[0]['timestamp']);
@@ -41,7 +40,7 @@ class LogServiceTest extends TestCase
         
         $logs = $logService->getLogs();
         $this->assertCount(1, $logs);
-        $this->assertEquals(LogLevel::ALERT, $logs[0]['level']);
+        $this->assertEquals('alert', $logs[0]['level']);
         $this->assertEquals('Alert message', $logs[0]['message']);
     }
 
@@ -54,7 +53,7 @@ class LogServiceTest extends TestCase
         
         $logs = $logService->getLogs();
         $this->assertCount(1, $logs);
-        $this->assertEquals(LogLevel::CRITICAL, $logs[0]['level']);
+        $this->assertEquals('critical', $logs[0]['level']);
     }
 
     public function testErrorLog()
@@ -66,7 +65,7 @@ class LogServiceTest extends TestCase
         
         $logs = $logService->getLogs();
         $this->assertCount(1, $logs);
-        $this->assertEquals(LogLevel::ERROR, $logs[0]['level']);
+        $this->assertEquals('error', $logs[0]['level']);
     }
 
     public function testWarningLog()
@@ -78,7 +77,7 @@ class LogServiceTest extends TestCase
         
         $logs = $logService->getLogs();
         $this->assertCount(1, $logs);
-        $this->assertEquals(LogLevel::WARNING, $logs[0]['level']);
+        $this->assertEquals('warning', $logs[0]['level']);
     }
 
     public function testNoticeLog()
@@ -90,7 +89,7 @@ class LogServiceTest extends TestCase
         
         $logs = $logService->getLogs();
         $this->assertCount(1, $logs);
-        $this->assertEquals(LogLevel::NOTICE, $logs[0]['level']);
+        $this->assertEquals('notice', $logs[0]['level']);
     }
 
     public function testInfoLog()
@@ -102,7 +101,7 @@ class LogServiceTest extends TestCase
         
         $logs = $logService->getLogs();
         $this->assertCount(1, $logs);
-        $this->assertEquals(LogLevel::INFO, $logs[0]['level']);
+        $this->assertEquals('info', $logs[0]['level']);
     }
 
     public function testDebugLog()
@@ -114,7 +113,7 @@ class LogServiceTest extends TestCase
         
         $logs = $logService->getLogs();
         $this->assertCount(1, $logs);
-        $this->assertEquals(LogLevel::DEBUG, $logs[0]['level']);
+        $this->assertEquals('debug', $logs[0]['level']);
     }
 
     public function testGenericLog()
@@ -153,8 +152,8 @@ class LogServiceTest extends TestCase
         $logService->error('Error message');
         $logService->info('Info message 2');
         
-        $infoLogs = $logService->getLogsByLevel(LogLevel::INFO);
-        $errorLogs = $logService->getLogsByLevel(LogLevel::ERROR);
+        $infoLogs = $logService->getLogsByLevel('info');
+        $errorLogs = $logService->getLogsByLevel('error');
         
         $this->assertCount(2, $infoLogs);
         $this->assertCount(1, $errorLogs);
