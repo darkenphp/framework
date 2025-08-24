@@ -1,8 +1,10 @@
 <?php
 
 use App\Test;
+use Build\pages\testid;
 use Darken\Attributes\Inject;
 use Darken\Service\LogService;
+use Darken\Service\RouteService;
 
 $page = new class {
     #[Inject(LogService::class)]
@@ -11,6 +13,9 @@ $page = new class {
     #[Inject(Test::class)]
     public Test $test;
 
+    #[Inject(RouteService::class)]
+    public RouteService $route;
+
     public function __construct()
     {
         $this->log->alert('hey');
@@ -18,4 +23,4 @@ $page = new class {
 };
 ?>
 
-<?php var_dump($page->log->getLogs()); ?>
+<?php var_dump($page->route->create(testid::class, ['id' => 123])); ?>

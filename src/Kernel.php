@@ -14,6 +14,7 @@ use Darken\Service\ExtensionServiceInterface;
 use Darken\Service\LogService;
 use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
+use Darken\Service\RouteService;
 use Whoops\Run;
 
 /**
@@ -54,8 +55,8 @@ abstract class Kernel
             $event = $config->events($event);
         }
         self::$container->register($event::class, $event, true);
-
         self::$container->register(LogService::class, null, true);
+        self::$container->register(RouteService::class, null, true);
 
         // extension service
         $extension = new ExtensionService($this);
