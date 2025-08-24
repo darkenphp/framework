@@ -91,4 +91,49 @@ class ContainerServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $service->ensure(AutoWireTestService::class, TestService::class);
     }
+
+    public function testResolveUnregisteredExistingClassCreatesInstance()
+    {
+        $service = new ContainerService();
+
+        // stdClass exists and has no constructor, resolve should create it even if not registered
+        $obj = $service->resolve(stdClass::class);
+
+        $this->assertInstanceOf(stdClass::class, $obj);
+    }
+
+    public function testRegisterAliasAndRemove()
+    {
+        $service = new ContainerService();
+
+        // register TestService under two names (alias)
+        $service->register([TestService::class, 'test.alias'], new TestService());
+
+        $defs = $service->definitions();
+        $this->assertContains(TestService::class, $defs);
+        $this->assertContains('test.alias', $defs);
+
+        // remove alias and ensure it's gone, and resolving it throws
+        $service->remove('test.alias');
+        $this->assertFalse($service->has('test.alias'));
+
+        $this->expectException(RuntimeException::class);
+        $service->resolve('test.alias');
+    }
+
+    public function testDefinitionsSystemFiltering()
+    {
+        $service = new ContainerService();
+
+        $service->register('sys.service', new TestService(), true);
+        $service->register('normal.service', new TestService());
+
+        $all = $service->definitions(true);
+        $this->assertContains('sys.service', $all);
+        $this->assertContains('normal.service', $all);
+
+        $filtered = $service->definitions(false);
+        $this->assertNotContains('sys.service', $filtered);
+        $this->assertContains('normal.service', $filtered);
+    }
 }
