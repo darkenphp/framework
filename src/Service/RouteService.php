@@ -32,11 +32,6 @@ final class RouteService
         }
     }
 
-    private function getRoutesFile(): string
-    {
-        return $this->config->getBuildOutputFolder() . DIRECTORY_SEPARATOR . 'routes.php';
-    }
-
     /**
      * Build a URL path for a compiled page class.
      *
@@ -158,7 +153,7 @@ final class RouteService
         }
 
         // Assemble path
-        $path = '/' . ltrim(implode('/', array_filter($builtSegments, fn($s) => $s !== '')), '/');
+        $path = '/' . ltrim(implode('/', array_filter($builtSegments, fn ($s) => $s !== '')), '/');
         if ($path === '') {
             $path = '/';
         }
@@ -173,46 +168,6 @@ final class RouteService
         }
 
         return $path;
-    }
-
-    /**
-     * DFS: return the stack of segment keys that lead to a node whose methods match $class.
-     *
-     * @param array  $node    Current trie node
-     * @param string $class   Target class name
-     * @param string $method  HTTP method (e.g., GET), '*' in trie also matches
-     * @param array  $stack   Accumulated segment keys
-     *
-     * @return array<string>|null
-     */
-    private function findPathForClass(array $node, string $class, string $method, array $stack): ?array
-    {
-        // Does this node have a methods leaf matching the class?
-        if (isset($node['_children']['methods']) && is_array($node['_children']['methods'])) {
-            $methods = $node['_children']['methods'];
-            if (
-                (isset($methods[$method]) && ($methods[$method]['class'] ?? null) === $class) ||
-                (isset($methods['*']) && ($methods['*']['class'] ?? null) === $class)
-            ) {
-                return $stack;
-            }
-        }
-
-        // Recurse into children segments
-        foreach ($node as $key => $child) {
-            if ($key === '_children') {
-                continue;
-            }
-            if (!is_array($child) || !isset($child['_children'])) {
-                continue;
-            }
-            $found = $this->findPathForClass($child, $class, $method, array_merge($stack, [$key]));
-            if ($found !== null) {
-                return $found;
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -289,5 +244,50 @@ final class RouteService
         }
 
         return [$node, $params];
+    }
+
+    private function getRoutesFile(): string
+    {
+        return $this->config->getBuildOutputFolder() . DIRECTORY_SEPARATOR . 'routes.php';
+    }
+
+    /**
+     * DFS: return the stack of segment keys that lead to a node whose methods match $class.
+     *
+     * @param array  $node    Current trie node
+     * @param string $class   Target class name
+     * @param string $method  HTTP method (e.g., GET), '*' in trie also matches
+     * @param array  $stack   Accumulated segment keys
+     *
+     * @return array<string>|null
+     */
+    private function findPathForClass(array $node, string $class, string $method, array $stack): ?array
+    {
+        // Does this node have a methods leaf matching the class?
+        if (isset($node['_children']['methods']) && is_array($node['_children']['methods'])) {
+            $methods = $node['_children']['methods'];
+            if (
+                (isset($methods[$method]) && ($methods[$method]['class'] ?? null) === $class) ||
+                (isset($methods['*']) && ($methods['*']['class'] ?? null) === $class)
+            ) {
+                return $stack;
+            }
+        }
+
+        // Recurse into children segments
+        foreach ($node as $key => $child) {
+            if ($key === '_children') {
+                continue;
+            }
+            if (!is_array($child) || !isset($child['_children'])) {
+                continue;
+            }
+            $found = $this->findPathForClass($child, $class, $method, array_merge($stack, [$key]));
+            if ($found !== null) {
+                return $found;
+            }
+        }
+
+        return null;
     }
 }
