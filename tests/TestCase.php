@@ -17,6 +17,7 @@ use Darken\Console\Commands\Build;
 use Darken\Builder\FileBuildProcess;
 use Darken\Web\Application;
 use Darken\Web\Request;
+use Darken\Kernel;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use PHPUnit\Framework\TestCase as FrameworkTestCase;
@@ -28,6 +29,49 @@ use Yiisoft\Files\FileHelper;
 
 class TestCase extends FrameworkTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Only clear build cache for tests that explicitly request it
+        // This prevents breaking tests that depend on previously built files
+    }
+
+    protected function tearDown(): void
+    {
+        $this->clearKernelContainer();
+        parent::tearDown();
+    }
+
+    /**
+     * Clear build cache to prevent test interference
+     * Call this manually in tests that need a clean build environment
+     */
+    protected function clearBuildCache(): void
+    {
+        $buildDir = $this->getTestsRootFolder() . DIRECTORY_SEPARATOR . '.build';
+        if (is_dir($buildDir)) {
+            try {
+                FileHelper::removeDirectory($buildDir);
+            } catch (\Throwable $e) {
+                // Ignore cleanup errors
+            }
+        }
+    }
+
+    /**
+     * Clear the Kernel container to prevent singleton state leakage
+     */
+    private function clearKernelContainer(): void
+    {
+        try {
+            $reflection = new ReflectionClass(Kernel::class);
+            $containerProperty = $reflection->getProperty('container');
+            $containerProperty->setAccessible(true);
+            $containerProperty->setValue(null, null);
+        } catch (\Throwable $e) {
+            // Ignore if we can't clear the container
+        }
+    }
     public function getTestsRootFolder(): string
     {
         return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'tests';

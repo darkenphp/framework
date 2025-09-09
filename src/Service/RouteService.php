@@ -17,26 +17,14 @@ final class RouteService
 
     public function __construct(private ConfigInterface $config)
     {
-        $routesFile = $this->getRoutesFile();
-
-        if (file_exists($routesFile) && !is_readable($routesFile)) {
-            throw new InvalidArgumentException(sprintf('Routes file "%s" is not readable', $routesFile));
-        }
-
-        if (file_exists($routesFile)) {
-            $trie = include $routesFile;
-            if (!is_array($trie)) {
-                throw new InvalidArgumentException(sprintf('Routes file "%s" must return an array.', $routesFile));
-            }
-            $this->trie = $trie;
-        }
+        $this->loadRoutes();
     }
 
     /**
      * Build a URL path for a compiled page class.
      *
      * @param string $class  Fully-qualified compiled page class (e.g. Build\pages\blogs\slug\api)
-     * @param array  $params Route params used to fill dynamic segments. Extra params become query string.
+     * @param array<string, mixed>  $params Route params used to fill dynamic segments. Extra params become query string.
      * @param string $method HTTP method to match against route methods (defaults to GET; '*' also matches).
      *
      * @return string URL path, query string appended for unused params.
@@ -64,87 +52,14 @@ final class RouteService
 
             // Handle segments that may contain 0..n placeholders like <name:regex>, even when embedded in static text
             if (preg_match_all('/<([^:>]+):([^>]+)>/', $segmentKey, $matches, PREG_SET_ORDER)) {
-                $cursor   = 0;
-                $rendered = '';
-
-                foreach ($matches as $m) {
-                    [$full, $name, $regex] = $m;
-                    $pos = strpos($segmentKey, $full, $cursor);
-                    if ($pos === false) {
-                        // Shouldn't happen, but keep it safe.
-                        continue;
-                    }
-
-                    // Static part before the placeholder
-                    $static = substr($segmentKey, $cursor, $pos - $cursor);
-                    if ($static !== '') {
-                        $rendered .= rawurlencode($static);
-                    }
-
-                    if (!array_key_exists($name, $params)) {
-                        throw new InvalidArgumentException("Missing required route param '{$name}' for {$class}.");
-                    }
-
-                    $value = (string) $params[$name];
-                    $usedParamNames[] = $name;
-
-                    // Validate regex
-                    if (@preg_match('/^' . $regex . '$/', '') === false) {
-                        throw new InvalidArgumentException("Invalid regex for param '{$name}': /{$regex}/");
-                    }
-
-                    // Embedded catch-all cannot contain '/' because it would break the path segment
-                    if ($regex === '.+' && str_contains($value, '/')) {
-                        throw new InvalidArgumentException("Param '{$name}' must not contain '/' in segment '{$segmentKey}'.");
-                    }
-
-                    if (!preg_match('/^' . $regex . '$/', $value)) {
-                        throw new InvalidArgumentException("Param '{$name}' value '{$value}' does not match /{$regex}/");
-                    }
-
-                    $rendered .= rawurlencode($value);
-                    $cursor = $pos + strlen($full);
-                }
-
-                // Tail static after the last placeholder
-                $tail = substr($segmentKey, $cursor);
-                if ($tail !== '') {
-                    $rendered .= rawurlencode($tail);
-                }
-
+                $rendered = $this->renderSegmentWithPlaceholders($segmentKey, $matches, $params, $usedParamNames, $class);
                 $builtSegments[] = $rendered;
                 continue;
             }
 
             // Pure placeholder segment like "<slug:.+>" (not embedded)
             if (preg_match('/^<([^:>]+):(.+)>$/', $segmentKey, $m)) {
-                $name  = $m[1];
-                $regex = $m[2];
-
-                if (!array_key_exists($name, $params)) {
-                    throw new InvalidArgumentException("Missing required route param '{$name}' for {$class}.");
-                }
-
-                $value = (string) $params[$name];
-                $usedParamNames[] = $name;
-
-                if (@preg_match('/^' . $regex . '$/', '') === false) {
-                    throw new InvalidArgumentException("Invalid regex for param '{$name}': /{$regex}/");
-                }
-
-                if ($regex === '.+') {
-                    // catch-all: allow slashes, encode per path segment
-                    $parts = array_map('rawurlencode', explode('/', trim($value, '/')));
-                    if ($parts === ['']) {
-                        throw new InvalidArgumentException("Param '{$name}' must not be empty for {$class}.");
-                    }
-                    $builtSegments[] = implode('/', $parts);
-                } else {
-                    if (!preg_match('/^' . $regex . '$/', $value)) {
-                        throw new InvalidArgumentException("Param '{$name}' value '{$value}' does not match /{$regex}/");
-                    }
-                    $builtSegments[] = rawurlencode($value);
-                }
+                $builtSegments[] = $this->renderPurePlaceholder($m[1], $m[2], $params, $usedParamNames, $class);
                 continue;
             }
 
@@ -153,10 +68,8 @@ final class RouteService
         }
 
         // Assemble path
-        $path = '/' . ltrim(implode('/', array_filter($builtSegments, fn ($s) => $s !== '')), '/');
-        if ($path === '') {
-            $path = '/';
-        }
+        $filteredSegments = array_filter($builtSegments, fn ($s) => $s !== '');
+        $path = empty($filteredSegments) ? '/' : '/' . implode('/', $filteredSegments);
 
         // Unused params → query string
         $unused = array_diff_key($params, array_flip($usedParamNames));
@@ -173,20 +86,25 @@ final class RouteService
     /**
      * Optional forward-matcher (kept public if you use it elsewhere).
      * Returns [node, params] or false if not found.
+     *
+     * @param string $url
+     * @return array{0: array<string, mixed>, 1: array<string, mixed>}|false
      */
-    public function findRouteNode(string $url, array $trie): false|array
+    public function findRouteNode(string $url): false|array
     {
         $segments = explode('/', trim($url, '/'));
         $hasWildCardMatch = false;
         $mustMatchFirst = false;
-        $node = $trie;
+        $node = $this->trie;
         $params = [];
 
         // if there is only 1 segment and it is empty, then it is the root
-        if (count($segments) === 1 && ($segments[0] === '' || $segments[0] === null)) {
+        if (count($segments) === 1 && $segments[0] === '') {
             $segments = ['index'];
-            if (array_key_exists('index', $node)) {
-                return [$node['index']['_children'], $params];
+            if (array_key_exists('index', $node) && is_array($node['index']) && isset($node['index']['_children']) && is_array($node['index']['_children'])) {
+                /** @var array<string, mixed> $childrenNode */
+                $childrenNode = $node['index']['_children'];
+                return [$childrenNode, $params];
             }
             $mustMatchFirst = true;
         } else {
@@ -196,17 +114,26 @@ final class RouteService
         foreach ($segments as $index => $segment) {
 
             // Try exact match first
-            if (isset($node[$segment])) {
+            if (isset($node[$segment]) && is_array($node[$segment]) && isset($node[$segment]['_children']) && is_array($node[$segment]['_children'])) {
                 $node = $node[$segment]['_children'];
                 continue;
             }
 
             // see if node matches regex
             foreach ($node as $key => $child) {
+                if (!is_string($key) || !is_array($child) || !isset($child['_children']) || !is_array($child['_children'])) {
+                    continue;
+                }
+
                 // Example dynamic route key: <id:[a-zA-Z0-9\-]+> or <slug:.+>
-                if (strpos($key, '<') === 0 && strpos($key, '>') === strlen($key) - 1) {
+                if (str_starts_with($key, '<') && str_ends_with($key, '>')) {
                     $pattern = substr($key, 1, -1);
-                    [$name, $regex] = explode(':', $pattern, 2);
+                    $parts = explode(':', $pattern, 2);
+                    if (count($parts) !== 2) {
+                        continue;
+                    }
+                    [$name, $regex] = $parts;
+
                     if ($regex === '.+') {
                         if (preg_match("/^$regex$/", $segment)) {
                             $slices = array_slice($segments, $index);
@@ -230,7 +157,7 @@ final class RouteService
             // it's the last index and we are at the end
             // if the segment is index and we have a page, then we are good
             // it's an index page which equals "" path.
-            if ($segment === 'index' && $node) {
+            if ($segment === 'index' && !empty($node)) {
                 continue;
             }
 
@@ -243,7 +170,27 @@ final class RouteService
             return false;
         }
 
-        return [$node, $params];
+        /** @var array<string, mixed> $typedNode */
+        $typedNode = $node;
+        return [$typedNode, $params];
+    }
+
+    private function loadRoutes(): void
+    {
+        $routesFile = $this->getRoutesFile();
+
+        if (file_exists($routesFile) && !is_readable($routesFile)) {
+            throw new InvalidArgumentException(sprintf('Routes file "%s" is not readable', $routesFile));
+        }
+
+        /** @var array<string, mixed> $trie */
+        $trie = include $routesFile;
+
+        // if the file is empty or does not return an array, just keep the empty trie, as this can happen
+        // if the build command runs, creates the route file, but there are not routes defined yet.
+        if (is_array($trie)) {
+            $this->trie = $trie;
+        }
     }
 
     private function getRoutesFile(): string
@@ -254,21 +201,21 @@ final class RouteService
     /**
      * DFS: return the stack of segment keys that lead to a node whose methods match $class.
      *
-     * @param array  $node    Current trie node
+     * @param array<string, mixed>  $node    Current trie node
      * @param string $class   Target class name
      * @param string $method  HTTP method (e.g., GET), '*' in trie also matches
-     * @param array  $stack   Accumulated segment keys
+     * @param array<string>  $stack   Accumulated segment keys
      *
      * @return array<string>|null
      */
     private function findPathForClass(array $node, string $class, string $method, array $stack): ?array
     {
         // Does this node have a methods leaf matching the class?
-        if (isset($node['_children']['methods']) && is_array($node['_children']['methods'])) {
+        if (isset($node['_children']) && is_array($node['_children']) && isset($node['_children']['methods']) && is_array($node['_children']['methods'])) {
             $methods = $node['_children']['methods'];
             if (
-                (isset($methods[$method]) && ($methods[$method]['class'] ?? null) === $class) ||
-                (isset($methods['*']) && ($methods['*']['class'] ?? null) === $class)
+                (isset($methods[$method]) && is_array($methods[$method]) && ($methods[$method]['class'] ?? null) === $class) ||
+                (isset($methods['*']) && is_array($methods['*']) && ($methods['*']['class'] ?? null) === $class)
             ) {
                 return $stack;
             }
@@ -276,10 +223,10 @@ final class RouteService
 
         // Recurse into children segments
         foreach ($node as $key => $child) {
-            if ($key === '_children') {
+            if ($key === '_children' || !is_string($key)) {
                 continue;
             }
-            if (!is_array($child) || !isset($child['_children'])) {
+            if (!is_array($child) || !isset($child['_children']) || !is_array($child['_children'])) {
                 continue;
             }
             $found = $this->findPathForClass($child, $class, $method, array_merge($stack, [$key]));
@@ -289,5 +236,114 @@ final class RouteService
         }
 
         return null;
+    }
+
+    /**
+     * Render a segment with embedded placeholders.
+     *
+     * @param string $segmentKey
+     * @param array<array{0: string, 1: string, 2: string}> $matches
+     * @param array<string, mixed> $params
+     * @param array<string> &$usedParamNames
+     * @param string $class
+     * @return string
+     */
+    private function renderSegmentWithPlaceholders(string $segmentKey, array $matches, array $params, array &$usedParamNames, string $class): string
+    {
+        $cursor = 0;
+        $rendered = '';
+
+        foreach ($matches as $m) {
+            [$full, $name, $regex] = $m;
+            $pos = strpos($segmentKey, $full, $cursor);
+            if ($pos === false) {
+                // Shouldn't happen, but keep it safe.
+                continue;
+            }
+
+            // Static part before the placeholder
+            $static = substr($segmentKey, $cursor, $pos - $cursor);
+            if ($static !== '') {
+                $rendered .= rawurlencode($static);
+            }
+
+            if (!array_key_exists($name, $params)) {
+                throw new InvalidArgumentException("Missing required route param '{$name}' for {$class}.");
+            }
+
+            $paramValue = $params[$name];
+            $value = is_scalar($paramValue) ? (string) $paramValue : '';
+            if ($value === '' && $paramValue !== '' && $paramValue !== 0 && $paramValue !== '0') {
+                throw new InvalidArgumentException("Param '{$name}' must be a scalar value for {$class}.");
+            }
+            $usedParamNames[] = $name;
+
+            // Validate regex
+            if (@preg_match('/^' . $regex . '$/', '') === false) {
+                throw new InvalidArgumentException("Invalid regex for param '{$name}': /{$regex}/");
+            }
+
+            // Embedded catch-all cannot contain '/' because it would break the path segment
+            if ($regex === '.+' && str_contains($value, '/')) {
+                throw new InvalidArgumentException("Param '{$name}' must not contain '/' in segment '{$segmentKey}'.");
+            }
+
+            if (!preg_match('/^' . $regex . '$/', $value)) {
+                throw new InvalidArgumentException("Param '{$name}' value '{$value}' does not match /{$regex}/");
+            }
+
+            $rendered .= rawurlencode($value);
+            $cursor = $pos + strlen($full);
+        }
+
+        // Tail static after the last placeholder
+        $tail = substr($segmentKey, $cursor);
+        if ($tail !== '') {
+            $rendered .= rawurlencode($tail);
+        }
+
+        return $rendered;
+    }
+
+    /**
+     * Render a pure placeholder segment.
+     *
+     * @param string $name
+     * @param string $regex
+     * @param array<string, mixed> $params
+     * @param array<string> &$usedParamNames
+     * @param string $class
+     * @return string
+     */
+    private function renderPurePlaceholder(string $name, string $regex, array $params, array &$usedParamNames, string $class): string
+    {
+        if (!array_key_exists($name, $params)) {
+            throw new InvalidArgumentException("Missing required route param '{$name}' for {$class}.");
+        }
+
+        $paramValue = $params[$name];
+        $value = is_scalar($paramValue) ? (string) $paramValue : '';
+        if ($value === '' && $paramValue !== '' && $paramValue !== 0 && $paramValue !== '0') {
+            throw new InvalidArgumentException("Param '{$name}' must be a scalar value for {$class}.");
+        }
+        $usedParamNames[] = $name;
+
+        if (@preg_match('/^' . $regex . '$/', '') === false) {
+            throw new InvalidArgumentException("Invalid regex for param '{$name}': /{$regex}/");
+        }
+
+        if ($regex === '.+') {
+            // catch-all: allow slashes, encode per path segment
+            $parts = array_map('rawurlencode', explode('/', trim($value, '/')));
+            if ($parts === ['']) {
+                throw new InvalidArgumentException("Param '{$name}' must not be empty for {$class}.");
+            }
+            return implode('/', $parts);
+        }
+        if (!preg_match('/^' . $regex . '$/', $value)) {
+            throw new InvalidArgumentException("Param '{$name}' value '{$value}' does not match /{$regex}/");
+        }
+        return rawurlencode($value);
+
     }
 }

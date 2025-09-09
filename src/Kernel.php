@@ -81,6 +81,11 @@ abstract class Kernel
         return self::getContainerService()->resolve(MiddlewareService::class);
     }
 
+    public function getRouteService(): RouteService
+    {
+        return self::getContainerService()->resolve(RouteService::class);
+    }
+
     public function getLogService(): LogService
     {
         return self::getContainerService()->resolve(LogService::class);
