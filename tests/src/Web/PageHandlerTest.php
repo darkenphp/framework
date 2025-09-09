@@ -2,6 +2,7 @@
 
 namespace Tests\src\Web;
 
+use Darken\Service\RouteService;
 use Darken\Web\Application;
 use Darken\Web\PageHandler;
 use Darken\Web\RouteExtractor;
@@ -13,17 +14,17 @@ use Tests\TestConfig;
 class PageHandlerTest extends TestCase
 {
     public function findRoutes() {
+        $config = $this->createConfig();
+        $routeService = new RouteService($config);
         
-        $pageHandler = $this->getMockBuilder(RouteExtractor::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $reflection = new ReflectionClass($pageHandler);
-        $method = $reflection->getMethod('findRouteNode');
-        $method->setAccessible(true);
-
         $args = func_get_args();
-        return $method->invoke($pageHandler, $args[0], $args[1]);
+        $trie = $args[1] ?? [];
+        $url = $args[0] ?? '';
+        
+        // Set the trie for testing
+        $routeService->setTrieForTesting($trie);
+        
+        return $routeService->findRouteNode($url);
     }
     
 
@@ -227,13 +228,6 @@ class PageHandlerTest extends TestCase
         $this->tmpFile($routesFile, '<?php return [];');
         $this->assertTrue(file_exists($routesFile));
 
-        $x = chmod($routesFile, 000);
-        /*
-        chmod does not work
-        $this->assertFalse(is_readable($routesFile));
-
-        $this->expectException(RuntimeException::class);
-        new PageHandler($web, 'doesnotexsts.json');
-        */
+        $this->clear();
     }
 }

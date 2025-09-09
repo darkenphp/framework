@@ -263,7 +263,7 @@ class BuildTest extends TestCase
             ],
         ] as $path => $def) {
 
-            $extractor = new RouteExtractor($web, $this->createServerRequest($path, 'GET'));
+            $extractor = new RouteExtractor($web->getRouteService(), $this->createServerRequest($path, 'GET'));
 
             $handler = new PageHandler($extractor);
             $response = $handler->handle($this->createServerRequest($path, 'GET'));

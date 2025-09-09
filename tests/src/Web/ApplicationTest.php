@@ -42,6 +42,7 @@ class ApplicationTest extends TestCase
 
         $this->assertInstanceOf(TestConfig::class, $app->getContainerService()->resolve(TestConfig::class));
         $this->assertInstanceOf(ConfigInterface::class, $app->getContainerService()->resolve(ConfigInterface::class));
+        
     }
     /*
     public function test404Application()
@@ -87,5 +88,6 @@ class ApplicationTest extends TestCase
         $output = ob_get_clean();
 
         $this->assertSame('Page not found', $output);
+        $this->clear();
     }
 }
