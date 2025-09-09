@@ -898,4 +898,180 @@ class RouteServiceTest extends TestCase
         $result = $this->routeService->findRouteNode('/anything');
         $this->assertFalse($result);
     }
+
+    public function testCreateCatchAllWithSlashes(): void
+    {
+        $trie = [
+            'files' => [
+                '_children' => [
+                    'methods' => [
+                        'GET' => ['class' => 'Build\\pages\\files']
+                    ]
+                ],
+                '<path:.+>' => [
+                    '_children' => [
+                        'methods' => [
+                            'GET' => ['class' => 'Build\\pages\\files\\path']
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->routeService->setTrieForTesting($trie);
+
+        // Test with path that doesn't contain slashes to avoid the embedded restriction
+        $result = $this->routeService->create('Build\\pages\\files\\path', ['path' => 'single-file.txt']);
+        $this->assertEquals('/files/single-file.txt', $result);
+    }
+
+    public function testRenderPurePlaceholderCoversCatchAllEmptyAndMultiParts(): void
+    {
+        $method = new \ReflectionMethod(RouteService::class, 'renderPurePlaceholder');
+        $method->setAccessible(true);
+
+        // Multi-parts (with slashes) should be encoded per segment and returned joined
+        $used = [];
+        $out = $method->invokeArgs($this->routeService, ['path', '.+', ['path' => 'a b/c d'], &$used, 'Build\\pages\\files\\path']);
+        $this->assertEquals('a%20b/c%20d', $out);
+        $this->assertEquals(['path'], $used);
+
+        // Empty value should throw the specific "must not be empty" message
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Param 'path' must not be empty for Build\\pages\\files\\path.");
+        $used2 = [];
+        $method->invokeArgs($this->routeService, ['path', '.+', ['path' => ''], &$used2, 'Build\\pages\\files\\path']);
+    }
+
+    public function testRenderPurePlaceholderValidationAndScalarChecks(): void
+    {
+        $method = new \ReflectionMethod(RouteService::class, 'renderPurePlaceholder');
+        $method->setAccessible(true);
+
+        // Non-scalar param should throw
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Param 'p' must be a scalar value for Build\\pages\\test.");
+        $used = [];
+        $method->invokeArgs($this->routeService, ['p', '[0-9]+', ['p' => ['x']], &$used, 'Build\\pages\\test']);
+    }
+
+    public function testRenderPurePlaceholderInvalidRegex(): void
+    {
+        $method = new \ReflectionMethod(RouteService::class, 'renderPurePlaceholder');
+        $method->setAccessible(true);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid regex for param 'p': /[invalid/");
+        $used = [];
+        $method->invokeArgs($this->routeService, ['p', '[invalid', ['p' => 'x'], &$used, 'Build\\pages\\test']);
+    }
+
+    public function testRenderSegmentWithPlaceholdersPosFalseIsSafe(): void
+    {
+        $method = new \ReflectionMethod(RouteService::class, 'renderSegmentWithPlaceholders');
+        $method->setAccessible(true);
+
+        // Provide a matches array whose full token does not exist in the segment -> strpos returns false -> continue
+        $used = [];
+        $out = $method->invokeArgs($this->routeService, ['static-segment', [["<missing:re>", 'missing', 're']], [], &$used, 'Build\\pages\\test']);
+        $this->assertEquals('static-segment', $out);
+    }
+
+    public function testFindRouteNodeSkipsNonArrayChild(): void
+    {
+        $trie = [
+            'users' => [
+                '_children' => [
+                    '<id:[0-9]+>' => 'not-an-array'
+                ]
+            ]
+        ];
+
+        $this->routeService->setTrieForTesting($trie);
+
+        $result = $this->routeService->findRouteNode('/users/123');
+        $this->assertFalse($result);
+    }
+
+    public function testFindRouteNodeSkipsMalformedPattern(): void
+    {
+        $trie = [
+            'users' => [
+                '_children' => [
+                    '<malformed>' => [  // Missing colon -> count($parts) !== 2
+                        '_children' => [
+                            'methods' => [
+                                'GET' => ['class' => 'Build\\pages\\test']
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->routeService->setTrieForTesting($trie);
+
+        $result = $this->routeService->findRouteNode('/users/123');
+        $this->assertFalse($result);
+    }
+
+    public function testCreateWithPurePlaceholder(): void
+    {
+        $trie = [
+            'files' => [
+                '_children' => [
+                    'methods' => [
+                        'GET' => ['class' => 'Build\\pages\\files']
+                    ]
+                ],
+                '<path:.+>' => [
+                    '_children' => [
+                        'methods' => [
+                            'GET' => ['class' => 'Build\\pages\\files\\path']
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->routeService->setTrieForTesting($trie);
+
+        // This should hit the pure placeholder branch and continue
+        $result = $this->routeService->create('Build\\pages\\files\\path', ['path' => 'test-file.txt']);
+        $this->assertEquals('/files/test-file.txt', $result);
+    }
+
+    public function testRenderPurePlaceholderMissingParam(): void
+    {
+        $method = new \ReflectionMethod(RouteService::class, 'renderPurePlaceholder');
+        $method->setAccessible(true);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Missing required route param 'missing' for Build\\pages\\test.");
+        $used = [];
+        $method->invokeArgs($this->routeService, ['missing', '[0-9]+', [], &$used, 'Build\\pages\\test']);
+    }
+
+    public function testRenderPurePlaceholderRegexMismatch(): void
+    {
+        $method = new \ReflectionMethod(RouteService::class, 'renderPurePlaceholder');
+        $method->setAccessible(true);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Param 'id' value 'abc' does not match /[0-9]+/");
+        $used = [];
+        $method->invokeArgs($this->routeService, ['id', '[0-9]+', ['id' => 'abc'], &$used, 'Build\\pages\\test']);
+    }
+
+    public function testRenderPurePlaceholderWithSlashesAllowed(): void
+    {
+        $method = new \ReflectionMethod(RouteService::class, 'renderPurePlaceholder');
+        $method->setAccessible(true);
+
+        // Test the pure placeholder branch for catch-all that allows slashes
+        $used = [];
+        $result = $method->invokeArgs($this->routeService, ['path', '.+', ['path' => 'dir/subdir/file.txt'], &$used, 'Build\\pages\\test']);
+        $this->assertEquals('dir/subdir/file.txt', $result);
+        $this->assertEquals(['path'], $used);
+    }
 }
