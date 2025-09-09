@@ -135,7 +135,7 @@ final class RouteService
                     [$name, $regex] = $parts;
 
                     if ($regex === '.+') {
-                        if (preg_match("/^$regex$/", $segment)) {
+                        if (preg_match('#^' . $regex . '$#', $segment)) {
                             $slices = array_slice($segments, $index);
                             // if the last slice is "index" then remove it
                             if (end($slices) === 'index') {
@@ -146,7 +146,7 @@ final class RouteService
                             $hasWildCardMatch = true;
                             continue 2;
                         }
-                    } elseif (preg_match("/^$regex$/", $segment)) {
+                    } elseif (preg_match('#^' . $regex . '$#', $segment)) {
                         $params[$name] = $segment;
                         $node = $child['_children'];
                         continue 2;
@@ -175,11 +175,26 @@ final class RouteService
         return [$typedNode, $params];
     }
 
+    /**
+     * Set the trie directly for testing purposes
+     *
+     * @param array<string, mixed> $trie
+     */
+    public function setTrieForTesting(array $trie): void
+    {
+        $this->trie = $trie;
+    }
+
     private function loadRoutes(): void
     {
         $routesFile = $this->getRoutesFile();
 
-        if (file_exists($routesFile) && !is_readable($routesFile)) {
+        if (!file_exists($routesFile)) {
+            // Routes file doesn't exist yet, keep empty trie
+            return;
+        }
+
+        if (!is_readable($routesFile)) {
             throw new InvalidArgumentException(sprintf('Routes file "%s" is not readable', $routesFile));
         }
 
@@ -279,7 +294,7 @@ final class RouteService
             $usedParamNames[] = $name;
 
             // Validate regex
-            if (@preg_match('/^' . $regex . '$/', '') === false) {
+            if (@preg_match('#^' . $regex . '$#', '') === false) {
                 throw new InvalidArgumentException("Invalid regex for param '{$name}': /{$regex}/");
             }
 
@@ -288,7 +303,7 @@ final class RouteService
                 throw new InvalidArgumentException("Param '{$name}' must not contain '/' in segment '{$segmentKey}'.");
             }
 
-            if (!preg_match('/^' . $regex . '$/', $value)) {
+            if (!preg_match('#^' . $regex . '$#', $value)) {
                 throw new InvalidArgumentException("Param '{$name}' value '{$value}' does not match /{$regex}/");
             }
 
@@ -328,7 +343,7 @@ final class RouteService
         }
         $usedParamNames[] = $name;
 
-        if (@preg_match('/^' . $regex . '$/', '') === false) {
+        if (@preg_match('#^' . $regex . '$#', '') === false) {
             throw new InvalidArgumentException("Invalid regex for param '{$name}': /{$regex}/");
         }
 
@@ -340,7 +355,7 @@ final class RouteService
             }
             return implode('/', $parts);
         }
-        if (!preg_match('/^' . $regex . '$/', $value)) {
+        if (!preg_match('#^' . $regex . '$#', $value)) {
             throw new InvalidArgumentException("Param '{$name}' value '{$value}' does not match /{$regex}/");
         }
         return rawurlencode($value);

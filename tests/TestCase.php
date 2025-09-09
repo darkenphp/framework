@@ -169,10 +169,9 @@ class TestCase extends FrameworkTestCase
     public function destoryTmpFile(string $path): void
     {
         try {
-        FileHelper::unlink($path);
+            FileHelper::unlink($path);
         } catch (\Throwable $e) {
-            restore_error_handler();
-        restore_exception_handler();
+            // Silently ignore file deletion errors in tests
         }
     }
 
