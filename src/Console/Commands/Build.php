@@ -28,7 +28,7 @@ class Build implements CommandInterface
 {
     public function run(Application $app): ConsoleExit
     {
-        if ($app->getArgument('clear', false)) {
+        if ($app->getArgument('clear', false) && file_exists($app->config->getBuildOutputFolder())) {
             FileHelper::clearDirectory($app->config->getBuildOutputFolder());
         }
 
