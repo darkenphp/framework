@@ -17,7 +17,7 @@ class ApplicationTest extends TestCase
     public function testApplicationGlobals()
     {
         $cfg = $this->createConfig();
-        $cfg->setDebugMode(true);
+        $cfg->setDebugMode(false); // Disable debug mode to test normal 404 behavior
 
         $app = new Application($cfg);
 

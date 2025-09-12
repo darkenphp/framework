@@ -84,7 +84,7 @@ class Application extends Kernel
         $this->getContainerService()->register(Request::class, $request);
 
         $routeExtractor = new RouteExtractor($this->getRouteService(), $request);
-        $pageHandler = new PageHandler($routeExtractor);
+        $pageHandler = new PageHandler($routeExtractor, $this->config);
 
         $temporaryMiddlewares = [];
         foreach ($routeExtractor->getMiddlewares() as $middlewareConfig) {

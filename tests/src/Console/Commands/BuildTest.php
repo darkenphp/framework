@@ -265,7 +265,7 @@ class BuildTest extends TestCase
 
             $extractor = new RouteExtractor($web->getRouteService(), $this->createServerRequest($path, 'GET'));
 
-            $handler = new PageHandler($extractor);
+            $handler = new PageHandler($extractor, $config);
             $response = $handler->handle($this->createServerRequest($path, 'GET'));
 
             $this->assertInstanceOf(ResponseInterface::class, $response);
