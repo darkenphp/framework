@@ -1074,4 +1074,32 @@ class RouteServiceTest extends TestCase
         $this->assertEquals('dir/subdir/file.txt', $result);
         $this->assertEquals(['path'], $used);
     }
+
+    public function testFindRouteNodeWithEmbeddedParameters(): void
+    {
+        // Test case for the bug: URL pattern with multiple embedded parameters
+        // Like '<id:[a-zA-Z0-9\-]+>-<token:[a-zA-Z0-9\-]+>'
+        $trie = [
+            'checks' => [
+                '_children' => [
+                    '<id:[a-zA-Z0-9\\-]+>-<token:[a-zA-Z0-9\\-]+>' => [
+                        '_children' => [
+                            'methods' => [
+                                '*' => ['class' => 'Build\\pages\\checks\\idtoken']
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        
+        $this->routeService->setTrieForTesting($trie);
+        
+        // This should match and extract both id and token parameters
+        $result = $this->routeService->findRouteNode('/checks/38356-123f');
+        $this->assertIsArray($result, 'Route should be found for embedded parameters pattern');
+        $this->assertCount(2, $result);
+        $this->assertArrayHasKey('methods', $result[0]);
+        $this->assertEquals(['id' => '38356', 'token' => '123f'], $result[1]);
+    }
 }

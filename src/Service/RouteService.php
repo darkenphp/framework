@@ -126,30 +126,40 @@ final class RouteService
                 }
 
                 // Example dynamic route key: <id:[a-zA-Z0-9\-]+> or <slug:.+>
+                // Also supports embedded parameters like: <id:[a-zA-Z0-9\-]+>-<token:[a-zA-Z0-9\-]+>
                 if (str_starts_with($key, '<') && str_ends_with($key, '>')) {
+                    // Check if this is a simple single parameter pattern
                     $pattern = substr($key, 1, -1);
                     $parts = explode(':', $pattern, 2);
-                    if (count($parts) !== 2) {
-                        continue;
-                    }
-                    [$name, $regex] = $parts;
+                    if (count($parts) === 2 && preg_match_all('/<([^:>]+):([^>]+)>/', $key, $paramMatches) === 1) {
+                        // Simple single parameter pattern
+                        [$name, $regex] = $parts;
 
-                    if ($regex === '.+') {
-                        if (preg_match('#^' . $regex . '$#', $segment)) {
-                            $slices = array_slice($segments, $index);
-                            // if the last slice is "index" then remove it
-                            if (end($slices) === 'index') {
-                                array_pop($slices);
+                        if ($regex === '.+') {
+                            if (preg_match('#^' . $regex . '$#', $segment)) {
+                                $slices = array_slice($segments, $index);
+                                // if the last slice is "index" then remove it
+                                if (end($slices) === 'index') {
+                                    array_pop($slices);
+                                }
+                                $params[$name] = implode('/', $slices);
+                                $node = $child['_children'];
+                                $hasWildCardMatch = true;
+                                continue 2;
                             }
-                            $params[$name] = implode('/', $slices);
+                        } elseif (preg_match('#^' . $regex . '$#', $segment)) {
+                            $params[$name] = $segment;
                             $node = $child['_children'];
-                            $hasWildCardMatch = true;
                             continue 2;
                         }
-                    } elseif (preg_match('#^' . $regex . '$#', $segment)) {
-                        $params[$name] = $segment;
-                        $node = $child['_children'];
-                        continue 2;
+                    } else {
+                        // Complex pattern with embedded parameters
+                        $extractedParams = [];
+                        if ($this->matchEmbeddedParameters($key, $segment, $extractedParams)) {
+                            $params = array_merge($params, $extractedParams);
+                            $node = $child['_children'];
+                            continue 2;
+                        }
                     }
                 }
             }
@@ -360,5 +370,43 @@ final class RouteService
         }
         return rawurlencode($value);
 
+    }
+
+    /**
+     * Match a segment against a pattern with embedded parameters.
+     *
+     * @param string $pattern The route pattern like '<id:[a-zA-Z0-9\-]+>-<token:[a-zA-Z0-9\-]+>'
+     * @param string $segment The URL segment to match against
+     * @param array<string, string> &$extractedParams Output array for extracted parameters
+     * @return bool True if the segment matches the pattern
+     */
+    private function matchEmbeddedParameters(string $pattern, string $segment, array &$extractedParams): bool
+    {
+        // Find all parameter placeholders in the pattern
+        if (!preg_match_all('/<([^:>]+):([^>]+)>/', $pattern, $matches, PREG_SET_ORDER)) {
+            return false;
+        }
+
+        // Build a regex pattern by replacing each placeholder with its regex
+        $regexPattern = preg_quote($pattern, '#');
+        $paramNames = [];
+
+        foreach ($matches as $match) {
+            [$fullMatch, $name, $regex] = $match;
+            $quotedFullMatch = preg_quote($fullMatch, '#');
+            $regexPattern = str_replace($quotedFullMatch, "({$regex})", $regexPattern);
+            $paramNames[] = $name;
+        }
+
+        // Try to match the segment against the constructed regex
+        if (preg_match("#^{$regexPattern}$#", $segment, $segmentMatches)) {
+            // Extract parameter values (skip the full match at index 0)
+            for ($i = 1; $i < count($segmentMatches); $i++) {
+                $extractedParams[$paramNames[$i - 1]] = $segmentMatches[$i];
+            }
+            return true;
+        }
+
+        return false;
     }
 }
