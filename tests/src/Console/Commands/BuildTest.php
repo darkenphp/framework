@@ -75,7 +75,7 @@ class BuildTest extends TestCase
             ],
             'blogs' => [
                 '_children' => [
-                    '<id:[a-zA-Z0-9\-]+>' => [
+                    '<id:[a-zA-Z0-9-]+>' => [
                         '_children' => [
                             'comments' => [
                                 '_children' => [
@@ -146,9 +146,9 @@ class BuildTest extends TestCase
             ],
             'nested' => [
                 '_children' => [
-                    '<level1:[a-zA-Z0-9\-]+>' => [
+                    '<level1:[a-zA-Z0-9-]+>' => [
                         '_children' => [
-                            '<level2:[a-zA-Z0-9\-]+>' => [
+                            '<level2:[a-zA-Z0-9-]+>' => [
                                 '_children' => [
                                     'methods' => [
                                         'GET' => [
@@ -185,7 +185,7 @@ class BuildTest extends TestCase
             ],
             'users' => [
                 '_children' => [
-                    '<test:[a-zA-Z0-9\-]+>-methods' => [
+                    '<test:[a-zA-Z0-9-]+>-methods' => [
                         '_children' => [
                             'methods' => [
                                 'GET' => [
@@ -373,16 +373,16 @@ PHP, $renderTestPageWithComponentsAndLayouts->getBody()->__toString());
         }
 
         // Test deeply nested methods sorting (users/[[test]]-methods with GET and POST)
-        if (isset($routes['users']['_children']['<test:[a-zA-Z0-9\-]+>-methods']['_children']['methods'])) {
-            $methods = array_keys($routes['users']['_children']['<test:[a-zA-Z0-9\-]+>-methods']['_children']['methods']);
+        if (isset($routes['users']['_children']['<test:[a-zA-Z0-9-]+>-methods']['_children']['methods'])) {
+            $methods = array_keys($routes['users']['_children']['<test:[a-zA-Z0-9-]+>-methods']['_children']['methods']);
             $sortedMethods = $methods;
             sort($sortedMethods);
             $this->assertEquals($sortedMethods, $methods, 'Deeply nested methods should be sorted');
         }
 
         // Test very deeply nested methods sorting (nested/[[level1]]/[[level2]] with GET, POST, PUT)
-        if (isset($routes['nested']['_children']['<level1:[a-zA-Z0-9\-]+>']['_children']['<level2:[a-zA-Z0-9\-]+>']['_children']['methods'])) {
-            $methods = array_keys($routes['nested']['_children']['<level1:[a-zA-Z0-9\-]+>']['_children']['<level2:[a-zA-Z0-9\-]+>']['_children']['methods']);
+        if (isset($routes['nested']['_children']['<level1:[a-zA-Z0-9-]+>']['_children']['<level2:[a-zA-Z0-9-]+>']['_children']['methods'])) {
+            $methods = array_keys($routes['nested']['_children']['<level1:[a-zA-Z0-9-]+>']['_children']['<level2:[a-zA-Z0-9-]+>']['_children']['methods']);
             $sortedMethods = $methods;
             sort($sortedMethods);
             $this->assertEquals($sortedMethods, $methods, 'Very deeply nested methods should be sorted');

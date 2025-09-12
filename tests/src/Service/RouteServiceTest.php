@@ -1082,7 +1082,7 @@ class RouteServiceTest extends TestCase
         $trie = [
             'checks' => [
                 '_children' => [
-                    '<id:[a-zA-Z0-9\\-]+>-<token:[a-zA-Z0-9\\-]+>' => [
+                    '<id:[a-zA-Z0-9]+>-<token:[a-zA-Z0-9]+>' => [
                         '_children' => [
                             'methods' => [
                                 '*' => ['class' => 'Build\\pages\\checks\\idtoken']
@@ -1101,5 +1101,8 @@ class RouteServiceTest extends TestCase
         $this->assertCount(2, $result);
         $this->assertArrayHasKey('methods', $result[0]);
         $this->assertEquals(['id' => '38356', 'token' => '123f'], $result[1]);
+
+        $link = $this->routeService->create('Build\\pages\\checks\\idtoken', ['id' => '38356', 'token' => '123f']);
+        $this->assertEquals('/checks/38356-123f', $link);
     }
 }
