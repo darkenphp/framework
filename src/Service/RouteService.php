@@ -127,12 +127,14 @@ final class RouteService
 
                 // Example dynamic route key: <id:[a-zA-Z0-9\-]+> or <slug:.+>
                 // Also supports embedded parameters like: <id:[a-zA-Z0-9\-]+>-<token:[a-zA-Z0-9\-]+>
-                if (str_starts_with($key, '<') && str_ends_with($key, '>')) {
-                    // Check if this is a simple single parameter pattern
-                    $pattern = substr($key, 1, -1);
-                    $parts = explode(':', $pattern, 2);
-                    if (count($parts) === 2 && preg_match_all('/<([^:>]+):([^>]+)>/', $key, $paramMatches) === 1) {
+
+                // Check if this contains any parameter patterns
+                if (preg_match_all('/<([^:>]+):([^>]+)>/', $key, $paramMatches, PREG_SET_ORDER)) {
+                    // Check if this is a simple single parameter pattern (key starts/ends with <> and has only one parameter)
+                    if (str_starts_with($key, '<') && str_ends_with($key, '>') && count($paramMatches) === 1) {
                         // Simple single parameter pattern
+                        $pattern = substr($key, 1, -1);
+                        $parts = explode(':', $pattern, 2);
                         [$name, $regex] = $parts;
 
                         if ($regex === '.+') {
@@ -153,10 +155,24 @@ final class RouteService
                             continue 2;
                         }
                     } else {
-                        // Complex pattern with embedded parameters
-                        $extractedParams = [];
-                        if ($this->matchEmbeddedParameters($key, $segment, $extractedParams)) {
-                            $params = array_merge($params, $extractedParams);
+                        // Embedded parameters (multiple parameters or embedded in static text)
+                        // Build a regex pattern from the key by replacing placeholders with capture groups
+                        $pattern = preg_quote($key, '#');
+                        $paramNames = [];
+                        foreach ($paramMatches as $match) {
+                            $paramName = $match[1];
+                            $paramRegex = $match[2];
+                            $paramNames[] = $paramName;
+                            // Replace the quoted placeholder with a capture group
+                            $quotedPlaceholder = preg_quote($match[0], '#');
+                            $pattern = str_replace($quotedPlaceholder, '(' . $paramRegex . ')', $pattern);
+                        }
+
+                        if (preg_match('#^' . $pattern . '$#', $segment, $matches)) {
+                            // Extract parameters from matches
+                            for ($i = 0; $i < count($paramNames); $i++) {
+                                $params[$paramNames[$i]] = $matches[$i + 1];
+                            }
                             $node = $child['_children'];
                             continue 2;
                         }
@@ -257,6 +273,22 @@ final class RouteService
             $found = $this->findPathForClass($child, $class, $method, array_merge($stack, [$key]));
             if ($found !== null) {
                 return $found;
+            }
+        }
+
+        // Also search in _children for dynamic routes (like embedded parameters)
+        if (isset($node['_children']) && is_array($node['_children'])) {
+            foreach ($node['_children'] as $key => $child) {
+                if ($key === 'methods' || !is_string($key)) {
+                    continue;
+                }
+                if (!is_array($child) || !isset($child['_children']) || !is_array($child['_children'])) {
+                    continue;
+                }
+                $found = $this->findPathForClass($child, $class, $method, array_merge($stack, [$key]));
+                if ($found !== null) {
+                    return $found;
+                }
             }
         }
 
@@ -370,43 +402,5 @@ final class RouteService
         }
         return rawurlencode($value);
 
-    }
-
-    /**
-     * Match a segment against a pattern with embedded parameters.
-     *
-     * @param string $pattern The route pattern like '<id:[a-zA-Z0-9\-]+>-<token:[a-zA-Z0-9\-]+>'
-     * @param string $segment The URL segment to match against
-     * @param array<string, string> &$extractedParams Output array for extracted parameters
-     * @return bool True if the segment matches the pattern
-     */
-    private function matchEmbeddedParameters(string $pattern, string $segment, array &$extractedParams): bool
-    {
-        // Find all parameter placeholders in the pattern
-        if (!preg_match_all('/<([^:>]+):([^>]+)>/', $pattern, $matches, PREG_SET_ORDER)) {
-            return false;
-        }
-
-        // Build a regex pattern by replacing each placeholder with its regex
-        $regexPattern = preg_quote($pattern, '#');
-        $paramNames = [];
-
-        foreach ($matches as $match) {
-            [$fullMatch, $name, $regex] = $match;
-            $quotedFullMatch = preg_quote($fullMatch, '#');
-            $regexPattern = str_replace($quotedFullMatch, "({$regex})", $regexPattern);
-            $paramNames[] = $name;
-        }
-
-        // Try to match the segment against the constructed regex
-        if (preg_match("#^{$regexPattern}$#", $segment, $segmentMatches)) {
-            // Extract parameter values (skip the full match at index 0)
-            for ($i = 1; $i < count($segmentMatches); $i++) {
-                $extractedParams[$paramNames[$i - 1]] = $segmentMatches[$i];
-            }
-            return true;
-        }
-
-        return false;
     }
 }

@@ -78,7 +78,34 @@ class OutputPage
         if (str_contains($source, '[[...')) {
             $pattern = preg_replace('/\[\[\.\.\.(.*?)\]\]/', '<$1:.+>', $source);
         } else {
-            $pattern = preg_replace('/\[\[(.*?)\]\]/', '<$1:[a-zA-Z0-9\-]+>', $source);
+            // Handle prefixed patterns like [[d:id]], [[w:name]], etc.
+            $pattern = preg_replace_callback('/\[\[([^:\]]*):?([^\]]*)\]\]/', function ($matches) {
+                $firstPart = $matches[1];
+                $secondPart = $matches[2];
+
+                // Check if first part is a valid prefix
+                $validPrefixes = ['d', 'w', 's', 'a', 'h'];
+                if (in_array($firstPart, $validPrefixes) && !empty($secondPart)) {
+                    // It's a prefixed parameter like [[d:id]]
+                    $prefix = $firstPart;
+                    $name = $secondPart;
+                } else {
+                    // It's either [[name]] or [[something:else]] where something is not a valid prefix
+                    if (empty($secondPart)) {
+                        // Simple [[name]] pattern
+                        $prefix = '';
+                        $name = $firstPart;
+                    } else {
+                        // [[something:else]] where something is not a valid prefix
+                        // Treat the whole thing as the parameter name
+                        $prefix = '';
+                        $name = $firstPart . ':' . $secondPart;
+                    }
+                }
+
+                $regex = $this->getRegexForPrefix($prefix);
+                return "<{$name}:{$regex}>";
+            }, $source);
         }
 
         // if the file ends with .get.php (but could also be .post.php, .put.php, etc)
@@ -88,5 +115,17 @@ class OutputPage
 
         // an easy way to convert /blogs/[[slug]] to a matcahable regex like /blogs/<slug:[\w+]>
         return str_replace('.php', '', $pattern);
+    }
+
+    private function getRegexForPrefix(string $prefix): string
+    {
+        return match ($prefix) {
+            'd' => '[0-9]+',
+            'w' => '[a-zA-Z0-9]+',
+            's' => '[a-zA-Z0-9-]+',  // Fixed: hyphen at end without escape
+            'a' => '[a-zA-Z]+',
+            'h' => '[a-fA-F0-9]+',
+            default => '[a-zA-Z0-9-]+',  // Fixed: hyphen at end without escape
+        };
     }
 }
