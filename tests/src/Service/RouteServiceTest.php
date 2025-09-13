@@ -98,7 +98,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\users');
+        $result = $this->routeService->url('Build\\pages\\users');
         $this->assertEquals('/users', $result);
     }
 
@@ -116,7 +116,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\index');
+        $result = $this->routeService->url('Build\\pages\\index');
         $this->assertEquals('/', $result);
     }
 
@@ -141,7 +141,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\users\\id', ['id' => '123']);
+        $result = $this->routeService->url('Build\\pages\\users\\id', ['id' => '123']);
         $this->assertEquals('/users/123', $result);
     }
 
@@ -167,7 +167,7 @@ class RouteServiceTest extends TestCase
         $this->routeService->setTrieForTesting($trie);
         
         // Use a path without slashes since current implementation treats <path:.+> as embedded
-        $result = $this->routeService->create('Build\\pages\\files\\path', ['path' => 'filename.txt']);
+        $result = $this->routeService->url('Build\\pages\\files\\path', ['path' => 'filename.txt']);
         $this->assertEquals('/files/filename.txt', $result);
     }
 
@@ -185,7 +185,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\blog_post', ['slug' => 'hello-world']);
+        $result = $this->routeService->url('Build\\pages\\blog_post', ['slug' => 'hello-world']);
         $this->assertEquals('/blog-hello-world-post', $result);
     }
 
@@ -203,7 +203,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\api_user', ['version' => '1', 'id' => '42']);
+        $result = $this->routeService->url('Build\\pages\\api_user', ['version' => '1', 'id' => '42']);
         $this->assertEquals('/api-1-user-42', $result);
     }
 
@@ -221,7 +221,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\users', ['page' => '2', 'limit' => '10']);
+        $result = $this->routeService->url('Build\\pages\\users', ['page' => '2', 'limit' => '10']);
         $this->assertEquals('/users?page=2&limit=10', $result);
     }
 
@@ -246,7 +246,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\users\\id', ['id' => '123', 'tab' => 'profile']);
+        $result = $this->routeService->url('Build\\pages\\users\\id', ['id' => '123', 'tab' => 'profile']);
         $this->assertEquals('/users/123?tab=profile', $result);
     }
 
@@ -272,7 +272,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\api\\users\\post', [], 'POST');
+        $result = $this->routeService->url('Build\\pages\\api\\users\\post', [], 'POST');
         $this->assertEquals('/api/users', $result);
     }
 
@@ -290,7 +290,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\catch_all', [], 'DELETE');
+        $result = $this->routeService->url('Build\\pages\\catch_all', [], 'DELETE');
         $this->assertEquals('/catch-all', $result);
     }
 
@@ -311,7 +311,7 @@ class RouteServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('No route found for class Build\\pages\\nonexistent (method GET).');
         
-        $this->routeService->create('Build\\pages\\nonexistent');
+        $this->routeService->url('Build\\pages\\nonexistent');
     }
 
     public function testCreateThrowsExceptionWhenParameterMissing(): void
@@ -338,7 +338,7 @@ class RouteServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Missing required route param 'id' for Build\\pages\\users\\id.");
         
-        $this->routeService->create('Build\\pages\\users\\id');
+        $this->routeService->url('Build\\pages\\users\\id');
     }
 
     public function testCreateThrowsExceptionWhenParameterNotScalar(): void
@@ -365,7 +365,7 @@ class RouteServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Param 'id' must be a scalar value for Build\\pages\\users\\id.");
         
-        $this->routeService->create('Build\\pages\\users\\id', ['id' => ['not', 'scalar']]);
+        $this->routeService->url('Build\\pages\\users\\id', ['id' => ['not', 'scalar']]);
     }
 
     public function testCreateThrowsExceptionWhenParameterDoesNotMatchRegex(): void
@@ -392,7 +392,7 @@ class RouteServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Param 'id' value 'abc' does not match /[0-9]+/");
         
-        $this->routeService->create('Build\\pages\\users\\id', ['id' => 'abc']);
+        $this->routeService->url('Build\\pages\\users\\id', ['id' => 'abc']);
     }
 
     public function testCreateThrowsExceptionWhenInvalidRegex(): void
@@ -419,7 +419,7 @@ class RouteServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Invalid regex for param 'id': /[invalid/");
         
-        $this->routeService->create('Build\\pages\\users\\id', ['id' => 'test']);
+        $this->routeService->url('Build\\pages\\users\\id', ['id' => 'test']);
     }
 
     public function testCreateThrowsExceptionWhenEmbeddedCatchAllContainsSlash(): void
@@ -439,7 +439,7 @@ class RouteServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Param 'path' must not contain '/' in segment 'prefix-<path:.+>-suffix'.");
         
-        $this->routeService->create('Build\\pages\\embedded_catchall', ['path' => 'dir/file']);
+        $this->routeService->url('Build\\pages\\embedded_catchall', ['path' => 'dir/file']);
     }
 
     public function testCreateThrowsExceptionWhenCatchAllParameterIsEmpty(): void
@@ -466,7 +466,7 @@ class RouteServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Param 'path' value '' does not match /.+/");
         
-        $this->routeService->create('Build\\pages\\files\\path', ['path' => '']);
+        $this->routeService->url('Build\\pages\\files\\path', ['path' => '']);
     }
 
     public function testCreateHandlesSpecialScalarValues(): void
@@ -491,11 +491,11 @@ class RouteServiceTest extends TestCase
         $this->routeService->setTrieForTesting($trie);
         
         // Test with integer 0
-        $result = $this->routeService->create('Build\\pages\\test\\value', ['value' => 0]);
+        $result = $this->routeService->url('Build\\pages\\test\\value', ['value' => 0]);
         $this->assertEquals('/test/0', $result);
         
         // Test with string '0'
-        $result = $this->routeService->create('Build\\pages\\test\\value', ['value' => '0']);
+        $result = $this->routeService->url('Build\\pages\\test\\value', ['value' => '0']);
         $this->assertEquals('/test/0', $result);
     }
 
@@ -554,7 +554,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\test_space');
+        $result = $this->routeService->url('Build\\pages\\test_space');
         $this->assertEquals('/test%20space', $result);
     }
 
@@ -579,7 +579,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\search\\query', ['query' => 'hello world']);
+        $result = $this->routeService->url('Build\\pages\\search\\query', ['query' => 'hello world']);
         $this->assertEquals('/search/hello%20world', $result);
     }
 
@@ -605,7 +605,7 @@ class RouteServiceTest extends TestCase
         $this->routeService->setTrieForTesting($trie);
         
         // Use a path without slashes but with spaces to test encoding
-        $result = $this->routeService->create('Build\\pages\\files\\path', ['path' => 'file name with spaces.txt']);
+        $result = $this->routeService->url('Build\\pages\\files\\path', ['path' => 'file name with spaces.txt']);
         $this->assertEquals('/files/file%20name%20with%20spaces.txt', $result);
     }
 
@@ -651,7 +651,7 @@ class RouteServiceTest extends TestCase
         
         $this->routeService->setTrieForTesting($trie);
         
-        $result = $this->routeService->create('Build\\pages\\blog\\post', [
+        $result = $this->routeService->url('Build\\pages\\blog\\post', [
             'year' => '2024',
             'month' => '03',
             'day' => '15',
@@ -921,7 +921,7 @@ class RouteServiceTest extends TestCase
         $this->routeService->setTrieForTesting($trie);
 
         // Test with path that doesn't contain slashes to avoid the embedded restriction
-        $result = $this->routeService->create('Build\\pages\\files\\path', ['path' => 'single-file.txt']);
+        $result = $this->routeService->url('Build\\pages\\files\\path', ['path' => 'single-file.txt']);
         $this->assertEquals('/files/single-file.txt', $result);
     }
 
@@ -1037,7 +1037,7 @@ class RouteServiceTest extends TestCase
         $this->routeService->setTrieForTesting($trie);
 
         // This should hit the pure placeholder branch and continue
-        $result = $this->routeService->create('Build\\pages\\files\\path', ['path' => 'test-file.txt']);
+        $result = $this->routeService->url('Build\\pages\\files\\path', ['path' => 'test-file.txt']);
         $this->assertEquals('/files/test-file.txt', $result);
     }
 
@@ -1102,7 +1102,7 @@ class RouteServiceTest extends TestCase
         $this->assertArrayHasKey('methods', $result[0]);
         $this->assertEquals(['id' => '38356', 'token' => '123f'], $result[1]);
 
-        $link = $this->routeService->create('Build\\pages\\checks\\idtoken', ['id' => '38356', 'token' => '123f']);
+        $link = $this->routeService->url('Build\\pages\\checks\\idtoken', ['id' => '38356', 'token' => '123f']);
         $this->assertEquals('/checks/38356-123f', $link);
     }
 }

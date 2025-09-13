@@ -23,4 +23,4 @@ $page = new class {
 };
 ?>
 
-<?php var_dump($page->route->create(testid::class, ['id' => 123])); ?>
+<?php var_dump($page->route->url(testid::class, ['id' => 123])); ?>

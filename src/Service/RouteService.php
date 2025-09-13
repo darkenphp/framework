@@ -29,7 +29,7 @@ final class RouteService
      *
      * @return string URL path, query string appended for unused params.
      */
-    public function create(string $class, array $params = [], string $method = 'GET'): string
+    public function url(string $class, array $params = [], string $method = 'GET'): string
     {
         $method = strtoupper($method);
 

@@ -193,7 +193,7 @@ class EmbeddedParameterIntegrationTest extends TestCase
         $this->routeService->setTrieForTesting($trie);
         
         // Test URL generation
-        $url = $this->routeService->create('Build\\pages\\users\\id', [
+        $url = $this->routeService->url('Build\\pages\\users\\id', [
             'id' => 'user123'
         ]);
         
@@ -201,7 +201,7 @@ class EmbeddedParameterIntegrationTest extends TestCase
         
         // Test parameter validation
         try {
-            $this->routeService->create('Build\\pages\\users\\id', [
+            $this->routeService->url('Build\\pages\\users\\id', [
                 'id' => 'user-123'  // Invalid: should not contain hyphens with new default
             ]);
             $this->fail('Should have thrown exception for invalid id parameter');
