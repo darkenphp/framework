@@ -56,7 +56,7 @@ class Application extends Kernel
                 return Handler::QUIT;
             });
         }
-        $this->whoops->pushHandler($handler);
+        $this->whoops->appendHandler($handler);
         $this->whoops->register();
     }
 

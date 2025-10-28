@@ -18,7 +18,7 @@ use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
 use Darken\Service\RouteService;
 use Throwable;
-use Whoops\Handler\Handler;
+use Whoops\Handler\CallbackHandler;
 use Whoops\Run;
 
 /**
@@ -37,26 +37,18 @@ abstract class Kernel
     {
         $this->whoops = new Run();
         $this->whoops->allowQuit(false);
-        // Register a custom handler to log uncaught exceptions
-        $this->whoops->pushHandler(function (Throwable $e) {
-            // Minimal structured context
-            $this->getLogService()->error(
-                'Uncaught exception: {message}',
-                [
-                    'message' => $e->getMessage(),
-                    'exception' => $e,
-                    'code' => $e->getCode(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'uri' => $_SERVER['REQUEST_URI'] ?? null,
-                    'method' => $_SERVER['REQUEST_METHOD'] ?? null,
-                    'stack_trace' => $e->getTraceAsString(),
-                ]
-            );
-
-            return Handler::DONE;
-        });
-
+        $this->whoops->appendHandler(new CallbackHandler(function (Throwable $exception) {
+            $this->getLogService()->error('Uncaught exception: {message}', [
+                'message' => $exception->getMessage(),
+                'exception' => $exception,
+                'code' => $exception->getCode(),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+                'uri' => $_SERVER['REQUEST_URI'] ?? null,
+                'method' => $_SERVER['REQUEST_METHOD'] ?? null,
+                'stack_trace' => $exception->getTraceAsString(),
+            ]);
+        }));
         $this->initalize();
 
         self::$container = new ContainerService();

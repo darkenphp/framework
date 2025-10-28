@@ -32,7 +32,7 @@ class Application extends Kernel
 
     public function initalize(): void
     {
-        $this->whoops->pushHandler(new PlainTextHandler());
+        $this->whoops->appendHandler(new PlainTextHandler());
         $this->whoops->register();
 
         $this->registerCommand('build', Build::class);
