@@ -8,6 +8,6 @@ class Test
 {
     public function __construct(LogService $log)
     {
-        $log->alert('hey');
+        $log->alert('test alert');
     }
 }
