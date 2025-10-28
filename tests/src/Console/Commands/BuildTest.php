@@ -40,6 +40,8 @@ class BuildTest extends TestCase
         $build = new Build();
 
         $build->run($app);
+
+        $this->clear();
         
         $content = include($config->getBuildOutputFolder() . '/routes.php');
 
@@ -346,6 +348,8 @@ PHP, $renderTestPageWithComponentsAndLayouts->getBody()->__toString());
         $this->assertArrayHasKey(AfterBuildEvent::class, $listeners);
         
         $this->destoryTmpFile($app->config->getBuildOutputFolder() . DIRECTORY_SEPARATOR . 'routes.php');
+
+        $this->clear();
     }
 
     /**

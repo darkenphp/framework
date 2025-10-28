@@ -19,5 +19,7 @@ class DevTest extends TestCase
         $output = ob_get_clean();
 
         $this->assertEmpty($output);
+
+        $this->clear();
     }
 }

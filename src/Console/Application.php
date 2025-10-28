@@ -31,10 +31,8 @@ class Application extends Kernel
 
     public function initalize(): void
     {
-        if ($this->config->getDebugMode()) {
-            $this->whoops->pushHandler(new \Whoops\Handler\PlainTextHandler());
-            $this->whoops->register();
-        }
+        $this->whoops->pushHandler(new \Whoops\Handler\PlainTextHandler());
+        $this->whoops->register();
 
         $this->registerCommand('build', Build::class);
         $this->registerCommand('dev', Dev::class);
@@ -55,13 +53,13 @@ class Application extends Kernel
             return ConsoleExit::INVALID_INPUT->value;
         }
 
-
         try {
             /** @var CommandInterface $object */
             $object = $this->getContainerService()->ensure($command, CommandInterface::class);
             return $object->run($this)->value;
         } catch (Exception $e) {
-            $this->stdOut($this->stdTextRed($e->getMessage()));
+            //$this->stdOut($this->stdTextRed($e->getMessage()));
+            $this->whoops->handleException($e);
             return ConsoleExit::ERROR->value;
         }
     }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Darken;
 
 use Darken\Config\ConfigInterface;
+use Darken\Events\AppInitializeEvent;
+use Darken\Events\AppShutdownEvent;
 use Darken\Service\ContainerService;
 use Darken\Service\ContainerServiceInterface;
 use Darken\Service\EventService;
@@ -34,6 +36,7 @@ abstract class Kernel
     public function __construct(public readonly ConfigInterface $config)
     {
         $this->whoops = new Run();
+        $this->whoops->allowQuit(false);
         // Register a custom handler to log uncaught exceptions
         $this->whoops->pushHandler(function (Throwable $e) {
             // Minimal structured context
@@ -64,6 +67,13 @@ abstract class Kernel
             self::$container = $config->containers(self::$container);
         }
 
+        // event service
+        $event = new EventService(self::$container);
+        if ($config instanceof EventServiceInterface) {
+            $event = $config->events($event);
+        }
+        $event->dispatch(new AppInitializeEvent($this));
+
         // middleware service
         $middlewareService = new MiddlewareService(self::$container);
         if ($this->config instanceof MiddlewareServiceInterface) {
@@ -71,11 +81,6 @@ abstract class Kernel
         }
         self::$container->register($middlewareService::class, $middlewareService, true);
 
-        // event service
-        $event = new EventService(self::$container);
-        if ($config instanceof EventServiceInterface) {
-            $event = $config->events($event);
-        }
         self::$container->register($event::class, $event, true);
         self::$container->register(LogService::class, null, true);
         self::$container->register(RouteService::class, null, true);
@@ -86,6 +91,8 @@ abstract class Kernel
             $extension = $config->extensions($extension);
         }
         self::$container->register($extension::class, $extension, true);
+
+        register_shutdown_function([$this, 'handleShutdown']);
     }
 
     public static function getContainerService(): ContainerService
@@ -116,6 +123,11 @@ abstract class Kernel
     public function getExtensionService(): ExtensionService
     {
         return self::getContainerService()->resolve(ExtensionService::class);
+    }
+
+    public function handleShutdown(): void
+    {
+        $this->getEventService()->dispatch(new AppShutdownEvent($this));
     }
 
     abstract public function initalize(): void;

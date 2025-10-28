@@ -12,5 +12,7 @@ class WatchTest extends TestCase
         $cfg = $this->createConfig();
         $app = new Application($cfg);
         $this->assertInstanceOf(Application::class, $app);
+
+        $this->clear();
     }
 }

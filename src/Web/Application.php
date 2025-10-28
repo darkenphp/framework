@@ -74,9 +74,14 @@ class Application extends Kernel
             $psr17Factory  // StreamFactory
         );
 
-        $response = $this->handleServerRequest($creator->fromGlobals());
-
-        $this->handleResponse($response);
+        try {
+            $response = $this->handleServerRequest($creator->fromGlobals());
+            $this->handleResponse($response);
+        } catch (Throwable $e) {
+            // Whoops won't call exit() because allowQuit(false) was set in Kernel.
+            http_response_code(500);
+            $this->whoops->handleException($e);
+        }
     }
 
     private function handleServerRequest(ServerRequestInterface $request): ResponseInterface

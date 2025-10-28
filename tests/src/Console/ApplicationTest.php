@@ -36,6 +36,8 @@ class ApplicationTest extends TestCase
             $app->stdTextRed('rk') . 
             $app->stdTextYellow('en')
         );
+
+        $this->clear();
     }
 
     public function testEmptyButDefinedArgv()
@@ -57,6 +59,8 @@ class ApplicationTest extends TestCase
         $this->assertTrue($app->getArgument('clear', true));
 
         $this->assertFalse($app->getArgument('nodefined', false));
+
+        $this->clear();
     }
 
     public function testRunBuild()
@@ -96,6 +100,8 @@ class ApplicationTest extends TestCase
         $output = ob_get_clean();
 
         $this->assertSame('Hello World', trim($output));
+
+        $this->clear();
     }
 
     public function testUnknownCommand()
@@ -109,6 +115,8 @@ class ApplicationTest extends TestCase
         $output = ob_get_clean();
 
         $this->assertStringContainsString('Command "unknown" not found.', $output);
+
+        $this->clear();
     }
 
     public function testCommandWhichThrowsAnException()
@@ -131,5 +139,7 @@ class ApplicationTest extends TestCase
         $output = ob_get_clean();
 
         $this->assertStringContainsString('Test Exception', $output);
+
+        $this->clear();
     }
 }
