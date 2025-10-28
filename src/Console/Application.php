@@ -10,6 +10,7 @@ use Darken\Console\Commands\Watch;
 use Darken\Enum\ConsoleExit;
 use Darken\Kernel;
 use Exception;
+use Whoops\Handler\PlainTextHandler;
 
 /**
  * Console Application
@@ -31,7 +32,7 @@ class Application extends Kernel
 
     public function initalize(): void
     {
-        $this->whoops->pushHandler(new \Whoops\Handler\PlainTextHandler());
+        $this->whoops->pushHandler(new PlainTextHandler());
         $this->whoops->register();
 
         $this->registerCommand('build', Build::class);

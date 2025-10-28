@@ -15,6 +15,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
 use Whoops\Handler\CallbackHandler;
+use Whoops\Handler\Handler;
 use Whoops\Handler\PrettyPageHandler;
 
 /**
@@ -52,6 +53,7 @@ class Application extends Kernel
                     </body>
                     </html>
                     HTML;
+                return Handler::QUIT;
             });
         }
         $this->whoops->pushHandler($handler);
