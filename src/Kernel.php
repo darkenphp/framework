@@ -15,6 +15,8 @@ use Darken\Service\LogService;
 use Darken\Service\MiddlewareService;
 use Darken\Service\MiddlewareServiceInterface;
 use Darken\Service\RouteService;
+use Throwable;
+use Whoops\Handler\Handler;
 use Whoops\Run;
 
 /**
@@ -32,6 +34,26 @@ abstract class Kernel
     public function __construct(public readonly ConfigInterface $config)
     {
         $this->whoops = new Run();
+        // Register a custom handler to log uncaught exceptions
+        $this->whoops->pushHandler(function (Throwable $e) {
+            // Minimal structured context
+            $this->getLogService()->error(
+                'Uncaught exception: {message}',
+                [
+                    'message' => $e->getMessage(),
+                    'exception' => $e,
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'uri' => $_SERVER['REQUEST_URI'] ?? null,
+                    'method' => $_SERVER['REQUEST_METHOD'] ?? null,
+                    'stack_trace' => $e->getTraceAsString(),
+                ]
+            );
+
+            return Handler::DONE;
+        });
+
         $this->initalize();
 
         self::$container = new ContainerService();
