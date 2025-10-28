@@ -40,7 +40,7 @@ use Stringable;
  * Retrieving logs:
  * ```php
  * $allLogs = $logger->getLogs();
- * $errorLogs = $logger->getLogsByLevel('error');
+ * $errorLogs = $logger->getLogsByLevel(LogLevel::ERROR);
  * $logger->clearLogs();
  * ```
  *
