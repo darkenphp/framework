@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "efad04bc9221307f485277eebb7a7230093d2c7e"
+                "reference": "9ecdaeb737b4076f9618240db880230bce931477"
             },
             "require": {
                 "filp/whoops": "^2.16",
@@ -25,6 +25,7 @@
                 "psr/http-message": "^2.0",
                 "psr/http-server-handler": "^1.0",
                 "psr/http-server-middleware": "^1.0",
+                "psr/log": "*",
                 "yiisoft/arrays": "^3.1",
                 "yiisoft/files": "^2.0"
             },
@@ -48,6 +49,9 @@
                 }
             },
             "scripts": {
+                "prepare": [
+                    "composer cs && composer phpstan && composer test"
+                ],
                 "test": [
                     "./vendor/bin/phpunit --coverage-clover coverage.xml"
                 ],
@@ -74,16 +78,16 @@
         },
         {
             "name": "filp/whoops",
-            "version": "2.16.0",
+            "version": "2.18.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filp/whoops.git",
-                "reference": "befcdc0e5dce67252aa6322d82424be928214fa2"
+                "reference": "d2102955e48b9fd9ab24280a7ad12ed552752c4d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filp/whoops/zipball/befcdc0e5dce67252aa6322d82424be928214fa2",
-                "reference": "befcdc0e5dce67252aa6322d82424be928214fa2",
+                "url": "https://api.github.com/repos/filp/whoops/zipball/d2102955e48b9fd9ab24280a7ad12ed552752c4d",
+                "reference": "d2102955e48b9fd9ab24280a7ad12ed552752c4d",
                 "shasum": ""
             },
             "require": {
@@ -133,7 +137,7 @@
             ],
             "support": {
                 "issues": "https://github.com/filp/whoops/issues",
-                "source": "https://github.com/filp/whoops/tree/2.16.0"
+                "source": "https://github.com/filp/whoops/tree/2.18.4"
             },
             "funding": [
                 {
@@ -141,20 +145,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-09-25T12:00:00+00:00"
+            "time": "2025-08-08T12:00:00+00:00"
         },
         {
             "name": "nikic/php-parser",
-            "version": "v5.4.0",
+            "version": "v5.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "447a020a1f875a434d62f2a401f53b82a396e494"
+                "reference": "3a454ca033b9e06b63282ce19562e892747449bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/447a020a1f875a434d62f2a401f53b82a396e494",
-                "reference": "447a020a1f875a434d62f2a401f53b82a396e494",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/3a454ca033b9e06b63282ce19562e892747449bb",
+                "reference": "3a454ca033b9e06b63282ce19562e892747449bb",
                 "shasum": ""
             },
             "require": {
@@ -173,7 +177,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "5.0-dev"
+                    "dev-master": "5.x-dev"
                 }
             },
             "autoload": {
@@ -197,9 +201,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v5.4.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.6.2"
             },
-            "time": "2024-12-30T11:07:19+00:00"
+            "time": "2025-10-21T19:32:17+00:00"
         },
         {
             "name": "nyholm/psr7",
@@ -347,16 +351,16 @@
         },
         {
             "name": "opis/closure",
-            "version": "4.1.0",
+            "version": "4.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/opis/closure.git",
-                "reference": "847d3c2031276cb67a45d1cf43233ef75300d6ef"
+                "reference": "9b6ef5f622b4b29cf98bdc144f2a370c3a40d4df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/opis/closure/zipball/847d3c2031276cb67a45d1cf43233ef75300d6ef",
-                "reference": "847d3c2031276cb67a45d1cf43233ef75300d6ef",
+                "url": "https://api.github.com/repos/opis/closure/zipball/9b6ef5f622b4b29cf98bdc144f2a370c3a40d4df",
+                "reference": "9b6ef5f622b4b29cf98bdc144f2a370c3a40d4df",
                 "shasum": ""
             },
             "require": {
@@ -405,9 +409,9 @@
             ],
             "support": {
                 "issues": "https://github.com/opis/closure/issues",
-                "source": "https://github.com/opis/closure/tree/4.1.0"
+                "source": "https://github.com/opis/closure/tree/4.3.1"
             },
-            "time": "2025-01-04T22:41:37+00:00"
+            "time": "2025-01-10T20:42:24+00:00"
         },
         {
             "name": "psr/event-dispatcher",
@@ -732,31 +736,38 @@
         },
         {
             "name": "yiisoft/arrays",
-            "version": "3.1.0",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/arrays.git",
-                "reference": "e07c7268bd53903108ed556df93ef75b4bac6760"
+                "reference": "a9e3a3393c8843838c5764354cbe9c8a53cc71a9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/arrays/zipball/e07c7268bd53903108ed556df93ef75b4bac6760",
-                "reference": "e07c7268bd53903108ed556df93ef75b4bac6760",
+                "url": "https://api.github.com/repos/yiisoft/arrays/zipball/a9e3a3393c8843838c5764354cbe9c8a53cc71a9",
+                "reference": "a9e3a3393c8843838c5764354cbe9c8a53cc71a9",
                 "shasum": ""
             },
             "require": {
-                "php": "^8.0",
+                "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
                 "yiisoft/strings": "^2.1"
             },
             "require-dev": {
-                "maglnet/composer-require-checker": "^4.4",
-                "phpunit/phpunit": "^9.5",
-                "rector/rector": "^1.0.0",
-                "roave/infection-static-analysis-plugin": "^1.25",
-                "spatie/phpunit-watcher": "^1.23",
-                "vimeo/psalm": "^4.30|^5.20"
+                "bamarni/composer-bin-plugin": "^1.8.2",
+                "phpunit/phpunit": "^10.5.43",
+                "rector/rector": "^2.0.7",
+                "roave/infection-static-analysis-plugin": "^1.35",
+                "spatie/phpunit-watcher": "^1.24",
+                "vimeo/psalm": "^5.26.1|^6.1"
             },
             "type": "library",
+            "extra": {
+                "bamarni-bin": {
+                    "bin-links": true,
+                    "forward-command": true,
+                    "target-directory": "tools"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Yiisoft\\Arrays\\": "src"
@@ -777,7 +788,7 @@
                 "chat": "https://t.me/yii3en",
                 "forum": "https://forum.yiiframework.com/",
                 "irc": "ircs://irc.libera.chat:6697/yii",
-                "issues": "https://github.com/yiisoft/arrays/issues",
+                "issues": "https://github.com/yiisoft/arrays/issues?state=open",
                 "source": "https://github.com/yiisoft/arrays",
                 "wiki": "https://www.yiiframework.com/wiki/"
             },
@@ -791,7 +802,7 @@
                     "type": "opencollective"
                 }
             ],
-            "time": "2024-04-04T11:07:18+00:00"
+            "time": "2025-02-01T05:26:03+00:00"
         },
         {
             "name": "yiisoft/files",
@@ -855,29 +866,29 @@
         },
         {
             "name": "yiisoft/strings",
-            "version": "2.4.0",
+            "version": "2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/strings.git",
-                "reference": "ff519d31e1c2518f42554fb5410e31bbb74b8108"
+                "reference": "eeb087d96ab8ae35c5b17daafe5d8ad9522880ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/strings/zipball/ff519d31e1c2518f42554fb5410e31bbb74b8108",
-                "reference": "ff519d31e1c2518f42554fb5410e31bbb74b8108",
+                "url": "https://api.github.com/repos/yiisoft/strings/zipball/eeb087d96ab8ae35c5b17daafe5d8ad9522880ab",
+                "reference": "eeb087d96ab8ae35c5b17daafe5d8ad9522880ab",
                 "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
-                "php": "^8.0"
+                "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0"
             },
             "require-dev": {
-                "maglnet/composer-require-checker": "^4.2",
-                "phpunit/phpunit": "^9.5",
-                "rector/rector": "^0.18.3",
-                "roave/infection-static-analysis-plugin": "^1.16",
-                "spatie/phpunit-watcher": "^1.23",
-                "vimeo/psalm": "^4.30|^5.8"
+                "maglnet/composer-require-checker": "^4.7.1",
+                "phpunit/phpunit": "^10.5.45",
+                "rector/rector": "^2.0.8",
+                "roave/infection-static-analysis-plugin": "^1.35",
+                "spatie/phpunit-watcher": "^1.24",
+                "vimeo/psalm": "^5.26.1|^6.4.1"
             },
             "type": "library",
             "autoload": {
@@ -899,22 +910,22 @@
             "support": {
                 "chat": "https://t.me/yii3en",
                 "forum": "https://www.yiiframework.com/forum/",
-                "irc": "irc://irc.freenode.net/yii",
-                "issues": "https://github.com/yiisoft/strings/issues",
+                "irc": "ircs://irc.libera.chat:6697/yii",
+                "issues": "https://github.com/yiisoft/strings/issues?state=open",
                 "source": "https://github.com/yiisoft/strings",
                 "wiki": "https://www.yiiframework.com/wiki/"
             },
             "funding": [
                 {
-                    "url": "https://github.com/yiisoft",
+                    "url": "https://github.com/sponsors/yiisoft",
                     "type": "github"
                 },
                 {
                     "url": "https://opencollective.com/yiisoft",
-                    "type": "open_collective"
+                    "type": "opencollective"
                 }
             ],
-            "time": "2023-12-22T07:29:39+00:00"
+            "time": "2025-02-09T16:30:52+00:00"
         }
     ],
     "packages-dev": [],

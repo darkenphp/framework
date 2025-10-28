@@ -18,7 +18,7 @@ $page = new class {
 
     public function __construct()
     {
-        $this->log->alert('hey');
+        $this->log->alert('page alert');
     }
 };
 ?>
